@@ -7,3 +7,9 @@ let error e = Error e
 let (>>=) a f = match a with
   | Ok a -> f a
   | Error b -> Error b
+
+let map f_ok f_error = function
+  | Ok a -> Ok (f_ok a)
+  | Error error -> Error (f_error error)
+
+let map_error f_error = map (fun a -> a) f_error
