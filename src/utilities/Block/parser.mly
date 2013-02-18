@@ -1,6 +1,6 @@
 %{
 
-  open Block
+  open Block_string
 
 %}
 
@@ -10,7 +10,7 @@
 %token EOF
 
 %start root
-%type <Block.t> root
+%type <Block_string.t> root
 %%
 
 root:

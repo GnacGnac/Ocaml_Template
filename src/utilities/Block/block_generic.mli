@@ -9,6 +9,8 @@ module type S = sig
   type t
   type child = Block of t | Int of int | Text of string
   type children = child list
+  val name : t -> Node.t
+  val children : t -> children
   val node : Node.t -> children -> t
   val block : t -> child
   val int : int -> child

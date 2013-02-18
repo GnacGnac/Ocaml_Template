@@ -1,5 +1,6 @@
 
 open Result
+open Block_generic
 open Block_string
 open Block_instance
 
@@ -16,6 +17,7 @@ let string_of_error = function
 
 
 let _ = match Parse.from_file Sys.argv.(1) with
-  | Ok block -> Printf.printf "%s\n%!" (Block.to_string block)
+  | Ok block ->
+    Printf.printf "%s\n%!" (extract (Block_string.to_string block))
   | Error error -> Error.show (string_of_error error)
 

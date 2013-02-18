@@ -13,3 +13,7 @@ let map f_ok f_error = function
   | Error error -> Error (f_error error)
 
 let map_error f_error = map (fun a -> a) f_error
+
+let extract = function
+  | Ok a -> a
+  | _ -> assert false (* Only use on valid monads. *)
