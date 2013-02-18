@@ -19,6 +19,8 @@ module Occurence = struct
 
   let mem a occurence = (min occurence) <= a & le_bound a (max occurence)
 
+  let none = make 0 (Int 0)
+
 end
 
 
@@ -57,7 +59,34 @@ module Make (Node : Map_ext.ORDERED_TYPE) = struct
     let sub_nodes = NodeMap.add node occurence (sub_nodes children_spec) in
     make (ints children_spec) (texts children_spec) sub_nodes
 
+  let merge_spec node occurence spec_occurence =
+    match occurence, spec_occurence with
+      | None, None -> None
+      | Some occurence, None -> Some (occurence, Occurence.none)
+      | None, Some spec_occurence -> Some (0, spec_occurence)
+      | Some occurence, Some spec_occurence -> Some (occurence, spec_occurence)
+
+  let check_sub_nodes_spec node nb_sub_nodes sub_nodes =
+    let occurences_and_specs =
+      NodeMap.merge merge_spec nb_sub_nodes sub_nodes in
+    let f sub_node (occurence, spec_occurence) res =
+      res >>= fun () ->
+      if Occurence.mem occurence spec_occurence then return ()
+      else
+	error
+	  (`Bad_sub_node_occurence (node, sub_node, occurence, spec_occurence))
+    in
+    NodeMap.fold f occurences_and_specs (return ())
+
   let check node children_spec nb_ints nb_texts nb_sub_nodes =
-    return () (* TODO *)
+    let ints = ints children_spec in
+    let texts = texts children_spec in
+    let sub_nodes = sub_nodes children_spec in
+    if Occurence.mem nb_ints ints then
+      if Occurence.mem nb_texts texts then
+	check_sub_nodes_spec node nb_sub_nodes sub_nodes
+      else error (`Bad_text_occurence (node, nb_texts, texts))
+    else
+      error (`Bad_int_occurence (node, nb_ints, ints))
 
 end
