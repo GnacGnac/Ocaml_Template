@@ -11,7 +11,7 @@ end
 
 
 module type S = sig
-  include Block_generic.S
+  include Generic.S
   val parse :
   string ->
     (t,
@@ -43,7 +43,7 @@ module Make (Spec : SPEC) = struct
       map_error f_error (to_string node)
   end
 
-  include Block_generic.Make (S)
+  include Generic.Make (S)
 
   let analyze_children_spec block_name spec children =
     let add_occurence (nb_ints, nb_texts, nb_sub_nodes) = function

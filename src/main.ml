@@ -1,8 +1,6 @@
 
 open Result
-open Block_generic
-open Block_string
-open Block_instance
+open BlockML.Generic
 
 
 let string_of_error = function

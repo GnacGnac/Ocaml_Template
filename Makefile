@@ -5,7 +5,7 @@ EXE = main
 BUILD = ocamlbuild
 NAT = $(MAIN).native
 BYTE = $(MAIN).byte
-DIRS = . src src/utilities src/utilities/Block
+DIRS = . src src/utilities src/utilities/BlockML
 TMPS = $(DIRS:=/*~)
 
 TARGET = $(NAT)
