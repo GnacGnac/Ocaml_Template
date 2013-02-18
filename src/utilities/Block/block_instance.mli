@@ -1,11 +1,8 @@
 
-module ChildrenSpec : sig
-  type 'a t
-end
-
 module type SPEC = sig
   include Stringable.S
-  val spec : t -> t ChildrenSpec.t
+  module Children : Children_spec.S with type node = t
+  val spec : t -> Children.t
   val possible_roots : Set.t
 end
 
@@ -14,7 +11,11 @@ module type S = sig
   val parse :
   string ->
     (t,
-     [> `File_does_not_exist of string
+     [> `Bad_int_occurence of Node.t * int * Children_spec.Occurence.t
+      | `Bad_sub_node_occurence of
+	  Node.t * Node.t * int * Children_spec.Occurence.t
+      | `Bad_text_occurence of Node.t * int * Children_spec.Occurence.t
+      | `File_does_not_exist of string
       | `Could_not_open_file of string
       | `Unrecognized_char of char * Position.t
       | `Parse_error of Position.t
