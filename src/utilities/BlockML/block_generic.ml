@@ -36,10 +36,18 @@ module Make (N : NODE) = struct
   let rec to_string space = function
     | Int i -> return (space ^ (string_of_int i))
     | Text s -> return (space ^ (string_of_text s))
+    | Node (name, []) ->
+      Node.to_string name >>= fun name -> return (space ^ name)
+    | Node (name, [Int i]) ->
+      Node.to_string name >>= fun name ->
+      return (space ^ name ^ " { " ^ (string_of_int i) ^ " }")
+    | Node (name, [Text s]) ->
+      Node.to_string name >>= fun name ->
+      return (space ^ name ^ " { " ^ (string_of_text s) ^ " }")
     | Node (name, children) ->
       string_of_children (space ^ "  ") children >>= fun children ->
       Node.to_string name >>= fun name ->
-      return (space ^ name ^ " " ^ children)
+      return (space ^ name ^ " {\n" ^ children ^ "\n" ^ space ^ "}")
 
   and string_of_children space children =
     List_ext.to_string_err "\n" (to_string space) children

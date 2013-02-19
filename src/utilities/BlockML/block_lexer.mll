@@ -32,21 +32,23 @@
 let space    = [' ' '\t']
 let new_line = ['\n']
 let digit    = ['0'-'9']
+let integer  = digit+
 let letter   = ['a'-'z' 'A'-'Z']
 let letter_  = letter | '_'
 let ident    = letter letter_* digit*
 
 
 rule token = parse
-  | space      { token lexbuf }
-  | new_line   { Lexing.new_line lexbuf ; token lexbuf }
-  | '"'        { Chars.reset () ; quoted_string lexbuf }
-  | '{'        { LBRC }
-  | '}'        { RBRC }
-  | "/*"       { comment lexbuf }
-  | ident as s { IDENT s }
-  | eof        { EOF }
-  | _ as c     { raise (Unrecognized_char c) }
+  | space        { token lexbuf }
+  | new_line     { Lexing.new_line lexbuf ; token lexbuf }
+  | '"'          { Chars.reset () ; quoted_string lexbuf }
+  | '{'          { LBRC }
+  | '}'          { RBRC }
+  | "/*"         { comment lexbuf }
+  | integer as i { INT (int_of_string i) }
+  | ident as s   { IDENT s }
+  | eof          { EOF }
+  | _ as c       { raise (Unrecognized_char c) }
 
 and quoted_string = parse
   | "\\\"" { Chars.add '"' ; quoted_string lexbuf }

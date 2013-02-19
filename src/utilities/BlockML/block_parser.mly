@@ -5,6 +5,7 @@
 %}
 
 %token LBRC RBRC
+%token <int> INT
 %token <string> IDENT
 %token <string> STRING
 %token EOF
@@ -18,8 +19,9 @@ root:
 ;
 
 block:
-  STRING                   { text $1 }
-| IDENT                    { node $1 [] }
+  INT                    { int $1 }
+| STRING                 { text $1 }
+| IDENT                  { node $1 [] }
 | IDENT LBRC blocks RBRC { node $1 $3 }
 ;
 
