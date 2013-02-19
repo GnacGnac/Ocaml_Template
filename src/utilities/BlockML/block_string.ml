@@ -7,4 +7,4 @@ module S = struct
   let to_string s = return s
 end
 
-include Generic.Make (S)
+include Block_generic.Make (S)

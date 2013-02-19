@@ -6,15 +6,10 @@ end
 
 module type S = sig
   module Node : NODE
-  type t
-  type child = Block of t | Int of int | Text of string
-  type children = child list
-  val name : t -> Node.t
-  val children : t -> children
-  val node : Node.t -> children -> t
-  val block : t -> child
-  val int : int -> child
-  val text : string -> child
+  type t = Int of int | Text of string | Node of Node.t * t list
+  val int : int -> t
+  val text : string -> t
+  val node : Node.t -> t list -> t
   val to_string :
     t -> (string, [> `Node_not_bound_to_a_string of Node.t]) Result.t
 end

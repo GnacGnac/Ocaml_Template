@@ -1,6 +1,6 @@
 
 open Result
-open BlockML.Generic
+open Block_instance
 
 
 let string_of_error = function
@@ -16,7 +16,7 @@ let string_of_error = function
     "node " ^ node ^ " not bound to a string"
 
 
-let _ = match Parse.from_file Sys.argv.(1) >>= Block_string.to_string with
+let _ = match Block_parse.from_file Sys.argv.(1) >>= Block_string.to_string with
   | Ok s -> Printf.printf "%s\n%!" s
   | Error error -> Error.show (string_of_error error)
 

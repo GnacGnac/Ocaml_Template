@@ -7,7 +7,7 @@ module type SPEC = sig
 end
 
 module type S = sig
-  include Generic.S
+  include Block_generic.S
   val parse :
   string ->
     (t,

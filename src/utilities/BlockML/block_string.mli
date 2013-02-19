@@ -1,2 +1,2 @@
 
-include Generic.S with type Node.t = string
+include Block_generic.S with type Node.t = string

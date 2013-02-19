@@ -11,7 +11,7 @@ end
 
 
 module type S = sig
-  include Generic.S
+  include Block_generic.S
   val parse :
   string ->
     (t,
@@ -43,14 +43,14 @@ module Make (Spec : SPEC) = struct
       map_error f_error (to_string node)
   end
 
-  include Generic.Make (S)
+  include Block_generic.Make (S)
 
-  let analyze_children_spec block_name spec children =
+(*
+  let analyze_children_spec block_name_opt spec children =
     let add_occurence (nb_ints, nb_texts, nb_sub_nodes) = function
       | Int _ -> (nb_ints + 1, nb_texts, nb_sub_nodes)
       | Text _ -> (nb_ints, nb_texts + 1, nb_sub_nodes)
-      | Block b ->
-	let name = name b in
+      | Node (name, _) ->
 	let old_occurence = S.Children.NodeMap.find name nb_sub_nodes in
 	let old_occurence = match old_occurence with
 	  | Ok old_occurence -> old_occurence
@@ -79,12 +79,20 @@ module Make (Spec : SPEC) = struct
     | Block_string.Int i -> return (int i)
     | Block_string.Text s -> return (text s)
     | Block_string.Block b -> analyze_block b >>= fun b -> return (block b)
+*)
+
+  let rec analyze_block = function
+    | Block_string.Int i -> return (int i)
+    | Block_string.Text s -> return (text s)
+    | Block_string.Node (name, children) ->
+      analyze_block b >>= fun b -> return (block b)
 
   let analyze block =
-    analyze_block block >>= fun block ->
-    let name = name block in
-    if S.Set.mem name S.possible_roots then return block
-    else error (`Not_a_root_node name)
+    analyze_block block >>= function
+      | Block_string.Int _ | Block_string.Text _ -> error `Root_is_not_a_node
+      | Block_string.Node (name, _) as block ->
+	if S.Set.mem name S.possible_roots then return block
+	else error (`Not_a_root_node name)
 
   let parse file =
     Parse.from_file file >>= fun block ->

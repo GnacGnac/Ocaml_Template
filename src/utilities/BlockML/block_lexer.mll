@@ -1,6 +1,6 @@
 {
 
-  open Parser
+  open Block_parser
 
   exception Unrecognized_char of char
 
