@@ -1,13 +1,14 @@
 %{
 
+  open Result
   open Block_string
 
 %}
 
 %token LBRC RBRC
-%token <int> INT
-%token <string> IDENT
-%token <string> STRING
+%token <int Position.t> INT
+%token <string Position.t> IDENT
+%token <string Position.t> STRING
 %token EOF
 
 %start root
@@ -19,10 +20,12 @@ root:
 ;
 
 block:
-  INT                    { int $1 }
-| STRING                 { text $1 }
-| IDENT                  { node $1 [] }
-| IDENT LBRC blocks RBRC { node $1 $3 }
+  INT                    { Position.map_contents int_content $1 }
+| STRING                 { Position.map_contents text_content $1 }
+| IDENT                  { Position.map_contents
+			   (fun name -> node_content name []) $1 }
+| IDENT LBRC blocks RBRC { Position.map_contents
+			   (fun name -> node_content name $3) $1 }
 ;
 
 blocks:

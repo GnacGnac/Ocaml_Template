@@ -8,7 +8,11 @@ module Generic : sig
 
   module type S = sig
     module Node : NODE
-    type t = Int of int | Text of string | Node of Node.t * t list
+    type contents = Int of int | Text of string | Node of Node.t * t list
+    and t = contents Position.t
+    val int_content : int -> contents
+    val text_content : string -> contents
+    val node_content : Node.t -> t list -> contents
     val int : int -> t
     val text : string -> t
     val node : Node.t -> t list -> t
@@ -74,8 +78,8 @@ module Instance : sig
         | `Bad_text_occurrence of Node.t * int * Occurrence.t
         | `File_does_not_exist of string
         | `Could_not_open_file of string
-        | `Unrecognized_char of char * Position.t
-        | `Parse_error of Position.t
+        | `Unrecognized_char of char Position.t
+        | `Parse_error of unit Position.t
         | `Not_a_root_node of Node.t option
         | `Unrecognized_node of string]) Result.t
     val save :

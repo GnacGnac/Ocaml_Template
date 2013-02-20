@@ -45,15 +45,16 @@ rule token = parse
   | '{'          { LBRC }
   | '}'          { RBRC }
   | "/*"         { comment lexbuf }
-  | integer as i { INT (int_of_string i) }
-  | ident as s   { IDENT s }
+  | integer as i { INT (Position.of_buffer lexbuf (int_of_string i)) }
+  | ident as s   { IDENT (Position.of_buffer lexbuf s) }
   | eof          { EOF }
   | _ as c       { raise (Unrecognized_char c) }
 
 and quoted_string = parse
   | "\\\"" { Chars.add '"' ; quoted_string lexbuf }
   | "\\\\" { Chars.add '\\' ; quoted_string lexbuf }
-  | '"'    { STRING (Chars.get ()) }
+  | '"'    { let s = Chars.get () in
+	     STRING (Position.of_buffer_offset lexbuf s (String.length s + 1)) }
   | _ as c { Chars.add c ; quoted_string lexbuf }
 
 and comment = parse
