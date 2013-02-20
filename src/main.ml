@@ -7,9 +7,16 @@ module S = struct
   module M = struct
     type t = Html | Body
     let compare = Pervasives.compare
-    let get = [(Html, "html") ; (Body, "body")]
+    let to_string = function
+      | Html -> "html"
+      | Body -> "body"
+    let of_string = function
+      | s when String.lowercase s = "html" -> return Html
+      | s when String.lowercase s = "body" -> return Body
+      | s -> error (`Unrecognized_string s)
   end
-  include Stringable.Make (M)
+  include M
+  module Set = Set_ext.Make (M)
 
   module Children = BlockML.ChildrenSpec.Make (M)
 
@@ -34,7 +41,8 @@ module BlockString = BlockML.Instance.Make (S)
 
 let string_of_error = function
   | `Bad_int_occurrence (node, occurrence, possible_occurrences) ->
-    Printf.sprintf "bad int children occurrence (%d not in %s)"
+    Printf.sprintf "bad int children occurrence of node %s (%d not in %s)"
+      (BlockString.Node.to_string node)
       occurrence (BlockML.Occurrence.to_string possible_occurrences)
   | `Bad_text_occurrence (node, occurrence, possible_occurrences) ->
     Printf.sprintf "bad text children occurrence (%d not in %s)"
@@ -51,13 +59,15 @@ let string_of_error = function
   | `Parse_error pos ->
     Printf.sprintf "parse error line %d character %d"
       (Position.line pos) (Position.char pos)
-  | `Node_not_bound_to_a_string node -> "node not bound to a string"
   | `Not_a_root_node None -> "root is not a node"
   | `Not_a_root_node (Some node) -> "node is not a root node"
   | `Unrecognized_node node -> "unrecognized node"
 
 
-let _ = match BlockString.parse Sys.argv.(1) >>= BlockString.to_string with
+let _ =
+  match
+    BlockString.parse Sys.argv.(1) >>= fun block ->
+    return (BlockString.to_string block) with
   | Ok s -> Printf.printf "%s\n%!" s
   | Error error -> Error.show (string_of_error error)
 

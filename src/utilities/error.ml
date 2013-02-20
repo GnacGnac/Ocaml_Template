@@ -1,2 +1,2 @@
 
-let show msg = Printf.eprintf "Error: %s.\n%!" msg
+let show msg = Printf.eprintf "** Error: %s.\n%!" msg

@@ -3,7 +3,7 @@ module Generic : sig
 
   module type NODE = sig
     type t
-    val to_string : t -> (string, [> `Node_not_bound_to_a_string of t]) Result.t
+    val to_string : t -> string
   end
 
   module type S = sig
@@ -12,8 +12,7 @@ module Generic : sig
     val int : int -> t
     val text : string -> t
     val node : Node.t -> t list -> t
-    val to_string :
-      t -> (string, [> `Node_not_bound_to_a_string of Node.t]) Result.t
+    val to_string : t -> string
   end
 
   module Make (N : NODE) : S with type Node.t = N.t
@@ -56,7 +55,10 @@ end
 module Instance : sig
 
   module type SPEC = sig
-    include Stringable.S
+    type t
+    module Set : Set_ext.S with type elt = t
+    val to_string : t -> string
+    val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
     module Children : ChildrenSpec.S with type node = t
     val spec : t -> Children.t
     val possible_roots : Set.t
@@ -77,10 +79,7 @@ module Instance : sig
         | `Not_a_root_node of Node.t option
         | `Unrecognized_node of string]) Result.t
     val save :
-      string -> t ->
-      (unit,
-       [> `Could_not_save_in_file of string
-        | `Node_not_bound_to_a_string of Node.t]) Result.t
+      string -> t -> (unit, [> `Could_not_save_in_file of string]) Result.t
   end
 
   module Make (Spec : SPEC) : S with type Node.t = Spec.t

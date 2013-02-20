@@ -4,7 +4,7 @@ open Result
 
 module type NODE = sig
   type t
-  val to_string : t -> (string, [> `Node_not_bound_to_a_string of t]) Result.t
+  val to_string : t -> string
 end
 
 
@@ -14,8 +14,7 @@ module type S = sig
   val int : int -> t
   val text : string -> t
   val node : Node.t -> t list -> t
-  val to_string :
-    t -> (string, [> `Node_not_bound_to_a_string of Node.t]) Result.t
+  val to_string : t -> string
 end
 
 
@@ -34,23 +33,20 @@ module Make (N : NODE) = struct
   let string_of_text s = "\"" ^ (String.escaped s) ^ "\""
 
   let rec to_string space = function
-    | Int i -> return (space ^ (string_of_int i))
-    | Text s -> return (space ^ (string_of_text s))
-    | Node (name, []) ->
-      Node.to_string name >>= fun name -> return (space ^ name)
+    | Int i -> space ^ (string_of_int i)
+    | Text s -> space ^ (string_of_text s)
+    | Node (name, []) -> space ^ (Node.to_string name)
     | Node (name, [Int i]) ->
-      Node.to_string name >>= fun name ->
-      return (space ^ name ^ " { " ^ (string_of_int i) ^ " }")
+      space ^ (Node.to_string name) ^ " { " ^ (string_of_int i) ^ " }"
     | Node (name, [Text s]) ->
-      Node.to_string name >>= fun name ->
-      return (space ^ name ^ " { " ^ (string_of_text s) ^ " }")
+      space ^ (Node.to_string name) ^ " { " ^ (string_of_text s) ^ " }"
     | Node (name, children) ->
-      string_of_children (space ^ "  ") children >>= fun children ->
-      Node.to_string name >>= fun name ->
-      return (space ^ name ^ " {\n" ^ children ^ "\n" ^ space ^ "}")
+      let children = string_of_children (space ^ "  ") children in
+      let name = Node.to_string name in
+      space ^ name ^ " {\n" ^ children ^ "\n" ^ space ^ "}"
 
   and string_of_children space children =
-    List_ext.to_string_err "\n" (to_string space) children
+    List_ext.to_string "\n" (to_string space) children
 
   let to_string = to_string ""
 
