@@ -15,6 +15,14 @@ end
 
 module type S = sig
   include Block_generic.S
+    val analyze :
+      t ->
+      (unit,
+       [> `Bad_int_occurrence of Node.t * int * Children_spec.Occurrence.t
+        | `Bad_sub_node_occurrence of
+	    Node.t * Node.t * int * Children_spec.Occurrence.t
+        | `Bad_text_occurrence of Node.t * int * Children_spec.Occurrence.t
+        | `Not_a_root_node of Node.t option]) Result.t
   val parse :
   string ->
     (t,
@@ -37,6 +45,22 @@ module Make (Spec : SPEC) = struct
 
   include Block_generic.Make (Spec)
 
+  let analyze_name name =
+    let f_error = function `Unrecognized_string s -> `Unrecognized_node s in
+    map_error f_error (Spec.of_string name)
+
+  let rec analyze_names block = match Position.contents block with
+    | Block_string.Int i ->
+      return (Position.change_contents (int_content i) block)
+    | Block_string.Text s ->
+      return (Position.change_contents (text_content s) block)
+    | Block_string.Node (name, children) ->
+      analyze_name name >>= fun name ->
+      analyze_children_names children >>= fun children ->
+      return (Position.change_contents (node_content name children) block)
+
+  and analyze_children_names children = List_ext.bind analyze_names children
+
   let analyze_children_spec name spec children =
     let add_occurrence (nb_ints, nb_texts, nb_sub_nodes) child =
       match Position.contents child with
@@ -56,31 +80,34 @@ module Make (Spec : SPEC) = struct
     Spec.Children.check name spec nb_ints nb_texts nb_sub_nodes
 
   let rec analyze block = match Position.contents block with
-    | Block_string.Int i ->
-      return (Position.change_contents (int_content i) block)
-    | Block_string.Text s ->
-      return (Position.change_contents (text_content s) block)
-    | Block_string.Node (name, children) -> analyze_block block name children
+    | Int i -> return ()
+    | Text s -> return ()
+    | Node (name, children) -> analyze_block name children
 
-  and analyze_block block name children =
-    analyze_name name >>= fun name ->
-    analyze_children children >>= fun children ->
+  and analyze_block name children =
+    analyze_children children >>= fun () ->
     analyze_children_spec name (Spec.spec name) children >>= fun () ->
-    return (Position.change_contents (node_content name children) block)
+    return ()
 
-  and analyze_name name =
-    let f_error = function `Unrecognized_string s -> `Unrecognized_node s in
-    map_error f_error (Spec.of_string name)
-
-  and analyze_children children = List_ext.bind analyze children
+  and analyze_children children =
+    List_ext.fold_bind (fun () -> analyze) () children
 
   let analyze_root block = match Position.contents block with
     | Int _ | Text _ -> error (`Not_a_root_node None)
     | Node (name, _) ->
-      if Spec.Set.mem name Spec.possible_roots then return block
+      if Spec.Set.mem name Spec.possible_roots then return ()
       else error (`Not_a_root_node (Some name))
 
-  let parse file = Block_parse.from_file file >>= analyze >>= analyze_root
+  let analyze block =
+    analyze_root block >>= fun () ->
+    analyze block >>= fun () ->
+    return ()
+
+  let parse file =
+    Block_parse.from_file file >>=
+    analyze_names >>= fun block ->
+    analyze block >>= fun () ->
+    return block
 
   let save file block = Sys_ext.save file (to_string block)
 

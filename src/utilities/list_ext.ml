@@ -14,11 +14,11 @@ let to_string sep f l =
   let f' e = return (f e) in
   match to_string_err sep f' l with
     | Ok s -> s
-    | Error _ -> assert false (* Impossible: [f'] cannot an error. *)
+    | Error _ -> assert false (* Impossible: [f'] cannot raise an error. *)
 
 
-let bind f =
-  let rec aux acc = function
-    | [] -> acc
-    | e :: l -> aux (acc >>= fun l -> f e >>= fun e -> return (l @ [e])) l in
-  aux (return [])
+let fold_bind f e l =
+  let f' res e' = res >>= fun res -> f res e' in
+  List.fold_left f' (return e) l
+
+let bind f l = fold_bind (fun l e -> f e >>= fun e -> return (l @ [e])) [] l
