@@ -67,11 +67,13 @@ rule token = parse
   | _ as c       { raise (Unrecognized_char c) }
 
 and quoted_string = parse
-  | "\\\"" { Chars.add '"' ; quoted_string lexbuf }
-  | "\\\\" { Chars.add '\\' ; quoted_string lexbuf }
-  | '"'    { let (s, line, char) = Chars.get () in
-	     STRING (Position.make s line char) }
-  | _ as c { Chars.add c ; quoted_string lexbuf }
+  | new_line as c { Lexing.new_line lexbuf ; Chars.add c ;
+		    quoted_string lexbuf }
+  | "\\\""        { Chars.add '"' ; quoted_string lexbuf }
+  | "\\\\"        { Chars.add '\\' ; quoted_string lexbuf }
+  | '"'           { let (s, line, char) = Chars.get () in
+		    STRING (Position.make s line char) }
+  | _ as c        { Chars.add c ; quoted_string lexbuf }
 
 and comment = parse
   | "*/" { CommentLevel.decrease () ;

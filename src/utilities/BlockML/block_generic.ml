@@ -42,11 +42,11 @@ module Make (N : NODE) = struct
   let string_of_text s = "\"" ^ (String.escaped s) ^ "\""
 
   let string_of_position ?debug block = match debug with
+(*
     | None | Some false -> ""
     | Some true ->
-(*
-    | _ ->
 *)
+    | _ ->
       let f_pos line char _ = Printf.sprintf "@(%d, %d)" line char in
       let f_no_pos _ = "" in
       Position.apply f_pos f_no_pos block
