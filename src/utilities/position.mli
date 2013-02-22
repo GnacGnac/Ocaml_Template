@@ -10,8 +10,5 @@ val char : 'a t -> (int, [> `No_position]) Result.t
 
 val change_contents : 'a -> 'b t -> 'a t
 
-val of_buffer : Lexing.lexbuf -> 'a -> 'a t
-val of_buffer_offset : Lexing.lexbuf -> 'a -> int -> 'a t
-
 val apply : (int -> int -> 'a -> 'b) -> ('a -> 'b) -> 'a t -> 'b
 val map_contents : ('a -> 'b) -> 'a t -> 'b t

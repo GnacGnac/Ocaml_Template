@@ -30,15 +30,6 @@ let char pos = match pos.pos with
 let change_contents contents pos = { pos with contents }
 
 
-let of_buffer_offset lexbuf contents offset =
-  let pos = Lexing.lexeme_start_p lexbuf in
-  let line = pos.Lexing.pos_lnum in
-  let char = pos.Lexing.pos_cnum - pos.Lexing.pos_bol - offset in
-  make contents line char
-
-let of_buffer lexbuf contents = of_buffer_offset lexbuf contents 0
-
-
 let apply f_pos f_no_pos pos =
   (match pos.pos with
     | None -> f_no_pos

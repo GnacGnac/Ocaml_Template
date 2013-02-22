@@ -4,15 +4,31 @@
 
   exception Unrecognized_char of char
 
+  let pos_of_lexbuf lexbuf =
+      let pos = Lexing.lexeme_start_p lexbuf in
+      let line = pos.Lexing.pos_lnum in
+      let char = pos.Lexing.pos_cnum - pos.Lexing.pos_bol in
+      (line, char)
+
+  let position_from_buffer lexbuf a =
+    let (line, char) = pos_of_lexbuf lexbuf in
+    Position.make a line char
+
   module Chars : sig
-    val reset : unit -> unit
+    val reset : Lexing.lexbuf -> unit
     val add : char -> unit
-    val get : unit -> string
+    val get : unit -> string * int * int
   end = struct
     let chars : string ref = ref ""
-    let reset () = chars := ""
+    let line = ref 1
+    let char = ref 0
+    let reset lexbuf =
+      let (ln, ch) = pos_of_lexbuf lexbuf in
+      chars := "" ;
+      line := ln ;
+      char := ch
     let add c = chars := !chars ^ (String.make 1 c)
-    let get () = !chars
+    let get () = (!chars, !line, !char)
   end
 
   module CommentLevel : sig
@@ -41,20 +57,20 @@ let ident    = letter letter_* digit*
 rule token = parse
   | space        { token lexbuf }
   | new_line     { Lexing.new_line lexbuf ; token lexbuf }
-  | '"'          { Chars.reset () ; quoted_string lexbuf }
+  | '"'          { Chars.reset lexbuf ; quoted_string lexbuf }
   | '{'          { LBRC }
   | '}'          { RBRC }
   | "/*"         { comment lexbuf }
-  | integer as i { INT (Position.of_buffer lexbuf (int_of_string i)) }
-  | ident as s   { IDENT (Position.of_buffer lexbuf s) }
+  | integer as i { INT (position_from_buffer lexbuf (int_of_string i)) }
+  | ident as s   { IDENT (position_from_buffer lexbuf s) }
   | eof          { EOF }
   | _ as c       { raise (Unrecognized_char c) }
 
 and quoted_string = parse
   | "\\\"" { Chars.add '"' ; quoted_string lexbuf }
   | "\\\\" { Chars.add '\\' ; quoted_string lexbuf }
-  | '"'    { let s = Chars.get () in
-	     STRING (Position.of_buffer_offset lexbuf s (String.length s + 1)) }
+  | '"'    { let (s, line, char) = Chars.get () in
+	     STRING (Position.make s line char) }
   | _ as c { Chars.add c ; quoted_string lexbuf }
 
 and comment = parse
