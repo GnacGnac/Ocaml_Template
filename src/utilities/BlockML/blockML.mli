@@ -70,6 +70,13 @@ module Instance : sig
 
   module type S = sig
     include Generic.S
+    val analyze :
+      t ->
+      (unit,
+       [> `Bad_int_occurrence of Node.t * int * Occurrence.t
+        | `Bad_sub_node_occurrence of Node.t * Node.t * int * Occurrence.t
+        | `Bad_text_occurrence of Node.t * int * Occurrence.t
+        | `Not_a_root_node of Node.t option]) Result.t       
     val parse :
     string ->
       (t,
