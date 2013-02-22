@@ -40,15 +40,16 @@ module ChildrenSpec : sig
 
   module type S = sig
     type node
+    type node_pos = node Position.t
     module NodeMap : Map_ext.S with type key = node
     type t
     val make : Occurrence.t -> Occurrence.t -> Occurrence.t NodeMap.t -> t
     val check :
-      node -> t -> int -> int -> int NodeMap.t ->
+      node_pos -> t -> int -> int -> int NodeMap.t ->
       (unit,
-       [> `Bad_int_occurrence of node * int * Occurrence.t
-        | `Bad_text_occurrence of node * int * Occurrence.t
-        | `Bad_sub_node_occurrence of node * node * int * Occurrence.t])
+       [> `Bad_int_occurrence of node_pos * int * Occurrence.t
+        | `Bad_text_occurrence of node_pos * int * Occurrence.t
+        | `Bad_sub_node_occurrence of node_pos * node * int * Occurrence.t])
 	Result.t
   end
 
@@ -70,25 +71,26 @@ module Instance : sig
 
   module type S = sig
     include Generic.S
+    type node_pos = Node.t Position.t
     val analyze :
       t ->
       (unit,
-       [> `Bad_int_occurrence of Node.t * int * Occurrence.t
-        | `Bad_sub_node_occurrence of Node.t * Node.t * int * Occurrence.t
-        | `Bad_text_occurrence of Node.t * int * Occurrence.t
-        | `Not_a_root_node of Node.t option]) Result.t       
+       [> `Bad_int_occurrence of node_pos * int * Occurrence.t
+        | `Bad_sub_node_occurrence of node_pos * Node.t * int * Occurrence.t
+        | `Bad_text_occurrence of node_pos * int * Occurrence.t
+        | `Not_a_root_node of Node.t option Position.t]) Result.t
     val parse :
     string ->
       (t,
-       [> `Bad_int_occurrence of Node.t * int * Occurrence.t
-        | `Bad_sub_node_occurrence of Node.t * Node.t * int * Occurrence.t
-        | `Bad_text_occurrence of Node.t * int * Occurrence.t
+       [> `Bad_int_occurrence of node_pos * int * Occurrence.t
+        | `Bad_sub_node_occurrence of node_pos * Node.t * int * Occurrence.t
+        | `Bad_text_occurrence of node_pos * int * Occurrence.t
         | `File_does_not_exist of string
         | `Could_not_open_file of string
         | `Unrecognized_char of char Position.t
         | `Parse_error of unit Position.t
-        | `Not_a_root_node of Node.t option
-        | `Unrecognized_node of string]) Result.t
+        | `Not_a_root_node of Node.t option Position.t
+        | `Unrecognized_node of string Position.t]) Result.t
     val save :
       string -> t -> (unit, [> `Could_not_save_in_file of string]) Result.t
   end

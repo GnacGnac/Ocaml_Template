@@ -38,21 +38,25 @@ end
 
 module type S = sig
   type node
+  type node_pos = node Position.t
   module NodeMap : Map_ext.S with type key = node
   type t
   val make : Occurrence.t -> Occurrence.t -> Occurrence.t NodeMap.t -> t
   val check :
-    node -> t -> int -> int -> int NodeMap.t ->
+    node_pos -> t -> int -> int -> int NodeMap.t ->
     (unit,
-     [> `Bad_int_occurrence of node * int * Occurrence.t
-      | `Bad_text_occurrence of node * int * Occurrence.t
-      | `Bad_sub_node_occurrence of node * node * int * Occurrence.t]) Result.t
+     [> `Bad_int_occurrence of node_pos * int * Occurrence.t
+      | `Bad_text_occurrence of node_pos * int * Occurrence.t
+      | `Bad_sub_node_occurrence of
+	  node_pos * node * int * Occurrence.t]) Result.t
 end
 
 
 module Make (Node : Map_ext.ORDERED_TYPE) = struct
 
   type node = Node.t
+
+  type node_pos = node Position.t
 
   module NodeMap = Map_ext.Make (Node)
 
