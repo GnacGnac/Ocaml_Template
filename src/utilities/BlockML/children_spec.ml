@@ -29,6 +29,8 @@ module Occurrence = struct
   let between i j = make i (Int j)
   let none = exactly 0
   let any = at_least 0
+  let option = between 0 1
+  let one = exactly 1
 
   let to_string occurrence =
     Printf.sprintf "%d..%s" (min occurrence) (string_of_bound (max occurrence))

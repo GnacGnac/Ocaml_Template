@@ -65,14 +65,12 @@ let string_of_error = function
 *)
 
 
-let _ = match StringBlock.parse Sys.argv.(1) with
+let _ = (* match StringBlock.parse Sys.argv.(1) with
   | Ok block -> Printf.printf "%s\n%!" (StringBlock.to_string block)
-  | _ -> ()
-(*
+  | _ -> () *)
   let html =
     Html.html
       [Html.body
 	  [Html.text "Hello world!" ;
 	   Html.input ~typ:"hidden" ()]] in
   Printf.printf "%s\n%!" (Html.to_string html)
-*)

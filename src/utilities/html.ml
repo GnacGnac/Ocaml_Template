@@ -64,10 +64,95 @@ module M = struct
 
   module Children = BlockML.ChildrenSpec.Make (Ord)
 
+  let node_spec int_children text_children node_children attribute_children =
+    let f_node (node, occurrences) = (Html_node node, occurrences) in
+    let f_attribute attribute =
+      (Attribute attribute, BlockML.Occurrence.option) in
+    Children.make int_children text_children
+      (Children.NodeMap.of_list
+	 ((List.map f_node node_children) @
+	  (List.map f_attribute attribute_children)))
+
+  let html_spec =
+    node_spec BlockML.Occurrence.none BlockML.Occurrence.none
+      [(Body, BlockML.Occurrence.option)] []
+
+  let body_node_children =
+    List.map (fun child -> (child, BlockML.Occurrence.any))
+      [Input ; Font ; Bold ; Italic ; Br ; Paragraph ; Table ; Tr ; Td ;
+       Center]
+
+  let body_spec =
+    node_spec BlockML.Occurrence.any BlockML.Occurrence.any
+      body_node_children []
+
+  let input_spec =
+    node_spec BlockML.Occurrence.any BlockML.Occurrence.any
+      [] [Type ; Text]
+
+  let font_spec =
+    node_spec BlockML.Occurrence.any BlockML.Occurrence.any
+      body_node_children [Color ; Face]
+
+  let bold_spec = body_spec
+
+  let italic_spec = body_spec
+
+  let br_spec = node_spec BlockML.Occurrence.none BlockML.Occurrence.none [] []
+
+  let paragraph_spec = body_spec
+
+  let table_spec =
+    node_spec BlockML.Occurrence.none BlockML.Occurrence.none
+      [(Tr, BlockML.Occurrence.any)]
+      [Border ; Cellpadding ; Cellspacing]
+
+  let tr_spec =
+    node_spec BlockML.Occurrence.none BlockML.Occurrence.none
+      [(Td, BlockML.Occurrence.any)] []
+
+  let td_spec = body_spec
+
+  let center_spec = body_spec
+
+  let node_spec = function
+    | Html -> html_spec
+    | Body -> body_spec
+    | Input -> input_spec
+    | Font -> font_spec
+    | Bold -> bold_spec
+    | Italic -> italic_spec
+    | Br -> br_spec
+    | Paragraph -> paragraph_spec
+    | Table -> table_spec
+    | Tr -> tr_spec
+    | Td -> td_spec
+    | Center -> center_spec
+
+  let int_attribute =
+    Children.make
+      BlockML.Occurrence.one BlockML.Occurrence.none Children.NodeMap.empty
+
+  let string_attribute =
+    Children.make
+      BlockML.Occurrence.none BlockML.Occurrence.one Children.NodeMap.empty
+
+  let attribute_spec = function
+    | Color -> string_attribute
+    | Face -> string_attribute
+    | Type -> string_attribute
+    | Value -> string_attribute
+    | Border -> int_attribute
+    | Cellpadding -> int_attribute
+    | Cellspacing -> int_attribute
+    | Colspan -> int_attribute
+    | Rowspan -> int_attribute
+    | Text -> string_attribute
+
+
   let spec = function
-    | _ ->
-      Children.make
-	BlockML.Occurrence.none BlockML.Occurrence.none Children.NodeMap.empty
+    | Html_node node -> node_spec node
+    | Attribute attribute -> attribute_spec attribute
 
   let possible_roots = Set.singleton (Html_node Html)
 
@@ -113,16 +198,42 @@ let td ?colspan ?rowspan children =
   node Td (colspan @ rowspan @ children)
 
 
+let string_of_attribute attribute value =
+  (Node.to_string attribute) ^ "=\"" ^ value ^ "\""
+let string_of_attribute attribute = match Position.contents attribute with
+  | Node (attribute, [value]) ->
+    (match Position.contents value with
+      | Int value -> string_of_attribute attribute (string_of_int value)
+      | Text value -> string_of_attribute attribute value
+      | _ -> assert false (* should be impossible *))
+  | _ -> assert false (* should be impossible *)
+
+let string_of_attributes attributes =
+  let f res attribute = res ^ " " ^ (string_of_attribute attribute) in
+  List.fold_left f "" attributes
+
 let rec to_string space html = match Position.contents html with
   | Int i -> space ^ (string_of_int i)
   | Text s -> space ^ s
-  | Node (name, children) -> to_string_node name children
+  | Node (name, children) -> to_string_node space name children
 
-and to_string_node name children =
+and to_string_node space name children =
+  let name = Node.to_string name in
   let is_attribute child = match Position.contents child with
     | Node (Attribute _, _) -> true
     | _ -> false in
   let (attributes, children) = List.partition is_attribute children in
-  assert false (* TODO *)
+  match children with
+    | [] ->
+      Printf.sprintf "%s<%s%s/>" space name (string_of_attributes attributes)
+    | _ ->
+      Printf.sprintf "%s<%s%s>\n%s\n%s</%s>"
+	space name
+	(string_of_attributes attributes)
+	(to_string_children (space ^ "  ") children)
+	space name
+
+and to_string_children space children =
+  List_ext.to_string "\n" (to_string space) children
 
 let to_string = to_string ""

@@ -39,17 +39,28 @@ module Make (N : NODE) = struct
   let node name children = Position.make_dummy (node_content name children)
 
 
-  let string_of_text s = "\"" ^ (String.escaped s) ^ "\""
+  let escaped s =
+    let to_escape = ['"' ; '\\'] in
+    let length = String.length s in
+    let rec aux acc i =
+      if i >= length then acc
+      else
+	let added =
+	  if List.mem s.[i] to_escape then "\\"
+	  else "" in
+	aux (acc ^ added ^ (String.make 1 s.[i])) (i + 1) in
+    aux "" 0
+
+  let string_of_text s = "\"" ^ (escaped s) ^ "\""
 
   let string_of_position ?debug block = match debug with
-(*
     | None | Some false -> ""
     | Some true ->
-*)
-    | _ ->
       let f_pos line char _ = Printf.sprintf "@(%d, %d)" line char in
       let f_no_pos _ = "" in
       Position.apply f_pos f_no_pos block
+
+  let string_of_position block = string_of_position ~debug:false block
 
   let rec to_string space block = match Position.contents block with
     | Int i -> space ^ (string_of_int i) ^ (string_of_position block)

@@ -33,6 +33,8 @@ module Occurrence : sig
   val at_least : int -> t
   val at_most : int -> t
   val between : int -> int -> t
+  val option : t
+  val one : t
   val to_string : t -> string
 end
 
