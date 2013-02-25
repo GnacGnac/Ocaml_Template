@@ -1,5 +1,6 @@
 
 open Result
+open Http
 
 
 module StringBlock = struct
@@ -64,13 +65,44 @@ let string_of_error = function
   | `Unrecognized_node node -> "unrecognized node"
 *)
 
+module HttpServerConf = struct
+
+  let port = 28000
+
+  let index params =
+    let name = "value" in
+    let i = try (match Http.get_param_value params name with
+      | Ok i -> int_of_string i
+      | Error (`No_such_parameter _) -> 105154) with _ -> 105154 in
+    let i = string_of_int (i + 1) in
+    Html.html
+      [Html.body
+	  [Html.form ~method_:"GET" ~action:"/"
+	      [Html.text i ; Html.input ~typ:"hidden" ~name ~value:i () ;
+	       Html.br ;
+	       Html.input ~typ:"submit" ~value:"Next" ()]]]
+
+  let not_found page _ =
+    Html.html [Html.body [Html.text (page ^ " not found")]]
+
+  let pages = function
+    | "/" -> index
+    | s -> not_found s
+
+end
+
+module HttpServer = Http.Make (HttpServerConf)
+
 
 let _ = (* match StringBlock.parse Sys.argv.(1) with
   | Ok block -> Printf.printf "%s\n%!" (StringBlock.to_string block)
   | _ -> () *)
+  HttpServer.launch ()
+(*
   let html =
     Html.html
       [Html.body
 	  [Html.text "Hello world!" ;
 	   Html.input ~typ:"hidden" ()]] in
   Printf.printf "%s\n%!" (Html.to_string html)
+*)

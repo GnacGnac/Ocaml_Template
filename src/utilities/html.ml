@@ -4,15 +4,13 @@ open Result
 
 type attribute =
   | Color | Face | Type | Value | Border | Cellpadding | Cellspacing | Colspan
-  | Rowspan | Text
+  | Rowspan | Action | Name | Method
 
 type html_node =
   | Html | Body | Input | Font | Bold | Italic | Br | Paragraph | Table
-  | Tr | Td | Center
+  | Tr | Td | Center | Form
 
 type item = Attribute of attribute | Html_node of html_node
-
-let html_Text = Text
 
 
 module M = struct
@@ -33,7 +31,8 @@ module M = struct
     [(Color, "color") ; (Face, "face") ; (Type, "type") ; (Value, "value") ;
      (Border, "border") ; (Cellpadding, "cellpadding") ;
      (Cellspacing, "cellspacing") ; (Colspan, "colspan") ;
-     (Rowspan, "rowspan") ; (Text, "text")]
+     (Rowspan, "rowspan") ; (Action, "action") ; (Name, "name") ;
+     (Method, "method")]
   let attribute_assoc_ =
     List.map (fun (x, y) -> (Attribute x, y)) attribute_assoc_
   let attribute_assoc = make_node_assoc attribute_assoc_
@@ -43,7 +42,7 @@ module M = struct
     [(Html, "html") ; (Body, "body") ; (Input, "input") ; (Font, "font") ;
      (Bold, "bold") ; (Italic, "italic") ; (Br, "br") ;
      (Paragraph, "paragraph") ; (Table, "table") ; (Tr, "tr") ; (Td, "td") ;
-     (Center, "center")]
+     (Center, "center") ; (Form, "form")]
   let html_node_assoc_ =
     List.map (fun (x, y) -> (Html_node x, y)) html_node_assoc_
   let html_node_assoc = make_node_assoc html_node_assoc_
@@ -80,7 +79,7 @@ module M = struct
   let body_node_children =
     List.map (fun child -> (child, BlockML.Occurrence.any))
       [Input ; Font ; Bold ; Italic ; Br ; Paragraph ; Table ; Tr ; Td ;
-       Center]
+       Center ; Form]
 
   let body_spec =
     node_spec BlockML.Occurrence.any BlockML.Occurrence.any
@@ -88,7 +87,7 @@ module M = struct
 
   let input_spec =
     node_spec BlockML.Occurrence.any BlockML.Occurrence.any
-      [] [Type ; Text]
+      [] [Type ; Value ; Name]
 
   let font_spec =
     node_spec BlockML.Occurrence.any BlockML.Occurrence.any
@@ -115,6 +114,10 @@ module M = struct
 
   let center_spec = body_spec
 
+  let form_spec =
+    node_spec BlockML.Occurrence.any BlockML.Occurrence.any
+      body_node_children [Method ; Action]
+
   let node_spec = function
     | Html -> html_spec
     | Body -> body_spec
@@ -128,6 +131,7 @@ module M = struct
     | Tr -> tr_spec
     | Td -> td_spec
     | Center -> center_spec
+    | Form -> form_spec
 
   let int_attribute =
     Children.make
@@ -147,7 +151,9 @@ module M = struct
     | Cellspacing -> int_attribute
     | Colspan -> int_attribute
     | Rowspan -> int_attribute
-    | Text -> string_attribute
+    | Action -> string_attribute
+    | Name -> string_attribute
+    | Method -> string_attribute
 
 
   let spec = function
@@ -173,10 +179,11 @@ let node html_node = node (Html_node html_node)
 
 let html = node Html
 let body = node Body
-let input ?typ ?text () =
+let input ?typ ?value ?name () =
   let typ = get_attribute Type typ in
-  let text = get_attribute html_Text text in
-  node Input (typ @ text)
+  let value = get_attribute Value value in
+  let name = get_attribute Name name in
+  node Input (typ @ value @ name)
 let font ?color ?face children =
   let color = get_attribute Color color in
   let face = get_attribute Face face in
@@ -196,6 +203,10 @@ let td ?colspan ?rowspan children =
   let colspan = get_int_attribute Colspan colspan in
   let rowspan = get_int_attribute Rowspan rowspan in
   node Td (colspan @ rowspan @ children)
+let form ?method_ ?action children =
+  let method_ = get_attribute Method method_ in
+  let action = get_attribute Action action in
+  node Form (method_ @ action @ children)
 
 
 let string_of_attribute attribute value =
