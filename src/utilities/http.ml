@@ -84,18 +84,6 @@ module Make (S : S) = struct
 
   let words s = Str.split (Str.regexp "[ \t]+") s
 
-  let is_http_request s = match words s with
-    | get :: page :: protocol :: _ ->
-      ((String.lowercase get = "get") ||
-       (String.lowercase get = "post")) &&
-	(String.length protocol >= 7) &&
-	(String.lowercase (String.sub protocol 0 7) = "http/1.")
-    | _ -> false
-
-  let requested_url s = match words s with
-    | _ :: url :: _ -> url
-    | _ -> raise (Failure "Html.requested_page")
-
   let requested_page url =
     if String.contains url '?' then
       let index = String.index_from url 0 '?' in
@@ -110,29 +98,13 @@ module Make (S : S) = struct
 
   let is_endline s = (String.length s = 1) && (Char.code s.[0] = 13)
 
-(*
-  let treat_message inc outc =
-    let url = ref "" in
-    let rec aux previous_is_endline () =
-      try
-	let s = input_line inc in
-	Printf.printf "R: %s\n%!" s ;
-	if is_http_request s then url := requested_url s ;
-	let is_endline = is_endline s in
-	if is_endline && previous_is_endline then
-	  treat_url outc !url
-	else aux is_endline ()
-      with End_of_file -> () in
-    aux false ()
-*)
-
   type kind =
     | No_kind
     | Get of string
     | Post of string * int
     | Content_length of int
 
-  let check_kind s = let content = "content-length:" in match words s with
+  let check_kind s = match words s with
     | get :: url :: protocol :: _
 	when (String.lowercase get = "get") &&
    	     (String.length protocol >= 7) &&
@@ -144,14 +116,13 @@ module Make (S : S) = struct
   	     (String.lowercase (String.sub protocol 0 7) = "http/1.") ->
       Post (url, 0)
     | content_length :: length :: _
-	when String.lowercase content_length = content ->
+	when String.lowercase content_length = "content-length:" ->
       let length =
 	try int_of_string (String.sub length 0 (String.length length - 1))
 	with Failure _ -> 0 in
       Content_length length
     | s :: _ -> No_kind
     | _ -> No_kind
-
 
   let treat_message inc outc =
     let rec aux kind =
