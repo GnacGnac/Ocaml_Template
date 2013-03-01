@@ -19,8 +19,6 @@ module Generic : sig
     val to_string : t -> string
   end
 
-  module Make (N : NODE) : S with type Node.t = N.t
-
 end
 
 module Occurrence : sig
