@@ -18,6 +18,10 @@ module type S = sig
   val int : int -> t
   val text : string -> t
   val node : Node.t -> t list -> t
+  val get_int : t list -> (int Position.t, [> `No_int]) Result.t
+  val get_text : t list -> (string Position.t, [> `No_text]) Result.t
+  val get_child :
+    Node.t -> t list -> (t list Position.t, [> `No_such_child]) Result.t
   val to_string : t -> string
 end
 
@@ -37,6 +41,28 @@ module Make (N : NODE) = struct
   let int i = Position.make_dummy (int_content i)
   let text s = Position.make_dummy (text_content s)
   let node name children = Position.make_dummy (node_content name children)
+
+  let get f res_error l =
+    let f' res a = match res with
+      | Ok _ -> res
+      | Error `Not_found ->
+	let res = f (Position.contents a) in
+	map_result (fun res -> Position.change_contents res a) res in
+    let f_error = function `Not_found -> res_error in
+    map_error f_error (List.fold_left f' (error `Not_found) l)
+
+  let get_int =
+    get (function Int i -> return i | _ -> error `Not_found) `No_int
+
+  let get_text =
+    get (function Text s -> return s | _ -> error `Not_found) `No_text
+
+  let get_child node =
+    let f = function
+      | Node (node', children) when node' = node ->
+	return children
+      | _ -> error `Not_found in
+    get f `No_such_child
 
 
   let escaped s =

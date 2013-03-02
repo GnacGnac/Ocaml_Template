@@ -12,6 +12,8 @@ let map f_ok f_error = function
   | Ok a -> Ok (f_ok a)
   | Error error -> Error (f_error error)
 
+let map_result f_ok = map f_ok (fun a -> a)
+
 let map_error f_error = map (fun a -> a) f_error
 
 let extract = function

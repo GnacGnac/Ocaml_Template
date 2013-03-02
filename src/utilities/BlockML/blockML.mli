@@ -16,6 +16,10 @@ module Generic : sig
     val int : int -> t
     val text : string -> t
     val node : Node.t -> t list -> t
+    val get_int : t list -> (int Position.t, [> `No_int]) Result.t
+    val get_text : t list -> (string Position.t, [> `No_text]) Result.t
+    val get_child :
+      Node.t -> t list -> (t list Position.t, [> `No_such_child]) Result.t
     val to_string : t -> string
   end
 
