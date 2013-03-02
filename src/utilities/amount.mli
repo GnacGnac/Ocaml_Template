@@ -2,6 +2,7 @@
 type t
 
 val of_int : int -> t
+val of_cent : int -> t
 
 val of_string : string -> (t, [> `Not_an_amount of string]) Result.t
 
