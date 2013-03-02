@@ -35,8 +35,6 @@ let div amount1 amount2 =
 
 let of_int i = make (big_int_of_int i) unit_big_int
 
-let of_cent i = make (big_int_of_int i) (big_int_of_int 100)
-
 let of_string s =
   try return (make (big_int_of_string s) unit_big_int)
   with _ (* what's the exception thrown? *) -> error (`Not_an_amount s)
