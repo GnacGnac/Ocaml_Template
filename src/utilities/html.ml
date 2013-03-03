@@ -4,7 +4,7 @@ open Result
 
 type attribute =
   | Color | Face | Type | Value | Border | Cellpadding | Cellspacing | Colspan
-  | Rowspan | Action | Name | Method
+  | Rowspan | Action | Name | Method | Size
 
 type html_node =
   | Html | Body | Input | Font | Bold | Italic | Br | Paragraph | Table
@@ -32,7 +32,7 @@ module M = struct
      (Border, "border") ; (Cellpadding, "cellpadding") ;
      (Cellspacing, "cellspacing") ; (Colspan, "colspan") ;
      (Rowspan, "rowspan") ; (Action, "action") ; (Name, "name") ;
-     (Method, "method")]
+     (Method, "method") ; (Size, "size")]
   let attribute_assoc_ =
     List.map (fun (x, y) -> (Attribute x, y)) attribute_assoc_
   let attribute_assoc = make_node_assoc attribute_assoc_
@@ -87,7 +87,7 @@ module M = struct
 
   let input_spec =
     node_spec BlockML.Occurrence.any BlockML.Occurrence.any
-      [] [Type ; Value ; Name]
+      [] [Type ; Value ; Name ; Size]
 
   let font_spec =
     node_spec BlockML.Occurrence.any BlockML.Occurrence.any
@@ -154,6 +154,7 @@ module M = struct
     | Action -> string_attribute
     | Name -> string_attribute
     | Method -> string_attribute
+    | Size -> int_attribute
 
 
   let spec = function
@@ -179,11 +180,12 @@ let node html_node = node (Html_node html_node)
 
 let html = node Html
 let body = node Body
-let input ?typ ?value ?name () =
+let input ?typ ?value ?name ?size () =
   let typ = get_attribute Type typ in
   let value = get_attribute Value value in
   let name = get_attribute Name name in
-  node Input (typ @ value @ name)
+  let size = get_int_attribute Size size in
+  node Input (typ @ value @ name @ size)
 let font ?color ?face children =
   let color = get_attribute Color color in
   let face = get_attribute Face face in
