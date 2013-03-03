@@ -22,3 +22,8 @@ let fold_bind f e l =
   List.fold_left f' (return e) l
 
 let bind f l = fold_bind (fun l e -> f e >>= fun e -> return (l @ [e])) [] l
+
+
+let repeat n a =
+  let rec aux acc i = if i <= 0 then acc else aux (a :: acc) (i - 1) in
+  aux [] n

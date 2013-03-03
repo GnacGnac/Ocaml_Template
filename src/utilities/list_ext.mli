@@ -8,3 +8,5 @@ val bind : ('a -> ('b, 'c) Result.t) -> 'a list -> ('b list, 'c) Result.t
 
 val fold_bind :
   ('b -> 'a -> ('b, 'c) Result.t) -> 'b -> 'a list -> ('b, 'c) Result.t
+
+val repeat : int -> 'a -> 'a list
