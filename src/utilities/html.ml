@@ -8,7 +8,7 @@ type attribute =
 
 type html_node =
   | Html | Body | Input | Font | Bold | Italic | Br | Paragraph | Table
-  | Tr | Td | Center | Form
+  | Tr | Td | Center | Form | Block
 
 type item = Attribute of attribute | Html_node of html_node
 
@@ -42,7 +42,7 @@ module M = struct
     [(Html, "html") ; (Body, "body") ; (Input, "input") ; (Font, "font") ;
      (Bold, "bold") ; (Italic, "italic") ; (Br, "br") ;
      (Paragraph, "paragraph") ; (Table, "table") ; (Tr, "tr") ; (Td, "td") ;
-     (Center, "center") ; (Form, "form")]
+     (Center, "center") ; (Form, "form") ; (Block, "block")]
   let html_node_assoc_ =
     List.map (fun (x, y) -> (Html_node x, y)) html_node_assoc_
   let html_node_assoc = make_node_assoc html_node_assoc_
@@ -79,7 +79,7 @@ module M = struct
   let body_node_children =
     List.map (fun child -> (child, BlockML.Occurrence.any))
       [Input ; Font ; Bold ; Italic ; Br ; Paragraph ; Table ; Tr ; Td ;
-       Center ; Form]
+       Center ; Form ; Block]
 
   let body_spec =
     node_spec BlockML.Occurrence.any BlockML.Occurrence.any
@@ -118,6 +118,8 @@ module M = struct
     node_spec BlockML.Occurrence.any BlockML.Occurrence.any
       body_node_children [Method ; Action]
 
+  let block_spec = body_spec
+
   let node_spec = function
     | Html -> html_spec
     | Body -> body_spec
@@ -132,6 +134,7 @@ module M = struct
     | Td -> td_spec
     | Center -> center_spec
     | Form -> form_spec
+    | Block -> block_spec
 
   let int_attribute =
     Children.make
@@ -209,8 +212,8 @@ let form ?method_ ?action children =
   let method_ = get_attribute Method method_ in
   let action = get_attribute Action action in
   node Form (method_ @ action @ children)
-
 let spaces n = text (String_ext.repeat n "&nbsp;")
+let block children = node Block children
 
 
 let string_of_attribute attribute value =
@@ -230,6 +233,7 @@ let string_of_attributes attributes =
 let rec to_string space html = match Position.contents html with
   | Int i -> space ^ (string_of_int i)
   | Text s -> space ^ s
+  | Node (Html_node Block, children) -> to_string_children space children
   | Node (name, children) -> to_string_node space name children
 
 and to_string_node space name children =
