@@ -213,6 +213,7 @@ let form ?method_ ?action children =
   let action = get_attribute Action action in
   node Form (method_ @ action @ children)
 let spaces n = text (String_ext.repeat n "&nbsp;")
+let space = spaces 1
 let block children = node Block children
 
 

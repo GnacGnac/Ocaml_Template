@@ -17,6 +17,7 @@ val table     :
 val tr        : t list -> t
 val td        : ?colspan:int -> ?rowspan:int -> t list -> t
 val form      : ?method_:string -> ?action:string -> t list -> t
+val space     : t
 val spaces    : int -> t
 val block     : t list -> t
 
