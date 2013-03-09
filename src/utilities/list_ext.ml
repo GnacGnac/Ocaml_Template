@@ -27,3 +27,13 @@ let bind f l = fold_bind (fun l e -> f e >>= fun e -> return (l @ [e])) [] l
 let repeat n a =
   let rec aux acc i = if i <= 0 then acc else aux (a :: acc) (i - 1) in
   aux [] n
+
+
+let foldi f a l =
+  let f' (index, res) e = (index + 1, f index res e) in
+  snd (List.fold_left f' (0, a) l)
+
+
+let mapi f l =
+  let f' index res e = (f index e) :: res in
+  List.rev (foldi f' [] l)
