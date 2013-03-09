@@ -4,7 +4,7 @@ open Result
 
 type attribute =
   | Color | Face | Type | Value | Border | Cellpadding | Cellspacing | Colspan
-  | Rowspan | Action | Name | Method | Size
+  | Rowspan | Action | Name | Method | Size | Bgcolor
 
 type html_node =
   | Html | Body | Input | Font | Bold | Italic | Br | Paragraph | Table
@@ -32,7 +32,7 @@ module M = struct
      (Border, "border") ; (Cellpadding, "cellpadding") ;
      (Cellspacing, "cellspacing") ; (Colspan, "colspan") ;
      (Rowspan, "rowspan") ; (Action, "action") ; (Name, "name") ;
-     (Method, "method") ; (Size, "size")]
+     (Method, "method") ; (Size, "size") ; (Bgcolor, "bgcolor")]
   let attribute_assoc_ =
     List.map (fun (x, y) -> (Attribute x, y)) attribute_assoc_
   let attribute_assoc = make_node_assoc attribute_assoc_
@@ -108,7 +108,7 @@ module M = struct
 
   let tr_spec =
     node_spec BlockML.Occurrence.none BlockML.Occurrence.none
-      [(Td, BlockML.Occurrence.any)] []
+      [(Td, BlockML.Occurrence.any)] [Bgcolor]
 
   let td_spec = body_spec
 
@@ -158,6 +158,7 @@ module M = struct
     | Name -> string_attribute
     | Method -> string_attribute
     | Size -> int_attribute
+    | Bgcolor -> string_attribute
 
 
   let spec = function
@@ -183,12 +184,12 @@ let node html_node = node (Html_node html_node)
 
 let html = node Html
 let body = node Body
-let input ?typ ?value ?name ?size () =
-  let typ = get_attribute Type typ in
+let input ?type_ ?value ?name ?size () =
+  let type_ = get_attribute Type type_ in
   let value = get_attribute Value value in
   let name = get_attribute Name name in
   let size = get_int_attribute Size size in
-  node Input (typ @ value @ name @ size)
+  node Input (type_ @ value @ name @ size)
 let font ?color ?face children =
   let color = get_attribute Color color in
   let face = get_attribute Face face in
@@ -203,7 +204,9 @@ let table ?border ?cellpadding ?cellspacing children =
   let cellpadding = get_int_attribute Cellpadding cellpadding in
   let cellspacing = get_int_attribute Cellspacing cellspacing in
   node Table (border @ cellpadding @ cellspacing @ children)
-let tr = node Tr
+let tr ?bgcolor children =
+  let bgcolor = get_attribute Bgcolor bgcolor in
+  node Tr (bgcolor @ children)
 let td ?colspan ?rowspan children =
   let colspan = get_int_attribute Colspan colspan in
   let rowspan = get_int_attribute Rowspan rowspan in

@@ -78,9 +78,9 @@ module HttpServerConf = struct
     Html.html
       [Html.body
 	  [Html.form ~method_:"GET" ~action:"/"
-	      [Html.text i ; Html.input ~typ:"hidden" ~name ~value:i () ;
+	      [Html.text i ; Html.input ~type_:"hidden" ~name ~value:i () ;
 	       Html.br ;
-	       Html.input ~typ:"submit" ~value:"Next" ()]]]
+	       Html.input ~type_:"submit" ~value:"Next" ()]]]
 
   let not_found page _ =
     Html.html [Html.body [Html.text (page ^ " not found")]]
