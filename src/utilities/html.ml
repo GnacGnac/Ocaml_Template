@@ -40,7 +40,7 @@ module M = struct
 
   let html_node_assoc_ =
     [(Html, "html") ; (Body, "body") ; (Input, "input") ; (Font, "font") ;
-     (Bold, "bold") ; (Italic, "italic") ; (Br, "br") ;
+     (Bold, "b") ; (Italic, "i") ; (Br, "br") ;
      (Paragraph, "paragraph") ; (Table, "table") ; (Tr, "tr") ; (Td, "td") ;
      (Center, "center") ; (Form, "form") ; (Block, "block")]
   let html_node_assoc_ =
