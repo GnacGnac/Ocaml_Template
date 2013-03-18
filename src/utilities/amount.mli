@@ -1,6 +1,7 @@
 
 type t
 
+val to_int : t -> (int, [> `Not_an_int of t]) Result.t
 val of_int : int -> t
 
 val of_string : string -> (t, [> `Not_an_amount of string]) Result.t

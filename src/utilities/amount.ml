@@ -33,6 +33,14 @@ let div amount1 amount2 =
   let d = mult_big_int (den amount1) (num amount2) in
   make n d
 
+let to_int i =
+  let error = error (`Not_an_int i) in
+  if is_int_big_int (num i) && is_int_big_int (den i) then
+    let num = int_of_big_int (num i) in
+    let den = int_of_big_int (den i) in
+    if den <> 0 && num mod den = 0 then return (num / den)
+    else error
+  else error
 let of_int i = make (big_int_of_int i) unit_big_int
 
 let of_string s =
