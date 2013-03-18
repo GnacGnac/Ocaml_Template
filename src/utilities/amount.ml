@@ -35,10 +35,9 @@ let div amount1 amount2 =
 
 let to_int i =
   let error = error (`Not_an_int i) in
-  if is_int_big_int (num i) && is_int_big_int (den i) then
-    let num = int_of_big_int (num i) in
-    let den = int_of_big_int (den i) in
-    if den <> 0 && num mod den = 0 then return (num / den)
+  if not (eq_big_int (den i) zero_big_int) then
+    let amount = div_big_int (num i) (den i) in
+    if is_int_big_int amount then return (int_of_big_int amount)
     else error
   else error
 let of_int i = make (big_int_of_int i) unit_big_int
