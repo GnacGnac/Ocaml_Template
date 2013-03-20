@@ -109,3 +109,17 @@ module Instance : sig
   module Make (Spec : SPEC) : S with type Node.t = Spec.t
 
 end
+
+module UnsafeInstance : sig
+
+  module type SPEC = sig
+    type t
+    val node_string : (t * string) list
+    module Children : ChildrenSpec.S with type node = t
+    val spec : t -> Children.t
+    val possible_roots : t list
+  end
+
+  module Make (Spec : SPEC) : Instance.S with type Node.t = Spec.t
+
+end
