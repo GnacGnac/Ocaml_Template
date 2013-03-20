@@ -110,3 +110,7 @@ module Make (Node : Map_ext.ORDERED_TYPE) = struct
       error (`Bad_int_occurrence (node, nb_ints, ints))
 
 end
+
+
+module MakeUnsafe (Node : sig type t end) =
+  Make (struct type t = Node.t let compare = Pervasives.compare end)

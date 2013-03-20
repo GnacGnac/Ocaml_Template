@@ -65,6 +65,7 @@ module ChildrenSpec : sig
   end
 
   module Make (Node : Map_ext.ORDERED_TYPE) : S with type node = Node.t
+  module MakeUnsafe (Node : sig type t end) : S with type node = Node.t
 
 end
 
