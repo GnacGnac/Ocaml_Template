@@ -21,6 +21,13 @@ module Generic : sig
     val get_child :
       Node.t -> t list -> (t list Position.t, [> `No_such_child]) Result.t
     val to_string : t -> string
+
+    (* Unsafe functions: raises assertion failure. *)
+    val extract_get : (t list -> ('a Position.t, 'b) Result.t) -> t list -> 'a
+    val extract_int : t list -> int
+    val extract_text : t list -> string
+    val extract_child : Node.t -> t list -> t list
+    val extract_node : Node.t -> t -> t list
   end
 
 end

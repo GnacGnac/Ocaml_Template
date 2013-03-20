@@ -23,6 +23,13 @@ module type S = sig
   val get_child :
     Node.t -> t list -> (t list Position.t, [> `No_such_child]) Result.t
   val to_string : t -> string
+
+  (* Unsafe functions: raises assertion failure. *)
+  val extract_get : (t list -> ('a Position.t, 'b) Result.t) -> t list -> 'a
+  val extract_int : t list -> int
+  val extract_text : t list -> string
+  val extract_child : Node.t -> t list -> t list
+  val extract_node : Node.t -> t -> t list
 end
 
 
@@ -63,6 +70,12 @@ module Make (N : NODE) = struct
 	return children
       | _ -> error `Not_found in
     get f `No_such_child
+
+  let extract_get get e = Position.contents (extract (get e))
+  let extract_int = extract_get get_int
+  let extract_text = extract_get get_text
+  let extract_child node = extract_get (get_child node)
+  let extract_node node block = extract_child node [block]
 
 
   let escaped s =
