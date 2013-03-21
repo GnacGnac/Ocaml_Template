@@ -1,4 +1,4 @@
 
 let map f = function
   | None -> None
-  | Some a -> Som (f a)
+  | Some a -> Some (f a)
