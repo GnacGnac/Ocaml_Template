@@ -44,7 +44,7 @@ let of_int i = make (big_int_of_int i) unit_big_int
 
 let remove_spaces_point_comma s = String_ext.remove_chars s [' ' ; '.' ; ',']
 
-let add_zeros s =
+let add_zeros error s =
   let l = String.length s in
   try
     let p =
