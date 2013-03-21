@@ -54,4 +54,6 @@ let to_string amount =
     if l <= 2 then "0." ^ s
     else
       let i = String.length s - 2 in
-      (String.sub s 0 i) ^ "." ^ (String.sub s i 2)
+      let cents = String.sub s i 2 in
+      let euros = String.sub s 0 i in
+      euros ^ (if cents = "00" then "" else cents)
