@@ -42,9 +42,28 @@ let to_int i =
   else error
 let of_int i = make (big_int_of_int i) unit_big_int
 
+let remove_spaces_point_comma s = String_ext.remove_chars s [' ' ; '.' ; ',']
+
+let add_zeros s =
+  let l = String.length s in
+  try
+    let p =
+      try String.index s '.'
+      with Not_found -> String.index s ',' in
+    if p = l - 1 then return (s ^ "00")
+    else
+      if p = l - 2 then return (s ^ "0")
+      else
+	if p = l - 3 then return s
+	else error
+  with Not_found -> return (s ^ "00")
+
 let of_string s =
+  let error = error (`Not_an_amount s) in
+  add_zeros error s >>= fun s ->
+  let s = remove_spaces_point_comma s in
   try return (make (big_int_of_string s) unit_big_int)
-  with _ (* what's the exception thrown? *) -> error (`Not_an_amount s)
+  with _ (* what's the thrown exception? *) -> error
 
 let to_string amount =
   let s = string_of_big_int (div_big_int (num amount) (den amount)) in
