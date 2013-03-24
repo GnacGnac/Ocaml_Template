@@ -8,7 +8,11 @@ type t = { num : big_int ; den : big_int }
 let num amount = amount.num
 let den amount = amount.den
 
-let make num den = { num ; den }
+let make num den =
+  if den = zero_big_int then
+    (Printf.eprintf "Division by zero.\n%!" ;
+     assert false)
+  else { num ; den }
 
 
 let zero = make zero_big_int unit_big_int
@@ -66,13 +70,10 @@ let of_string s =
   with _ (* what's the thrown exception? *) -> error
 
 let to_string amount =
-  let s = string_of_big_int (div_big_int (num amount) (den amount)) in
-  let l = String.length s in
-  if l <= 1 then "0.0" ^ s
-  else
-    if l <= 2 then "0." ^ s
-    else
-      let i = String.length s - 2 in
-      let cents = String.sub s i 2 in
-      let euros = String.sub s 0 i in
-      euros ^ (if cents = "00" then "" else "," ^ cents)
+  let amount = div_big_int (num amount) (den amount) in
+  let (euros, cents) = quomod_big_int amount (big_int_of_int 100) in
+  let euros = string_of_big_int euros in
+  let cents =
+    (if lt_big_int cents (big_int_of_int 10) then "0" else "") ^
+    (string_of_big_int cents) in
+  euros ^ (if cents = "00" then "" else "," ^ cents)
