@@ -17,6 +17,7 @@ module type S = sig
   val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
   val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   val iter : (key -> 'a -> unit) -> 'a t -> unit
+  val foldi : (int -> key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
   val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
   val for_all : (key -> 'a -> bool) -> 'a t -> bool
   val exists : (key -> 'a -> bool) -> 'a t -> bool

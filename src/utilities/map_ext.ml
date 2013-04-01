@@ -21,6 +21,7 @@ module type S = sig
   val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int
   val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
   val iter : (key -> 'a -> unit) -> 'a t -> unit
+  val foldi : (int -> key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
   val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
   val for_all : (key -> 'a -> bool) -> 'a t -> bool
   val exists : (key -> 'a -> bool) -> 'a t -> bool
@@ -49,6 +50,10 @@ end
 module Make (Ord : ORDERED_TYPE) : S with type key = Ord.t = struct
 
   include Map.Make (Ord)
+
+  let foldi f map b =
+    let f' key a (i, b) = (i + 1, f i key a b) in
+    snd (fold f' map (0, b))
 
   let find key map =
     try return (find key map)
