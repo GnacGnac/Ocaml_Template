@@ -1,4 +1,4 @@
 <src>: include
 <src/utilities>: include
 <src/utilities/BlockML>: include
-<src/main.{byte,native}>: use_unix, use_str
+<src/main.{byte,native}>: use_unix, use_str, use_nums
