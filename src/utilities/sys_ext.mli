@@ -5,8 +5,6 @@ val save :
 val get_env :
   string -> (string, [> `No_such_environment_variable of string]) Result.t
 
-val command : string -> (unit, [> `Command_error of (string * int)]) Result.t
-
 val is_file_empty :
   string ->
   (bool,

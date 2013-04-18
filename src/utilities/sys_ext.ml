@@ -14,11 +14,6 @@ let get_env var =
   try return (Sys.getenv var)
   with Not_found -> error (`No_such_environment_variable var)
 
-let command cmd =
-  let res = Sys.command cmd in
-  if res = 0 then return ()
-  else error (`Command_error (cmd, res))
-
 let open_in file =
   try return (open_in file)
   with Sys_error _ -> error (`Could_not_open_file file)
