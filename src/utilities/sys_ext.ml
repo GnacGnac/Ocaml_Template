@@ -14,3 +14,9 @@ let save file s =
 let get_env var =
   try return (Sys.getenv var)
   with Not_found -> error (`No_such_environment_variable var)
+
+
+let command cmd =
+  let res = Sys.command cmd in
+  if res = 0 then return ()
+  else error (`Command_error (cmd, res))
