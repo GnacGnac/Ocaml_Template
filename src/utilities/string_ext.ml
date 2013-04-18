@@ -1,4 +1,6 @@
 
+module Set = Set_ext.Make (String)
+
 module Map = Map_ext.Make (String)
 
 
