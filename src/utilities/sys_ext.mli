@@ -13,4 +13,7 @@ val is_file_empty :
    [> `File_does_not_exist of string
     | `Could_not_open_file of string]) Result.t
 
-val remove : string -> (unit, [> `Could_not_remove_file of string]) Result.t
+val remove :
+  string ->
+  (unit,
+   [> `Could_not_remove_file of (string * string)]) Result.t

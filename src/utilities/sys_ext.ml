@@ -32,4 +32,4 @@ let is_file_empty file =
 
 let remove file =
   try return (Sys.remove file)
-  with Sys_error _ -> error (`Could_not_remove_file file)
+  with Sys_error err -> error (`Could_not_remove_file (file, err))
