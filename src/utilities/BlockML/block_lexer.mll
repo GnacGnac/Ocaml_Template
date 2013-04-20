@@ -48,7 +48,7 @@
 let space    = [' ' '\t']
 let new_line = ['\n']
 let digit    = ['0'-'9']
-let integer  = digit+
+let integer  = '-'?digit+
 let letter   = ['a'-'z' 'A'-'Z']
 let letter_  = letter | '_'
 let ident    = letter letter_* digit*
