@@ -41,7 +41,16 @@ end
 module type S = sig
   type node
   type node_pos = node Position.t
-  module NodeMap : Map_ext.S with type key = node
+  module NodeMap : sig
+    include Map_ext.S with type key = node
+    val all : Occurrence.t -> node list -> Occurrence.t t
+    val any : node -> Occurrence.t t
+    val one : node -> Occurrence.t t
+    val option : node -> Occurrence.t t
+    val anys : node list -> Occurrence.t t
+    val ones : node list -> Occurrence.t t
+    val options : node list -> Occurrence.t t
+  end
   type t
   val make : Occurrence.t -> Occurrence.t -> Occurrence.t NodeMap.t -> t
   val check :
@@ -60,7 +69,16 @@ module Make (Node : Map_ext.ORDERED_TYPE) = struct
 
   type node_pos = node Position.t
 
-  module NodeMap = Map_ext.Make (Node)
+  module NodeMap = struct 
+    include Map_ext.Make (Node)
+    let all i l = of_list (List.map (fun x -> (x, i)) l)
+    let anys = all Occurrence.any
+    let ones = all Occurrence.one
+    let options = all Occurrence.option
+    let any node = anys [node]
+    let one node = ones [node]
+    let option node = options [node]
+  end
 
   type t =
       { ints : Occurrence.t ;

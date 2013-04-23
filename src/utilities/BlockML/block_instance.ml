@@ -55,9 +55,9 @@ module Make (Spec : SPEC) = struct
     map_error f_error (Spec.of_string name)
 
   let rec analyze_names block = match Position.contents block with
-    | Block_string.Int i ->
+    | Block_string.Primitive (Block_string.Int i) ->
       return (Position.change_contents (int_content i) block)
-    | Block_string.Text s ->
+    | Block_string.Primitive (Block_string.Text s) ->
       return (Position.change_contents (text_content s) block)
     | Block_string.Node (name, children) ->
       analyze_name block name >>= fun name ->
@@ -69,8 +69,8 @@ module Make (Spec : SPEC) = struct
   let analyze_children_spec name spec children =
     let add_occurrence (nb_ints, nb_texts, nb_sub_nodes) child =
       match Position.contents child with
-	| Int _ -> (nb_ints + 1, nb_texts, nb_sub_nodes)
-	| Text _ -> (nb_ints, nb_texts + 1, nb_sub_nodes)
+	| Primitive (Int _) -> (nb_ints + 1, nb_texts, nb_sub_nodes)
+	| Primitive (Text _) -> (nb_ints, nb_texts + 1, nb_sub_nodes)
 	| Node (name, _) ->
 	  let old_occurrence = Spec.Children.NodeMap.find name nb_sub_nodes in
 	  let old_occurrence = match old_occurrence with
@@ -85,8 +85,8 @@ module Make (Spec : SPEC) = struct
     Spec.Children.check name spec nb_ints nb_texts nb_sub_nodes
 
   let rec analyze block = match Position.contents block with
-    | Int i -> return ()
-    | Text s -> return ()
+    | Primitive (Int i) -> return ()
+    | Primitive (Text s) -> return ()
     | Node (name, children) ->
       analyze_block (Position.change_contents name block) children
 
@@ -100,7 +100,7 @@ module Make (Spec : SPEC) = struct
     List_ext.fold_bind (fun () -> analyze) () children
 
   let analyze_root block = match Position.contents block with
-    | Int _ | Text _ ->
+    | Primitive (Int _) | Primitive (Text _) ->
       error (`Not_a_root_node (Position.change_contents None block))
     | Node (name, _) ->
       if Spec.Set.mem name Spec.possible_roots then return ()

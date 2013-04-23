@@ -8,7 +8,8 @@ module Generic : sig
 
   module type S = sig
     module Node : NODE
-    type contents = Int of int | Text of string | Node of Node.t * t list
+    type primitive = Int of int | Text of string
+    type contents = Primitive of primitive | Node of Node.t * t list
     and t = contents Position.t
     val int_content : int -> contents
     val text_content : string -> contents
@@ -18,7 +19,7 @@ module Generic : sig
     val node : Node.t -> t list -> t
     val get_int : t list -> (int Position.t, [> `No_int]) Result.t
     val get_text : t list -> (string Position.t, [> `No_text]) Result.t
-    val get_child :
+    val get_node :
       Node.t -> t list -> (t list Position.t, [> `No_such_child]) Result.t
     val to_string : t -> string
 
@@ -26,8 +27,11 @@ module Generic : sig
     val extract_get : (t list -> ('a Position.t, 'b) Result.t) -> t list -> 'a
     val extract_int : t list -> int
     val extract_text : t list -> string
-    val extract_child : Node.t -> t list -> t list
-    val extract_node : Node.t -> t -> t list
+    val extract_node : Node.t -> t list -> t list
+    val extract_child_node : Node.t -> t -> t list
+    val extract_int1 : t -> int
+    val extract_text1 : t -> string
+    val extract_children : t -> t list
   end
 
 end
@@ -57,7 +61,16 @@ module ChildrenSpec : sig
   module type S = sig
     type node
     type node_pos = node Position.t
-    module NodeMap : Map_ext.S with type key = node
+    module NodeMap : sig
+      include Map_ext.S with type key = node
+      val all : Occurrence.t -> node list -> Occurrence.t t
+      val any : node -> Occurrence.t t
+      val one : node -> Occurrence.t t
+      val option : node -> Occurrence.t t
+      val anys : node list -> Occurrence.t t
+      val ones : node list -> Occurrence.t t
+      val options : node list -> Occurrence.t t
+    end
     type t
     val make : Occurrence.t -> Occurrence.t -> Occurrence.t NodeMap.t -> t
     val check :
@@ -125,10 +138,14 @@ end
 type grammar_node =
   | Grammar
   | Possible_roots
-  | Cardinalities
-  | Cardinality
-  | Parent
+  | Children_specs
+  | Children_spec
+  | Name
+  | Int
+  | Text
+  | Children
   | Child
+  | Cardinality
   | Min
   | Max
   | Unlimited

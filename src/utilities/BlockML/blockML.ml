@@ -30,14 +30,17 @@ type ('node, 'node_pos) parse_error =
 type grammar_node =
   | Grammar
   | Possible_roots
-  | Cardinalities
-  | Cardinality
-  | Parent
+  | Children_specs
+  | Children_spec
+  | Name
+  | Int
+  | Text
+  | Children
   | Child
+  | Cardinality
   | Min
   | Max
   | Unlimited
-
 
 module Grammar = struct
 
@@ -51,36 +54,51 @@ module Grammar = struct
 
     let node_string =
       [(Grammar, "grammar") ; (Possible_roots, "possible_roots") ;
-       (Cardinalities, "cardinalities") ; (Cardinality, "cardinality") ;
-       (Parent, "parent") ; (Child, "child") ; (Min, "min") ; (Max, "max") ;
-       (Unlimited, "unlimited")]
+       (Children_specs, "children_specs") ; (Children_spec, "children_spec") ;
+       (Name, "name") ; (Int, "int") ; (Text, "text") ; (Children, "children") ;
+       (Child, "child") ; (Cardinality, "cardinality") ; (Min, "min") ;
+       (Max, "max") ; (Unlimited, "unlimited")]
 
     let possible_roots = [Grammar]
 
     let spec = function
       | Grammar ->
 	Children.make Occurrence.none Occurrence.none
-	  (Children.NodeMap.of_list [(Possible_roots, Occurrence.one) ;
-				     (Cardinalities, Occurrence.one)])
+	  (Children.NodeMap.ones [Possible_roots ; Children_specs])
       | Possible_roots ->
 	Children.make Occurrence.none Occurrence.any Children.NodeMap.empty
-      | Cardinalities ->
+      | Children_specs ->
 	Children.make Occurrence.none Occurrence.none
-	  (Children.NodeMap.singleton Cardinality Occurrence.any)
-      | Cardinality ->
+	  (Children.NodeMap.any Children_spec)
+      | Children_spec ->
 	Children.make Occurrence.none Occurrence.none
 	  (Children.NodeMap.of_list
-	     (List.map (fun x -> (x, Occurrence.one))
-		[Parent ; Child ; Min ; Max]))
-      | Parent ->
+	     [(Name, Occurrence.one) ;
+	      (Int, Occurrence.option) ;
+	      (Text, Occurrence.option) ;
+	      (Children, Occurrence.option)])
+      | Name ->
 	Children.make Occurrence.none Occurrence.one Children.NodeMap.empty
+      | Int ->
+	Children.make Occurrence.none Occurrence.none
+	  (Children.NodeMap.one Cardinality)
+      | Text ->
+	Children.make Occurrence.none Occurrence.none
+	  (Children.NodeMap.one Cardinality)
+      | Children ->
+	Children.make Occurrence.none Occurrence.none
+	  (Children.NodeMap.any Child)
       | Child ->
-	Children.make Occurrence.none Occurrence.one Children.NodeMap.empty
+	Children.make Occurrence.none Occurrence.none
+	  (Children.NodeMap.ones [Name ; Cardinality])
+      | Cardinality ->
+	Children.make Occurrence.none Occurrence.none
+	  (Children.NodeMap.ones [Min ; Max])
       | Min ->
 	Children.make Occurrence.one Occurrence.none Children.NodeMap.empty
       | Max ->
 	Children.make Occurrence.option Occurrence.none
-	  (Children.NodeMap.singleton Unlimited Occurrence.option)
+	  (Children.NodeMap.option Unlimited)
       | Unlimited ->
 	Children.make Occurrence.none Occurrence.none Children.NodeMap.empty
 
@@ -102,7 +120,20 @@ let from_file file =
 
     module Children = ChildrenSpec.Make (String)
 
-    let possible_roots = assert false
+    let possible_roots =
+      let possible_roots = Grammar.extract_child_node Possible_roots block in
+      let f_possible_root possible_root =
+	Grammar.extract_text [possible_root] in
+      Set.of_list (List.map f_possible_root possible_roots)
+
+    let add_children_spec (nodes, children_spec) block =
+      let name =
+	Grammar.extract_text (Grammar.extract_child_node Name block) in
+(*
+      let child =
+	Grammar.extract_text (Grammar.extract_child_node Parent block) in
+*)
+      assert false
 
     let spec _ = assert false
 
