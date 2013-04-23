@@ -8,8 +8,7 @@ module Generic : sig
 
   module type S = sig
     module Node : NODE
-    type primitive = Int of int | Text of string
-    type contents = Primitive of primitive | Node of Node.t * t list
+    type contents = Int of int | Text of string | Node of Node.t * t list
     and t = contents Position.t
     val int_content : int -> contents
     val text_content : string -> contents

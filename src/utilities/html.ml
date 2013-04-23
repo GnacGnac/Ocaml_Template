@@ -225,9 +225,8 @@ let string_of_attribute attribute value =
 let string_of_attribute attribute = match Position.contents attribute with
   | Node (attribute, [value]) ->
     (match Position.contents value with
-      | Primitive (Int value) ->
-	string_of_attribute attribute (string_of_int value)
-      | Primitive (Text value) -> string_of_attribute attribute value
+      | Int value -> string_of_attribute attribute (string_of_int value)
+      | Text value -> string_of_attribute attribute value
       | _ -> assert false (* should be impossible *))
   | _ -> assert false (* should be impossible *)
 
@@ -236,8 +235,8 @@ let string_of_attributes attributes =
   List.fold_left f "" attributes
 
 let rec to_string space html = match Position.contents html with
-  | Primitive (Int i) -> space ^ (string_of_int i)
-  | Primitive (Text s) -> space ^ s
+  | Int i -> space ^ (string_of_int i)
+  | Text s -> space ^ s
   | Node (Html_node Block, children) -> to_string_children space children
   | Node (name, children) -> to_string_node space name children
 
