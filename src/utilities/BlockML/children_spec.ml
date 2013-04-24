@@ -51,10 +51,12 @@ module type S = sig
     val ones : node list -> Occurrence.t t
     val options : node list -> Occurrence.t t
   end
-  type t
-  val make : Occurrence.t -> Occurrence.t -> Occurrence.t NodeMap.t -> t
+  type primitive = Int | Text
+  type 'a specification
+  val make : (primitive -> 'a) -> 'a NodeMap.t -> 'a specification
+  type t = Occurrence.t specification
   val check :
-    node_pos -> t -> int -> int -> int NodeMap.t ->
+    node_pos -> t -> int specification ->
     (unit,
      [> `Bad_int_occurrence of node_pos * int * Occurrence.t
       | `Bad_text_occurrence of node_pos * int * Occurrence.t
