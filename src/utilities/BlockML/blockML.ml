@@ -40,7 +40,6 @@ type grammar_node =
   | Cardinality
   | Min
   | Max
-  | Unlimited
 
 module Grammar = struct
 
@@ -57,7 +56,7 @@ module Grammar = struct
        (Children_specs, "children_specs") ; (Children_spec, "children_spec") ;
        (Name, "name") ; (Int, "int") ; (Text, "text") ; (Children, "children") ;
        (Child, "child") ; (Cardinality, "cardinality") ; (Min, "min") ;
-       (Max, "max") ; (Unlimited, "unlimited")]
+       (Max, "max")]
 
     let possible_roots = [Grammar]
 
@@ -95,10 +94,8 @@ module Grammar = struct
 	Children.make (Children.one_primitive Children.Int)
 	  Children.NodeMap.empty
       | Max ->
-	Children.make (Children.option_primitive Children.Int)
-	  (Children.NodeMap.option Unlimited)
-      | Unlimited ->
-	Children.make Children.no_primitive Children.NodeMap.empty
+	Children.make (Children.one_primitive Children.Int)
+	  Children.NodeMap.empty
 
   end
 
@@ -123,6 +120,12 @@ let from_file file =
       let f_possible_root possible_root =
 	Grammar.extract_text [possible_root] in
       Set.of_list (List.map f_possible_root possible_roots)
+
+    let cardinality_of_block block =
+      let min_cardinality = Grammar.extract_child_node Min block in
+      let min_cardinality = Grammar.extract_int min_cardinality in
+      let max_cardinality = Grammar.extract_child_node Max block in
+      assert false
 
     let add_children_spec (nodes, children_spec) block =
       let name =

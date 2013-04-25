@@ -23,6 +23,17 @@ module type S = sig
   val get_text : t list -> (string Position.t, [> `No_text]) Result.t
   val get_node :
     Node.t -> t list -> (t list Position.t, [> `No_such_child]) Result.t
+  val get_ints : t list -> int Position.t list
+  val get_texts : t list -> string Position.t list
+  val get_nodes : Node.t -> t list -> t list Position.t list
+  val get_int_children : t -> int Position.t list
+  val get_text_children : t -> string Position.t list
+  val get_node_children : Node.t -> t -> t list Position.t list
+  val get_int1 : t -> (int Position.t, [> `No_int]) Result.t
+  val get_text1 : t -> (string Position.t, [> `No_text]) Result.t
+  val get_node1 :
+      Node.t -> t -> (t list Position.t, [> `No_such_child]) Result.t
+  val get_children : t -> (t list, [> `No_children]) Result.t
   val to_string : t -> string
 
   (* Unsafe functions: raises assertion failure. *)
@@ -30,9 +41,9 @@ module type S = sig
   val extract_int : t list -> int
   val extract_text : t list -> string
   val extract_node : Node.t -> t list -> t list
-  val extract_child_node : Node.t -> t -> t list
   val extract_int1 : t -> int
   val extract_text1 : t -> string
+  val extract_child_node : Node.t -> t -> t list
   val extract_children : t -> t list
 end
 
@@ -54,40 +65,54 @@ module Make (N : NODE) = struct
   let text s = Position.make_dummy (text_content s)
   let node name children = Position.make_dummy (node_content name children)
 
-  let get f res_error l =
-    let f' res a = match res with
-      | Ok _ -> res
-      | Error `Not_found ->
-	let res = f (Position.contents a) in
-	map_result (fun res -> Position.change_contents res a) res in
-    let f_error = function `Not_found -> res_error in
-    map_error f_error (List.fold_left f' (error `Not_found) l)
+  let get_children block = match Position.contents block with
+    | Node (_, children) -> return children
+    | _ -> error `No_children
 
-  let get_int =
-    get (function Primitive (Int i) -> return i | _ -> error `Not_found) `No_int
+  let gets f l =
+    let f' res a =
+      (match f (Position.contents a) with
+	| None -> []
+	| Some e -> [Position.change_contents e a]) @ res in
+    List.fold_left f' [] l
 
-  let get_text =
-    get
-      (function Primitive (Text s) -> return s | _ -> error `Not_found)
-      `No_text
+  let get_ints = gets (function Primitive (Int i) -> Some i | _ -> None)
+  let get_texts = gets (function Primitive (Text s) -> Some s | _ -> None)
+  let get_nodes node =
+    gets
+      (function
+	| Node (node', children) when node' = node -> Some children 
+	| _ -> None)
 
-  let get_children =
-    get
-      (function Node (_, children) -> return children | _ -> error `Not_found)
-      `No_children
+  let get_from_children f block = match Position.contents block with
+    | Node (_, children) -> f children
+    | _ -> []
 
-  let get_node node =
-    let f = function
-      | Node (node', children) when node' = node ->
-	return children
-      | _ -> error `Not_found in
-    get f `No_such_child
+  let get_int_children = get_from_children get_ints
+  let get_text_children = get_from_children get_texts
+  let get_node_children node = get_from_children (get_nodes node)
+
+  let get f res_error l = match f l with
+    | [] -> error res_error
+    | a :: _ -> return a
+
+  let get_int = get get_ints `No_int
+  let get_text = get get_texts `No_text
+  let get_node node = get (get_nodes node) `No_such_child
+
+  let get1_from_children f res_error block = match f block with
+    | [] -> error res_error
+    | a :: _ -> return a
+
+  let get_int1 = get1_from_children get_ints `No_int
+  let get_text1 = get1_from_children get_texts `No_text
+  let get_node1 node = get1_from_children (get_nodes node) `No_such_node
 
   let extract_get get e = Position.contents (extract (get e))
   let extract_int = extract_get get_int
   let extract_text = extract_get get_text
   let extract_node node = extract_get (get_node node)
-  let extract_children node = extract_get get_children [node]
+  let extract_children node = assert false (* extract_get get_children [node] *)
   let extract_child_node node block = extract_node node (extract_children block)
   let extract_int1 node = extract_int [node]
   let extract_text1 node = extract_text [node]

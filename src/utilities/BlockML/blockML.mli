@@ -21,6 +21,17 @@ module Generic : sig
     val get_text : t list -> (string Position.t, [> `No_text]) Result.t
     val get_node :
       Node.t -> t list -> (t list Position.t, [> `No_such_child]) Result.t
+    val get_ints : t list -> int Position.t list
+    val get_texts : t list -> string Position.t list
+    val get_nodes : Node.t -> t list -> t list Position.t list
+    val get_int_children : t -> int Position.t list
+    val get_text_children : t -> string Position.t list
+    val get_node_children : Node.t -> t -> t list Position.t list
+    val get_int1 : t -> (int Position.t, [> `No_int]) Result.t
+    val get_text1 : t -> (string Position.t, [> `No_text]) Result.t
+    val get_node1 :
+	Node.t -> t -> (t list Position.t, [> `No_such_child]) Result.t
+    val get_children : t -> (t list, [> `No_children]) Result.t
     val to_string : t -> string
 
     (* Unsafe functions: raises assertion failure. *)
@@ -28,9 +39,9 @@ module Generic : sig
     val extract_int : t list -> int
     val extract_text : t list -> string
     val extract_node : Node.t -> t list -> t list
-    val extract_child_node : Node.t -> t -> t list
     val extract_int1 : t -> int
     val extract_text1 : t -> string
+    val extract_child_node : Node.t -> t -> t list
     val extract_children : t -> t list
   end
 
@@ -158,7 +169,6 @@ type grammar_node =
   | Cardinality
   | Min
   | Max
-  | Unlimited
 
 module Grammar : Instance.S with type Node.t = grammar_node
 
