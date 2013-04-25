@@ -8,7 +8,8 @@ module Generic : sig
 
   module type S = sig
     module Node : NODE
-    type contents = Int of int | Text of string | Node of Node.t * t list
+    type primitive = Int of int | Text of string
+    type contents = Primitive of primitive | Node of Node.t * t list
     and t = contents Position.t
     val int_content : int -> contents
     val text_content : string -> contents
@@ -70,10 +71,20 @@ module ChildrenSpec : sig
       val ones : node list -> Occurrence.t t
       val options : node list -> Occurrence.t t
     end
-    type t
-    val make : Occurrence.t -> Occurrence.t -> Occurrence.t NodeMap.t -> t
+    type primitive = Int | Text
+    type 'a primitive_specification = primitive -> 'a
+    type occurrence_primitive_specification =
+	Occurrence.t primitive_specification
+    val no_primitive : occurrence_primitive_specification
+    val any_primitives : occurrence_primitive_specification
+    val one_primitive : primitive -> occurrence_primitive_specification
+    val any_primitive : primitive -> occurrence_primitive_specification
+    val option_primitive : primitive -> occurrence_primitive_specification
+    type 'a specification
+    val make : 'a primitive_specification -> 'a NodeMap.t -> 'a specification
+    type t = Occurrence.t specification
     val check :
-      node_pos -> t -> int -> int -> int NodeMap.t ->
+      node_pos -> t -> int specification ->
       (unit, [> (node, node_pos) occurrence_error]) Result.t
   end
 

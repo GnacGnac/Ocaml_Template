@@ -62,61 +62,53 @@ module M = struct
     with Not_found -> error (`Unrecognized_string s)
 
   module Children = BlockML.ChildrenSpec.Make (Ord)
+  module Occurrence = BlockML.Occurrence
 
-  let node_spec int_children text_children node_children attribute_children =
+  let no_primitive = Children.no_primitive
+  let any_primitives = Children.any_primitives
+  let one_primitive = Children.one_primitive
+
+  let node_spec primitive_children node_children attribute_children =
     let f_node (node, occurrences) = (Html_node node, occurrences) in
     let f_attribute attribute =
-      (Attribute attribute, BlockML.Occurrence.option) in
-    Children.make int_children text_children
+      (Attribute attribute, Occurrence.option) in
+    Children.make primitive_children
       (Children.NodeMap.of_list
 	 ((List.map f_node node_children) @
 	  (List.map f_attribute attribute_children)))
 
-  let html_spec =
-    node_spec BlockML.Occurrence.none BlockML.Occurrence.none
-      [(Body, BlockML.Occurrence.option)] []
+  let html_spec = node_spec no_primitive [(Body, Occurrence.option)] []
 
   let body_node_children =
-    List.map (fun child -> (child, BlockML.Occurrence.any))
+    List.map (fun child -> (child, Occurrence.any))
       [Input ; Font ; Bold ; Italic ; Br ; Paragraph ; Table ; Tr ; Td ;
        Center ; Form ; Block]
 
-  let body_spec =
-    node_spec BlockML.Occurrence.any BlockML.Occurrence.any
-      body_node_children []
+  let body_spec = node_spec any_primitives body_node_children []
 
-  let input_spec =
-    node_spec BlockML.Occurrence.any BlockML.Occurrence.any
-      [] [Type ; Value ; Name ; Size]
+  let input_spec = node_spec any_primitives [] [Type ; Value ; Name ; Size]
 
-  let font_spec =
-    node_spec BlockML.Occurrence.any BlockML.Occurrence.any
-      body_node_children [Color ; Face]
+  let font_spec = node_spec any_primitives body_node_children [Color ; Face]
 
   let bold_spec = body_spec
 
   let italic_spec = body_spec
 
-  let br_spec = node_spec BlockML.Occurrence.none BlockML.Occurrence.none [] []
+  let br_spec = node_spec no_primitive [] []
 
   let paragraph_spec = body_spec
 
   let table_spec =
-    node_spec BlockML.Occurrence.none BlockML.Occurrence.none
-      [(Tr, BlockML.Occurrence.any)]
-      [Border ; Cellpadding ; Cellspacing]
+    node_spec no_primitive
+      [(Tr, Occurrence.any)] [Border ; Cellpadding ; Cellspacing]
 
-  let tr_spec =
-    node_spec BlockML.Occurrence.none BlockML.Occurrence.none
-      [(Td, BlockML.Occurrence.any)] [Bgcolor]
+  let tr_spec = node_spec no_primitive [(Td, Occurrence.any)] [Bgcolor]
 
   let td_spec = body_spec
 
   let center_spec = body_spec
 
-  let form_spec =
-    node_spec BlockML.Occurrence.any BlockML.Occurrence.any
-      body_node_children [Method ; Action]
+  let form_spec = node_spec any_primitives body_node_children [Method ; Action]
 
   let block_spec = body_spec
 
@@ -137,12 +129,10 @@ module M = struct
     | Block -> block_spec
 
   let int_attribute =
-    Children.make
-      BlockML.Occurrence.one BlockML.Occurrence.none Children.NodeMap.empty
+    Children.make (one_primitive Children.Int) Children.NodeMap.empty
 
   let string_attribute =
-    Children.make
-      BlockML.Occurrence.none BlockML.Occurrence.one Children.NodeMap.empty
+    Children.make (one_primitive Children.Text) Children.NodeMap.empty
 
   let attribute_spec = function
     | Color -> string_attribute
@@ -220,13 +210,16 @@ let space = spaces 1
 let block children = node Block children
 
 
+let string_of_primitive = function
+  | Int i -> string_of_int i
+  | Text s -> s
 let string_of_attribute attribute value =
   (Node.to_string attribute) ^ "=\"" ^ value ^ "\""
 let string_of_attribute attribute = match Position.contents attribute with
   | Node (attribute, [value]) ->
     (match Position.contents value with
-      | Int value -> string_of_attribute attribute (string_of_int value)
-      | Text value -> string_of_attribute attribute value
+      | Primitive prim ->
+	string_of_attribute attribute (string_of_primitive prim)
       | _ -> assert false (* should be impossible *))
   | _ -> assert false (* should be impossible *)
 
@@ -235,8 +228,7 @@ let string_of_attributes attributes =
   List.fold_left f "" attributes
 
 let rec to_string space html = match Position.contents html with
-  | Int i -> space ^ (string_of_int i)
-  | Text s -> space ^ s
+  | Primitive prim -> space ^ (string_of_primitive prim)
   | Node (Html_node Block, children) -> to_string_children space children
   | Node (name, children) -> to_string_node space name children
 

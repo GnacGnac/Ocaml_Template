@@ -52,8 +52,15 @@ module type S = sig
     val options : node list -> Occurrence.t t
   end
   type primitive = Int | Text
+  type 'a primitive_specification = primitive -> 'a
+  type occurrence_primitive_specification = Occurrence.t primitive_specification
+  val no_primitive : occurrence_primitive_specification
+  val any_primitives : occurrence_primitive_specification
+  val one_primitive : primitive -> occurrence_primitive_specification
+  val any_primitive : primitive -> occurrence_primitive_specification
+  val option_primitive : primitive -> occurrence_primitive_specification
   type 'a specification
-  val make : (primitive -> 'a) -> 'a NodeMap.t -> 'a specification
+  val make : 'a primitive_specification -> 'a NodeMap.t -> 'a specification
   type t = Occurrence.t specification
   val check :
     node_pos -> t -> int specification ->
@@ -82,20 +89,42 @@ module Make (Node : Map_ext.ORDERED_TYPE) = struct
     let option node = options [node]
   end
 
-  type t =
-      { ints : Occurrence.t ;
-	texts : Occurrence.t ;
-	sub_nodes : Occurrence.t NodeMap.t }
+  type primitive = Int | Text
 
-  let make ints texts sub_nodes = { ints ; texts ; sub_nodes }
+  type 'a primitive_specification = primitive -> 'a
+  type occurrence_primitive_specification = Occurrence.t primitive_specification
 
-  let ints children_spec = children_spec.ints
-  let texts children_spec = children_spec.texts
+  let no_primitive _ = Occurrence.none
+  let any_primitives _ = Occurrence.any
+  let one_primitive_value value (prim : primitive) (prim' : primitive) =
+    if prim' = prim then value else Occurrence.none
+  let one_primitive = one_primitive_value Occurrence.one
+  let any_primitive = one_primitive_value Occurrence.any
+  let option_primitive = one_primitive_value Occurrence.option
+
+  type 'a specification =
+      { primitives : 'a primitive_specification ;
+	sub_nodes : 'a NodeMap.t }
+
+  type t = Occurrence.t specification
+
+  let make primitives sub_nodes = { primitives ; sub_nodes }
+
+  let primitives children_spec = children_spec.primitives
   let sub_nodes children_spec = children_spec.sub_nodes
 
-  let add node occurrence children_spec =
-    let sub_nodes = NodeMap.add node occurrence (sub_nodes children_spec) in
-    make (ints children_spec) (texts children_spec) sub_nodes
+  let check_primitive nb_primitives primitives () (prim, prim_error) =
+    let nb = nb_primitives prim in
+    let spec = primitives prim in
+    if Occurrence.mem nb spec then return ()
+    else error (prim_error nb spec)
+
+  let check_primitives_spec node nb_primitives primitives =
+    List_ext.fold_bind (check_primitive nb_primitives primitives) ()
+      [(Int,
+	(fun nb_ints ints -> `Bad_int_occurrence (node, nb_ints, ints))) ;
+       (Text,
+	(fun nb_texts texts -> `Bad_text_occurrence (node, nb_texts, texts)))]
 
   let merge_spec node occurrence spec_occurrence =
     match occurrence, spec_occurrence with
@@ -118,16 +147,13 @@ module Make (Node : Map_ext.ORDERED_TYPE) = struct
     in
     NodeMap.fold f occurrences_and_specs (return ())
 
-  let check node children_spec nb_ints nb_texts nb_sub_nodes =
-    let ints = ints children_spec in
-    let texts = texts children_spec in
+  let check node children_spec nb_children =
+    let nb_primitives = primitives nb_children in
+    let nb_sub_nodes = sub_nodes nb_children in
+    let primitives = primitives children_spec in
     let sub_nodes = sub_nodes children_spec in
-    if Occurrence.mem nb_ints ints then
-      if Occurrence.mem nb_texts texts then
-	check_sub_nodes_spec node nb_sub_nodes sub_nodes
-      else error (`Bad_text_occurrence (node, nb_texts, texts))
-    else
-      error (`Bad_int_occurrence (node, nb_ints, ints))
+    check_primitives_spec node nb_primitives primitives >>= fun () ->
+    check_sub_nodes_spec node nb_sub_nodes sub_nodes
 
 end
 

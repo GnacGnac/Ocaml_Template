@@ -10,7 +10,8 @@ end
 
 module type S = sig
   module Node : NODE
-  type contents = Int of int | Text of string | Node of Node.t * t list
+  type primitive = Int of int | Text of string
+  type contents = Primitive of primitive | Node of Node.t * t list
   and t = contents Position.t
   val int_content : int -> contents
   val text_content : string -> contents
@@ -41,11 +42,12 @@ module Make (N : NODE) = struct
   module Node = N
 
 
-  type contents = Int of int | Text of string | Node of Node.t * t list
+  type primitive = Int of int | Text of string
+  type contents = Primitive of primitive | Node of Node.t * t list
   and t = contents Position.t
 
-  let int_content i = Int i
-  let text_content s = Text s
+  let int_content i = Primitive (Int i)
+  let text_content s = Primitive (Text s)
   let node_content name children = Node (name, children)
 
   let int i = Position.make_dummy (int_content i)
@@ -62,10 +64,12 @@ module Make (N : NODE) = struct
     map_error f_error (List.fold_left f' (error `Not_found) l)
 
   let get_int =
-    get (function Int i -> return i | _ -> error `Not_found) `No_int
+    get (function Primitive (Int i) -> return i | _ -> error `Not_found) `No_int
 
   let get_text =
-    get (function Text s -> return s | _ -> error `Not_found) `No_text
+    get
+      (function Primitive (Text s) -> return s | _ -> error `Not_found)
+      `No_text
 
   let get_children =
     get
@@ -112,9 +116,15 @@ module Make (N : NODE) = struct
 
   let string_of_position block = string_of_position ~debug:false block
 
+  let string_of_primitive = function
+    | Int i -> string_of_int i
+    | Text s -> string_of_text s
+
   let rec to_string space block = match Position.contents block with
-    | Int i -> space ^ (string_of_int i) ^ (string_of_position block)
-    | Text s -> space ^ (string_of_text s) ^ (string_of_position block)
+    | Primitive (Int i) ->
+      space ^ (string_of_int i) ^ (string_of_position block)
+    | Primitive (Text s) ->
+      space ^ (string_of_text s) ^ (string_of_position block)
     | Node (name, []) ->
       space ^ (Node.to_string name) ^ (string_of_position block)
     | Node (name, [child]) -> to_string_one_child block space name child
@@ -126,12 +136,9 @@ module Make (N : NODE) = struct
 
   and to_string_one_child block space name child =
     match Position.contents child with
-      | Int i ->
+      | Primitive prim ->
 	space ^ (Node.to_string name) ^ (string_of_position block) ^
-	  " { " ^ (string_of_int i) ^ " }"
-      | Text s ->
-	space ^ (Node.to_string name) ^ (string_of_position block) ^
-	  " { " ^ (string_of_text s) ^ " }"
+	  " { " ^ (string_of_primitive prim) ^ " }"
       | Node _ ->
 	let child = to_string (space ^ "  ") child in
 	let name = Node.to_string name in

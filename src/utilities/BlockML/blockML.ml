@@ -63,44 +63,42 @@ module Grammar = struct
 
     let spec = function
       | Grammar ->
-	Children.make Occurrence.none Occurrence.none
+	Children.make Children.no_primitive
 	  (Children.NodeMap.ones [Possible_roots ; Children_specs])
       | Possible_roots ->
-	Children.make Occurrence.none Occurrence.any Children.NodeMap.empty
+	Children.make
+	  (Children.any_primitive Children.Text) Children.NodeMap.empty
       | Children_specs ->
-	Children.make Occurrence.none Occurrence.none
-	  (Children.NodeMap.any Children_spec)
+	Children.make Children.no_primitive (Children.NodeMap.any Children_spec)
       | Children_spec ->
-	Children.make Occurrence.none Occurrence.none
+	Children.make Children.no_primitive
 	  (Children.NodeMap.of_list
 	     [(Name, Occurrence.one) ;
 	      (Int, Occurrence.option) ;
 	      (Text, Occurrence.option) ;
 	      (Children, Occurrence.option)])
       | Name ->
-	Children.make Occurrence.none Occurrence.one Children.NodeMap.empty
+	Children.make Children.no_primitive Children.NodeMap.empty
       | Int ->
-	Children.make Occurrence.none Occurrence.none
-	  (Children.NodeMap.one Cardinality)
+	Children.make Children.no_primitive (Children.NodeMap.one Cardinality)
       | Text ->
-	Children.make Occurrence.none Occurrence.none
-	  (Children.NodeMap.one Cardinality)
+	Children.make Children.no_primitive (Children.NodeMap.one Cardinality)
       | Children ->
-	Children.make Occurrence.none Occurrence.none
-	  (Children.NodeMap.any Child)
+	Children.make Children.no_primitive (Children.NodeMap.any Child)
       | Child ->
-	Children.make Occurrence.none Occurrence.none
+	Children.make Children.no_primitive
 	  (Children.NodeMap.ones [Name ; Cardinality])
       | Cardinality ->
-	Children.make Occurrence.none Occurrence.none
+	Children.make Children.no_primitive
 	  (Children.NodeMap.ones [Min ; Max])
       | Min ->
-	Children.make Occurrence.one Occurrence.none Children.NodeMap.empty
+	Children.make (Children.one_primitive Children.Int)
+	  Children.NodeMap.empty
       | Max ->
-	Children.make Occurrence.option Occurrence.none
+	Children.make (Children.option_primitive Children.Int)
 	  (Children.NodeMap.option Unlimited)
       | Unlimited ->
-	Children.make Occurrence.none Occurrence.none Children.NodeMap.empty
+	Children.make Children.no_primitive Children.NodeMap.empty
 
   end
 
