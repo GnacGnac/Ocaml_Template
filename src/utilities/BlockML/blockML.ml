@@ -116,21 +116,19 @@ let from_file file =
     module Children = ChildrenSpec.Make (String)
 
     let possible_roots =
-      let possible_roots = Grammar.extract_child_node Possible_roots block in
-      let f_possible_root possible_root =
-	Grammar.extract_text [possible_root] in
-      Set.of_list (List.map f_possible_root possible_roots)
+      let possible_roots = Grammar.extract_node Possible_roots block in
+      Set.of_list (Grammar.extract_text_children possible_roots)
 
     let cardinality_of_block block =
-      let min_cardinality = Grammar.extract_child_node Min block in
+      let min_cardinality = Grammar.extract_node Min block in
       let min_cardinality = Grammar.extract_int min_cardinality in
-      let max_cardinality = Grammar.extract_child_node Max block in
+      let max_cardinality = Grammar.extract_node Max block in
       assert false
 
     let add_children_spec (nodes, children_spec) block =
+(*
       let name =
 	Grammar.extract_text (Grammar.extract_child_node Name block) in
-(*
       let child =
 	Grammar.extract_text (Grammar.extract_child_node Parent block) in
 *)
