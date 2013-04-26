@@ -1,0 +1,45 @@
+grammar {
+  possible_roots { "term" }
+  children_specs {
+    children_spec {
+      name { "term" }
+      children {
+        child {
+          name { "var" }
+          cardinality { min { 0 } max { 1 } }
+        }
+        child {
+         name { "abs" }
+          cardinality { min { 0 } max { 1 } }
+        }
+        child {
+          name { "app" }
+          cardinality { min { 0 } max { 1 } }
+        }
+      }
+    }
+    children_spec {
+      name { "var" }
+      text { cardinality { min { 1 } max { 1 } } }
+    }
+    children_spec {
+      name { "abs" }
+      text { cardinality { min { 1 } max { 1 } } }
+      children {
+        child {
+          name { "term" }
+          cardinality { min { 1 } max { 1 } }
+        }
+      }
+    }
+    children_spec {
+      name { "app" }
+      children {
+        child {
+          name { "term" }
+          cardinality { min { 2 } max { 2 } }
+        }
+      }
+    }
+  }
+}

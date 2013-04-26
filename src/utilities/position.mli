@@ -7,6 +7,7 @@ val make_dummy : 'a -> 'a t
 val contents : 'a t -> 'a
 val line : 'a t -> (int, [> `No_position]) Result.t
 val char : 'a t -> (int, [> `No_position]) Result.t
+val line_and_char : 'a t -> (int * int, [> `No_position]) Result.t
 
 val change_contents : 'a -> 'b t -> 'a t
 

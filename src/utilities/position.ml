@@ -8,6 +8,7 @@ module Position = struct
   let make line char = { line ; char }
   let line pos = pos.line
   let char pos = pos.char
+  let line_and_char pos = (line pos, char pos)
 
 end
 
@@ -19,12 +20,13 @@ let make contents line char =
 let make_dummy contents = { contents ; pos = None }
 
 let contents pos = pos.contents
-let line pos = match pos.pos with
+let line_and_char pos = match pos.pos with
   | None -> error `No_position
-  | Some pos -> return (Position.line pos)
-let char pos = match pos.pos with
-  | None -> error `No_position
-  | Some pos -> return (Position.char pos)
+  | Some pos -> return (Position.line_and_char pos)
+let line pos =
+  line_and_char pos >>= fun (line, char) -> return line
+let char pos =
+  line_and_char pos >>= fun (line, char) -> return char
 
 
 let change_contents contents pos = { pos with contents }
