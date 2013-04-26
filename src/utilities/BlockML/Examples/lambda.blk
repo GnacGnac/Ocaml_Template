@@ -1,10 +1,10 @@
 term { app {
   term { abs {
-    var { "x" }
+    "x"
     term { var { "x" } } }
   }
   term { abs {
-    var { "x" }
+    "x"
     term { var { "x" } } }
   } }
 }

@@ -10,7 +10,7 @@ grammar {
         }
         child {
          name { "abs" }
-          cardinality { min { 0 } max { 1 } }
+         cardinality { min { 0 } max { 1 } }
         }
         child {
           name { "app" }
