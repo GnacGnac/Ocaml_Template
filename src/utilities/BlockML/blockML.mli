@@ -91,17 +91,24 @@ module ChildrenSpec : sig
       val ones : node list -> Occurrence.t t
       val options : node list -> Occurrence.t t
     end
-    type primitive = Int | Text
-    type 'a primitive_specification = primitive -> 'a
-    type occurrence_primitive_specification =
-	Occurrence.t primitive_specification
-    val no_primitive : occurrence_primitive_specification
-    val any_primitives : occurrence_primitive_specification
-    val one_primitive : primitive -> occurrence_primitive_specification
-    val any_primitive : primitive -> occurrence_primitive_specification
-    val option_primitive : primitive -> occurrence_primitive_specification
+    module Primitive : sig
+      type t = Int | Text
+      type 'a specification = t -> 'a
+      type occurrence_specification = Occurrence.t specification
+      val none : occurrence_specification
+      val anys : occurrence_specification
+      val one : t -> occurrence_specification
+      val any : t -> occurrence_specification
+      val option : t -> occurrence_specification
+      val one_int : occurrence_specification
+      val one_text : occurrence_specification
+      val any_int : occurrence_specification
+      val any_text : occurrence_specification
+      val option_int : occurrence_specification
+      val option_text : occurrence_specification
+    end
     type 'a specification
-    val make : 'a primitive_specification -> 'a NodeMap.t -> 'a specification
+    val make : 'a Primitive.specification -> 'a NodeMap.t -> 'a specification
     type t = Occurrence.t specification
     val check :
       node_pos -> t -> int specification ->

@@ -69,8 +69,8 @@ module Make (Spec : SPEC) = struct
   and analyze_children_names children = List_ext.bind analyze_names children
 
   let spec_primitive_of_primitive = function
-    | Int _ -> Spec.Children.Int
-    | Text _ -> Spec.Children.Text
+    | Int _ -> Spec.Children.Primitive.Int
+    | Text _ -> Spec.Children.Primitive.Text
 
   let update_nb_primitives primitive nb_primitives primitive' =
     (nb_primitives primitive) + (if primitive' = primitive then 1 else 0)

@@ -63,10 +63,7 @@ module M = struct
 
   module Children = BlockML.ChildrenSpec.Make (Ord)
   module Occurrence = BlockML.Occurrence
-
-  let no_primitive = Children.no_primitive
-  let any_primitives = Children.any_primitives
-  let one_primitive = Children.one_primitive
+  module Primitive = Children.Primitive
 
   let node_spec primitive_children node_children attribute_children =
     let f_node (node, occurrences) = (Html_node node, occurrences) in
@@ -77,38 +74,38 @@ module M = struct
 	 ((List.map f_node node_children) @
 	  (List.map f_attribute attribute_children)))
 
-  let html_spec = node_spec no_primitive [(Body, Occurrence.option)] []
+  let html_spec = node_spec Primitive.none [(Body, Occurrence.option)] []
 
   let body_node_children =
     List.map (fun child -> (child, Occurrence.any))
       [Input ; Font ; Bold ; Italic ; Br ; Paragraph ; Table ; Tr ; Td ;
        Center ; Form ; Block]
 
-  let body_spec = node_spec any_primitives body_node_children []
+  let body_spec = node_spec Primitive.anys body_node_children []
 
-  let input_spec = node_spec any_primitives [] [Type ; Value ; Name ; Size]
+  let input_spec = node_spec Primitive.anys [] [Type ; Value ; Name ; Size]
 
-  let font_spec = node_spec any_primitives body_node_children [Color ; Face]
+  let font_spec = node_spec Primitive.anys body_node_children [Color ; Face]
 
   let bold_spec = body_spec
 
   let italic_spec = body_spec
 
-  let br_spec = node_spec no_primitive [] []
+  let br_spec = node_spec Primitive.none [] []
 
   let paragraph_spec = body_spec
 
   let table_spec =
-    node_spec no_primitive
+    node_spec Primitive.none
       [(Tr, Occurrence.any)] [Border ; Cellpadding ; Cellspacing]
 
-  let tr_spec = node_spec no_primitive [(Td, Occurrence.any)] [Bgcolor]
+  let tr_spec = node_spec Primitive.none [(Td, Occurrence.any)] [Bgcolor]
 
   let td_spec = body_spec
 
   let center_spec = body_spec
 
-  let form_spec = node_spec any_primitives body_node_children [Method ; Action]
+  let form_spec = node_spec Primitive.anys body_node_children [Method ; Action]
 
   let block_spec = body_spec
 
@@ -128,11 +125,9 @@ module M = struct
     | Form -> form_spec
     | Block -> block_spec
 
-  let int_attribute =
-    Children.make (one_primitive Children.Int) Children.NodeMap.empty
+  let int_attribute = Children.make Primitive.one_int Children.NodeMap.empty
 
-  let string_attribute =
-    Children.make (one_primitive Children.Text) Children.NodeMap.empty
+  let string_attribute = Children.make Primitive.one_text Children.NodeMap.empty
 
   let attribute_spec = function
     | Color -> string_attribute
