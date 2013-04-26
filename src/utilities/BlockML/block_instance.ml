@@ -73,7 +73,7 @@ module Make (Spec : SPEC) = struct
     | Text _ -> Spec.Children.Primitive.Text
 
   let update_nb_primitives primitive nb_primitives primitive' =
-    (nb_primitives primitive) + (if primitive' = primitive then 1 else 0)
+    (nb_primitives primitive') + (if primitive' = primitive then 1 else 0)
 
   let analyze_children_spec name spec children =
     let add_occurrence (nb_primitives, nb_sub_nodes) child =
