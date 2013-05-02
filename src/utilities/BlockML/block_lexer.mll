@@ -39,10 +39,10 @@
     val decrease : unit -> unit
     val is_null : unit -> bool
   end = struct
-    let start_pos = ref (Position.make_dummy ())
-    let start lexbuf = start_pos := position_from_buffer lexbuf ()
-    let start_pos () = !start_pos
     let level = ref 0
+    let start_pos = ref (Position.make_dummy ())
+    let start lexbuf = start_pos := position_from_buffer lexbuf () ; level := 1
+    let start_pos () = !start_pos
     let increase () = level := !level + 1
     let decrease () = level := !level - 1
     let is_null () = !level = 0
