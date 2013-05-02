@@ -21,6 +21,8 @@ let string_of_error f = function
   | `Unrecognized_char c ->
     Printf.sprintf "%sunrecognized character `%c`"
       (string_of_pos c) (Position.contents c)
+  | `Unterminated_comment pos ->
+    Printf.sprintf "%sunterminated comment" (string_of_pos pos)
   | `File_does_not_exist file -> "file " ^ file ^ " does not exist"
   | `Could_not_open_file file -> "could not open file " ^ file
   | `Bad_int_occurrence (node, i, occ) ->

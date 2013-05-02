@@ -3,6 +3,7 @@
   open Block_parser
 
   exception Unrecognized_char of char
+  exception Unterminated_comment of unit Position.t
 
   let pos_of_lexbuf lexbuf =
       let pos = Lexing.lexeme_start_p lexbuf in
@@ -32,10 +33,15 @@
   end
 
   module CommentLevel : sig
+    val start : Lexing.lexbuf -> unit
+    val start_pos : unit -> unit Position.t
     val increase : unit -> unit
     val decrease : unit -> unit
     val is_null : unit -> bool
   end = struct
+    let start_pos = ref (Position.make_dummy ())
+    let start lexbuf = start_pos := position_from_buffer lexbuf ()
+    let start_pos () = !start_pos
     let level = ref 0
     let increase () = level := !level + 1
     let decrease () = level := !level - 1
@@ -60,7 +66,7 @@ rule token = parse
   | '"'          { Chars.reset lexbuf ; quoted_string lexbuf }
   | '{'          { LBRC }
   | '}'          { RBRC }
-  | "/*"         { comment lexbuf }
+  | "/*"         { CommentLevel.start lexbuf ; comment lexbuf }
   | integer as i { INT (position_from_buffer lexbuf (int_of_string i)) }
   | ident as s   { IDENT (position_from_buffer lexbuf s) }
   | eof          { EOF }
@@ -80,6 +86,7 @@ and comment = parse
 	   if CommentLevel.is_null () then token lexbuf
 	   else comment lexbuf }
   | "/*" { CommentLevel.increase () ; comment lexbuf }
+  | eof  { raise (Unterminated_comment (CommentLevel.start_pos ())) }
   | _    { comment lexbuf }
 
 

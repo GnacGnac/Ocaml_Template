@@ -34,6 +34,7 @@ module type S = sig
       | `File_does_not_exist of string
       | `Could_not_open_file of string
       | `Unrecognized_char of char Position.t
+      | `Unterminated_comment of unit Position.t
       | `Parse_error of unit Position.t
       | `Not_a_root_node of Node.t option Position.t
       | `Unrecognized_node of string Position.t]) Result.t

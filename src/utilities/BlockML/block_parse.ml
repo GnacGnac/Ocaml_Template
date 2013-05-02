@@ -10,6 +10,8 @@ let from_file file =
       with
 	| Block_lexer.Unrecognized_char c ->
 	  error (`Unrecognized_char (Block_lexer.position_from_buffer lexbuf c))
+	| Block_lexer.Unterminated_comment pos ->
+	  error (`Unterminated_comment pos)
 	| Parsing.Parse_error ->
 	  error (`Parse_error (Block_lexer.position_from_buffer lexbuf ()))
     else error (`File_does_not_exist file)
