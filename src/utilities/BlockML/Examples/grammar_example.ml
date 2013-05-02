@@ -43,9 +43,9 @@ let run () =
   if Array.length Sys.argv >= 3 then
     match BlockML.from_file Sys.argv.(1) with
       | Ok grammar ->
-	let module Lambda = (val grammar : BlockML.Instance.S) in
-	(match Lambda.parse Sys.argv.(2) with
-	  | Ok lambda -> Printf.printf "%s\n%!" (Lambda.to_string lambda)
-	  | Error error -> show_error Lambda.Node.to_string error)
+	let module Grammar = (val grammar : BlockML.Instance.S) in
+	(match Grammar.parse Sys.argv.(2) with
+	  | Ok block -> Printf.printf "%s\n%!" (Grammar.to_string block)
+	  | Error error -> show_error Grammar.Node.to_string error)
       | Error error -> show_error BlockML.Grammar.Node.to_string error
   else Error.show ("usage: " ^ Sys.argv.(0) ^ " grammar_file file")
