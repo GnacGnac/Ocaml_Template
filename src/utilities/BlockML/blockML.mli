@@ -76,6 +76,19 @@ type ('node, 'node_pos) occurrence_error =
   | `Bad_text_occurrence of 'node_pos * int * Occurrence.t
   | `Bad_sub_node_occurrence of 'node_pos * 'node * int * Occurrence.t]
 
+type ('node, 'node_pos) analyze_error =
+  [ ('node, 'node_pos) occurrence_error
+  | `Not_a_root_node of 'node option Position.t]
+
+type ('node, 'node_pos) parse_error =
+  [ ('node, 'node_pos) analyze_error
+  | `File_does_not_exist of string
+  | `Could_not_open_file of string
+  | `Unrecognized_char of char Position.t
+  | `Unterminated_comment of unit Position.t
+  | `Parse_error of unit Position.t
+  | `Unrecognized_node of string Position.t]
+
 module ChildrenSpec : sig
 
   module type S = sig
@@ -119,19 +132,6 @@ module ChildrenSpec : sig
   module MakeUnsafe (Node : sig type t end) : S with type node = Node.t
 
 end
-
-type ('node, 'node_pos) analyze_error =
-  [ ('node, 'node_pos) occurrence_error
-  | `Not_a_root_node of 'node option Position.t]
-
-type ('node, 'node_pos) parse_error =
-  [ ('node, 'node_pos) analyze_error
-  | `File_does_not_exist of string
-  | `Could_not_open_file of string
-  | `Unrecognized_char of char Position.t
-  | `Unterminated_comment of unit Position.t
-  | `Parse_error of unit Position.t
-  | `Unrecognized_node of string Position.t]
 
 module Instance : sig
 
@@ -188,8 +188,7 @@ module Grammar : sig
     | Min
     | Max
   include Instance.S with type Node.t = node
+  module type S = Instance.S with type Node.t = string
   val from_file :
-    string ->
-    ((module Instance.S),
-     [> (Node.t, Node.t Position.t) parse_error]) Result.t
+    string -> ((module S), [> (node, node Position.t) parse_error]) Result.t
 end

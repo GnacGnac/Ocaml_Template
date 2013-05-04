@@ -4,10 +4,6 @@ open Result
 
 module Generic = Block_generic
 module Occurrence = Children_spec.Occurrence
-module ChildrenSpec = Children_spec
-module Instance = Block_instance
-module UnsafeInstance = Block_unsafe_instance
-
 
 type ('node, 'node_pos) occurrence_error =
   [ `Bad_int_occurrence of 'node_pos * int * Occurrence.t
@@ -26,6 +22,11 @@ type ('node, 'node_pos) parse_error =
   | `Unterminated_comment of unit Position.t
   | `Parse_error of unit Position.t
   | `Unrecognized_node of string Position.t]
+
+module ChildrenSpec = Children_spec
+
+module Instance = Block_instance
+module UnsafeInstance = Block_unsafe_instance
 
 
 module Grammar = struct
@@ -97,6 +98,8 @@ module Grammar = struct
   end
 
   module G = UnsafeInstance.Make (Spec)
+
+  module type S = Instance.S with type Node.t = string
 
   let from_file file =
     G.parse file >>= fun block ->
@@ -176,7 +179,7 @@ module Grammar = struct
 	else error (`Unrecognized_string node)
 
     end in
-    return (module Instance.Make (Spec) : Instance.S)
+    return (module Instance.Make (Spec) : S)
 
   include G
 

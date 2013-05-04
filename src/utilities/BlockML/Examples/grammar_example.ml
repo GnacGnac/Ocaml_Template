@@ -43,7 +43,7 @@ let run () =
   if Array.length Sys.argv >= 3 then
     match BlockML.Grammar.from_file Sys.argv.(1) with
       | Ok grammar ->
-	let module Grammar = (val grammar : BlockML.Instance.S) in
+	let module Grammar = (val grammar : BlockML.Grammar.S) in
 	(match Grammar.parse Sys.argv.(2) with
 	  | Ok block -> Printf.printf "%s\n%!" (Grammar.to_string block)
 	  | Error error -> show_error Grammar.Node.to_string error)
