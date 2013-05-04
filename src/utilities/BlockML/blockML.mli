@@ -173,23 +173,23 @@ module UnsafeInstance : sig
 end
 
 
-type grammar_node =
-  | Grammar
-  | Possible_roots
-  | Children_specs
-  | Children_spec
-  | Name
-  | Int
-  | Text
-  | Children
-  | Child
-  | Cardinality
-  | Min
-  | Max
-
-module Grammar : Instance.S with type Node.t = grammar_node
-
-val from_file :
-  string ->
-  ((module Instance.S),
-   [> (Grammar.Node.t, Grammar.Node.t Position.t) parse_error]) Result.t
+module Grammar : sig
+  type node =
+    | Grammar
+    | Possible_roots
+    | Children_specs
+    | Children_spec
+    | Name
+    | Int
+    | Text
+    | Children
+    | Child
+    | Cardinality
+    | Min
+    | Max
+  include Instance.S with type Node.t = node
+  val from_file :
+    string ->
+    ((module Instance.S),
+     [> (Node.t, Node.t Position.t) parse_error]) Result.t
+end

@@ -41,7 +41,7 @@ let show_error f error = Error.show (string_of_error f error)
 
 let run () =
   if Array.length Sys.argv >= 3 then
-    match BlockML.from_file Sys.argv.(1) with
+    match BlockML.Grammar.from_file Sys.argv.(1) with
       | Ok grammar ->
 	let module Grammar = (val grammar : BlockML.Instance.S) in
 	(match Grammar.parse Sys.argv.(2) with
