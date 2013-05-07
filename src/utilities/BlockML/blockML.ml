@@ -25,6 +25,12 @@ type ('node, 'node_pos) parse_error =
 
 module ChildrenSpec = Children_spec
 
+module type STRINGABLE = sig
+  type t
+  val to_string : t -> string
+  val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
+end
+
 module Instance = Block_instance
 module UnsafeInstance = Block_unsafe_instance
 
@@ -99,87 +105,97 @@ module Grammar = struct
 
   module G = UnsafeInstance.Make (Spec)
 
-  module type S = Instance.S with type Node.t = string
+  module Make (M : sig include STRINGABLE val compare : t -> t -> int end) =
+  struct
 
-  let from_file file =
-    G.parse file >>= fun block ->
-    let module Spec = struct
+    module type S = Instance.S with type Node.t = M.t
 
-      type t = string
+    module MSet = Set_ext.Make (M)
+    module MMap = Map_ext.Make (M)
+    module MChildren = ChildrenSpec.Make (M)
 
-      let to_string s = s
+    let of_string pos_string =
+      map_error
+	(function
+	| `Unrecognized_string _ -> `Grammar_unrecognized_node pos_string)
+	(M.of_string (Position.contents pos_string))
 
-      module Set = String_ext.Set
-      module Map = String_ext.Map
+    let possible_roots block =
+      let possible_roots = G.extract_node Possible_roots block in
+      let possible_roots = G.extract_text_children_with_pos possible_roots in
+      List_ext.bind of_string possible_roots
 
-      module Children = ChildrenSpec.Make (String)
+    let cardinality_of_block block =
+      let min_cardinality = G.extract_node Min block in
+      let min_cardinality = G.extract_int min_cardinality in
+      let max_cardinality = match G.get_node Max block with
+	| Ok max_cardinality -> Occurrence.Int (G.extract_int max_cardinality)
+	| Error `No_such_child -> Occurrence.Infty in
+      Occurrence.make min_cardinality max_cardinality
 
-      let possible_roots =
-	let possible_roots = G.extract_node Possible_roots block in
-	Set.of_list (G.extract_text_children possible_roots)
+    let extracted_cardinality_of_block block =
+      cardinality_of_block (G.extract_node Cardinality block)
 
-      let cardinality_of_block block =
-	let min_cardinality = G.extract_node Min block in
-	let min_cardinality = G.extract_int min_cardinality in
-	let max_cardinality = match G.get_node Max block with
-	  | Ok max_cardinality ->
-	    Occurrence.Int (G.extract_int max_cardinality)
-	  | Error `No_such_child -> Occurrence.Infty in
-	Occurrence.make min_cardinality max_cardinality
+    let extract_cardinality_option block node =
+      match G.get_node node block with
+      | Ok cardinality -> extracted_cardinality_of_block cardinality
+      | Error _ -> Occurrence.none
 
-      let extracted_cardinality_of_block block =
-	cardinality_of_block (G.extract_node Cardinality block)
+    let defined_children_spec_of_block block =
+      let f children_map child =
+	let name = G.extract_text_with_pos (G.extract_node Name child) in
+	of_string name >>= fun name ->
+	let cardinality = extracted_cardinality_of_block child in
+	return (MChildren.NodeMap.add name cardinality children_map) in
+      List_ext.fold_bind f MChildren.NodeMap.empty
+	(G.extract_node_children Child block)
 
-      let extract_cardinality_option block node =
-	match G.get_node node block with
-	| Ok cardinality -> extracted_cardinality_of_block cardinality
-	| Error _ -> Occurrence.none
+    let children_spec_of_block block = match G.get_node Children block with
+      | Ok children -> defined_children_spec_of_block children
+      | Error `No_such_child -> return MChildren.NodeMap.empty
 
-      let defined_children_spec_of_block block =
-	let f (nodes, children_map) child =
-	  let name = G.extract_text (G.extract_node Name child) in
-	  let cardinality = extracted_cardinality_of_block child in
-	  let nodes = Set.add name nodes in
-	  let children_map =
-	    Children.NodeMap.add name cardinality children_map in
-	  (nodes, children_map) in
-	List.fold_left f (Set.empty, Children.NodeMap.empty)
-	  (G.extract_node_children Child block)
+    let add_children_spec children_spec block =
+      let name = G.extract_text_with_pos (G.extract_node Name block) in
+      of_string name >>= fun name ->
+      let int_cardinality = extract_cardinality_option block Int in
+      let text_cardinality = extract_cardinality_option block Text in
+      let primitives = function
+	| MChildren.Primitive.Int -> int_cardinality
+	| MChildren.Primitive.Text -> text_cardinality in
+      children_spec_of_block block >>= fun children_map ->
+      let added_spec = MChildren.make primitives children_map in
+      return (MMap.add name added_spec children_spec)
 
-      let children_spec_of_block block =
-	match G.get_node Children block with
-	| Ok children -> defined_children_spec_of_block children
-	| Error `No_such_child -> (Set.empty, Children.NodeMap.empty)
+    let children_spec block =
+      let children_specs = G.extract_node Children_specs block in
+      let children_specs =
+	G.extract_node_children Children_spec children_specs in
+      List_ext.fold_bind add_children_spec MMap.empty children_specs
 
-      let add_children_spec (nodes, children_spec) block =
-	let name = G.extract_text (G.extract_node Name block) in
-	let int_cardinality = extract_cardinality_option block Int in
-	let text_cardinality = extract_cardinality_option block Text in
-	let primitives = function
-	  | Children.Primitive.Int -> int_cardinality
-	  | Children.Primitive.Text -> text_cardinality in
-	let (added_nodes, children_map) = children_spec_of_block block in
-	let added_nodes = Set.add name added_nodes in
-	let added_spec = Children.make primitives children_map in
-	(Set.union nodes added_nodes, Map.add name added_spec children_spec)
+    let from_file file =
+      G.parse file >>= fun block ->
+      possible_roots block >>= fun possible_roots ->
+      children_spec block >>= fun children_spec ->
+      let module Spec = struct
 
-      let (nodes, children_spec) =
-	let children_specs = G.extract_node Children_specs block in
-	let children_specs =
-	  G.extract_node_children Children_spec children_specs in
-	List.fold_left add_children_spec (Set.empty, Map.empty) children_specs
+	include M
 
-      let spec node = match Map.find node children_spec with
-	| Ok children_spec -> children_spec
-	| Error `Not_found ->
-	  Children.make Children.Primitive.none Children.NodeMap.empty
+	module Set = MSet
+	module Map = MMap
 
-      let of_string node =
-	if Set.mem node nodes then return node
-	else error (`Unrecognized_string node)
+	module Children = MChildren
 
-    end in
-    return (module Instance.Make (Spec) : S)
+	let possible_roots = Set.of_list possible_roots
+
+	let spec node = match Map.find node children_spec with
+	  | Ok children_spec -> children_spec
+	  | Error `Not_found ->
+	    Children.make Children.Primitive.none Children.NodeMap.empty
+
+      end in
+      return (module Instance.Make (Spec) : S)
+
+  end
 
   include G
 

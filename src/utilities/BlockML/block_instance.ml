@@ -4,9 +4,9 @@ open Result
 
 module type SPEC = sig
   type t
-  module Set : Set_ext.S with type elt = t
   val to_string : t -> string
   val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
+  module Set : Set_ext.S with type elt = t
   module Children : Children_spec.S with type node = t
   val spec : t -> Children.t
   val possible_roots : Set.t

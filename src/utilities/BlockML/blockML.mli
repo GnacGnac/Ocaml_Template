@@ -133,13 +133,17 @@ module ChildrenSpec : sig
 
 end
 
+module type STRINGABLE = sig
+  type t
+  val to_string : t -> string
+  val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
+end
+
 module Instance : sig
 
   module type SPEC = sig
-    type t
+    include STRINGABLE
     module Set : Set_ext.S with type elt = t
-    val to_string : t -> string
-    val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
     module Children : ChildrenSpec.S with type node = t
     val spec : t -> Children.t
     val possible_roots : Set.t
@@ -188,7 +192,12 @@ module Grammar : sig
     | Min
     | Max
   include Instance.S with type Node.t = node
-  module type S = Instance.S with type Node.t = string
-  val from_file :
-    string -> ((module S), [> (node, node Position.t) parse_error]) Result.t
+  module Make (M : sig include STRINGABLE val compare : t -> t -> int end) : sig
+    module type S = Instance.S with type Node.t = M.t
+    val from_file :
+      string ->
+      ((module S),
+       [> (node, node Position.t) parse_error
+        | `Grammar_unrecognized_node of string Position.t]) Result.t
+  end
 end
