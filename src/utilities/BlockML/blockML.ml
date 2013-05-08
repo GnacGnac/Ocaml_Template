@@ -31,8 +31,11 @@ module type STRINGABLE = sig
   val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
 end
 
-module Instance = Block_instance
-module UnsafeInstance = Block_unsafe_instance
+module Instance = struct
+  include Block_instance
+  module type UNSAFESPEC = Block_unsafe_instance.SPEC
+  module MakeUnsafe = Block_unsafe_instance.Make
+end
 
 
 module Grammar = struct
@@ -103,7 +106,7 @@ module Grammar = struct
 
   end
 
-  module G = UnsafeInstance.Make (Spec)
+  module G = Instance.MakeUnsafe (Spec)
 
   module Make (M : sig include STRINGABLE val compare : t -> t -> int end) =
   struct
