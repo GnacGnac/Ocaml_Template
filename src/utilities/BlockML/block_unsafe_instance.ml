@@ -29,16 +29,16 @@ module Make (Spec : SPEC) = struct
 
     let string_node = List.map (fun (x, y) -> (y, x)) node_string
 
-    let to_string node =
-      try List.assoc node node_string
-      with Not_found ->
+    let to_string node = match List_ext.assoc node node_string with
+      | Ok s -> s
+      | Error _ ->
 	(* Should not happen. If so, check that every node is associated a
 	   string in [node_string]. *)
 	assert false
 
     let of_string s =
-      try return (List.assoc (String.lowercase s) string_node)
-      with Not_found -> error (`Unrecognized_string s)
+      map_error (fun `Not_found -> `Unrecognized_string s)
+	(List_ext.assoc (String.lowercase s) string_node)
 
     module Children = Spec.Children
 

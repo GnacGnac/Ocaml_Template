@@ -200,6 +200,37 @@ module Grammar = struct
 
   end
 
+  module MakeUnsafe
+    (M : sig type t val compare : t -> t -> int
+		    val node_string : (t * string) list end) =
+  struct
+
+    module M' = struct
+
+      type t = M.t
+      let compare = M.compare
+
+      let node_string =
+	List.map (fun (x, y) -> (x, String.lowercase y)) M.node_string
+      let string_node = List.map (fun (x, y) -> (y, x)) node_string
+
+      let of_string s =
+	map_error (fun `Not_found -> `Unrecognized_string s)
+	  (List_ext.assoc (String.lowercase s) string_node)
+
+      let to_string node = match List_ext.assoc node node_string with
+	| Ok s -> s
+	| Error _ ->
+	  (* Should not happen. If so, check that every node is associated a
+	     string in [node_string]. *)
+	  assert false
+
+    end
+
+    include Make (M')
+
+  end
+
   include G
 
 end

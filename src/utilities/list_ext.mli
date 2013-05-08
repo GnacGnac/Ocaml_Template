@@ -12,3 +12,5 @@ val fold_bind :
   ('b -> 'a -> ('b, 'c) Result.t) -> 'b -> 'a list -> ('b, 'c) Result.t
 
 val repeat : int -> 'a -> 'a list
+
+val assoc : 'a -> ('a * 'b) list -> ('b, [> `Not_found]) Result.t

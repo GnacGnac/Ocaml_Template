@@ -37,3 +37,7 @@ let foldi f a l =
 let mapi f l =
   let f' index res e = (f index e) :: res in
   List.rev (foldi f' [] l)
+
+let assoc e l =
+  try return (List.assoc e l)
+  with Not_found -> error `Not_found

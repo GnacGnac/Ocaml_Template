@@ -196,4 +196,14 @@ module Grammar : sig
        [> (node, node Position.t) parse_error
         | `Grammar_unrecognized_node of string Position.t]) Result.t
   end
+  module MakeUnsafe
+    (M : sig type t val compare : t -> t -> int
+		    val node_string : (t * string) list end) : sig
+    module type S = Instance.S with type Node.t = M.t
+    val from_file :
+      string ->
+      ((module S),
+       [> (node, node Position.t) parse_error
+        | `Grammar_unrecognized_node of string Position.t]) Result.t
+  end
 end
