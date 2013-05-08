@@ -2,22 +2,11 @@
 open Result
 
 
-let eq_lowercase s1 s2 = String.lowercase s1 = String.lowercase s2
-
 module M = struct
   type t = Term | Var | App | Abs
   let compare = Pervasives.compare
-  let string_assoc =
+  let node_string =
     [(Term, "term") ; (Var, "var") ; (App, "app") ; (Abs, "abs")]
-  let string_assoc =
-    List.map (fun (x, y) -> (x, String.lowercase y)) string_assoc
-  let of_string s =
-    try
-      return
-	(List.assoc (String.lowercase s)
-	   (List.map (fun (x, y) -> (y, x)) string_assoc))
-    with Not_found -> error (`Unrecognized_string s)
-  let to_string node = List.assoc node string_assoc
 end
 
 let string_of_pos a = match Position.line_and_char a with
@@ -62,7 +51,7 @@ let show_error f error = Error.show (string_of_error f error)
 
 let run () =
   if Array.length Sys.argv >= 3 then
-    let module Grammar = BlockML.Grammar.Make (M) in
+    let module Grammar = BlockML.Grammar.MakeUnsafe (M) in
     match Grammar.from_file Sys.argv.(1) with
       | Ok grammar ->
 	let module Lambda = (val grammar : Grammar.S) in
