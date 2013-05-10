@@ -31,9 +31,14 @@ module type STRINGABLE = sig
   val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
 end
 
+module type UNSAFE_STRINGABLE = sig
+  type t
+  val node_string : (t * string) list
+end
+
 module Instance = struct
   include Block_instance
-  module type UNSAFESPEC = Block_unsafe_instance.SPEC
+  module type UNSAFE_SPEC = Block_unsafe_instance.SPEC
   module MakeUnsafe = Block_unsafe_instance.Make
 end
 
@@ -55,6 +60,16 @@ module Grammar = struct
     | Max
 
   module M = struct type t = node end
+
+  module type S = sig
+    type t
+    module type S = Instance.S with type Node.t = t
+    val from_file :
+      string ->
+      ((module S),
+       [> (node, node Position.t) parse_error
+        | `Grammar_unrecognized_node of string Position.t]) Result.t
+  end
 
   module Spec = struct
 
@@ -108,10 +123,16 @@ module Grammar = struct
 
   module G = Instance.MakeUnsafe (Spec)
 
-  module Make (M : sig include STRINGABLE val compare : t -> t -> int end) =
-  struct
+  module type M = sig
+    include STRINGABLE
+    val compare : t -> t -> int
+  end
+
+  module Make (M : M) = struct
 
     module type S = Instance.S with type Node.t = M.t
+
+    type t = M.t
 
     module MSet = Set_ext.Make (M)
     module MMap = Map_ext.Make (M)
@@ -200,10 +221,12 @@ module Grammar = struct
 
   end
 
-  module MakeUnsafe
-    (M : sig type t val compare : t -> t -> int
-		    val node_string : (t * string) list end) =
-  struct
+  module type M_UNSAFE = sig
+    include UNSAFE_STRINGABLE
+    val compare : t -> t -> int
+  end
+
+  module MakeUnsafe (M : M_UNSAFE) = struct
 
     module M' = struct
 
