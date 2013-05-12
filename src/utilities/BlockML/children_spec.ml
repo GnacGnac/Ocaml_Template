@@ -159,7 +159,3 @@ module Make (Node : Map_ext.ORDERED_TYPE) = struct
     check_sub_nodes_spec node nb_sub_nodes sub_nodes
 
 end
-
-
-module MakeUnsafe (Node : sig type t end) =
-  Make (struct type t = Node.t let compare = Pervasives.compare end)

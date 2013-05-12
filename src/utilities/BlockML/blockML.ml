@@ -37,11 +37,7 @@ module type UNSAFE_STRINGABLE = sig
   val node_string : (t * string) list
 end
 
-module Instance = struct
-  include Block_instance
-  module type UNSAFE_SPEC = Block_unsafe_instance.SPEC
-  module MakeUnsafe = Block_unsafe_instance.Make
-end
+module Instance = Block_instance
 
 
 module Grammar = struct
@@ -76,8 +72,6 @@ module Grammar = struct
 
     include M
 
-    module Children = ChildrenSpec.MakeUnsafe (M)
-
     let node_string =
       [(Grammar, "grammar") ; (Possible_roots, "possible_roots") ;
        (Children_specs, "children_specs") ; (Children_spec, "children_spec") ;
@@ -87,7 +81,7 @@ module Grammar = struct
 
     let possible_roots = [Grammar]
 
-    let spec = function
+    let spec _  = assert false (* TODO: transform function
       | Grammar ->
 	Children.make Primitive.none
 	  (Children.NodeMap.ones [Possible_roots ; Children_specs])
@@ -118,7 +112,7 @@ module Grammar = struct
 	Children.make Primitive.none
 	  (Children.NodeMap.ones [Min ; Max])
       | Min -> Children.make Primitive.one_int Children.NodeMap.empty
-      | Max -> Children.make Primitive.one_int Children.NodeMap.empty
+      | Max -> Children.make Primitive.one_int Children.NodeMap.empty *)
 
   end
 
@@ -222,17 +216,12 @@ module Grammar = struct
 
   end
 
-  module type M_UNSAFE = sig
-    include UNSAFE_STRINGABLE
-    val compare : t -> t -> int
-  end
-
-  module MakeUnsafe (M : M_UNSAFE) = struct
+  module MakeUnsafe (M : UNSAFE_STRINGABLE) = struct
 
     module M' = struct
 
       type t = M.t
-      let compare = M.compare
+      let compare = Pervasives.compare
 
       let node_string =
 	List.map (fun (x, y) -> (x, String.lowercase y)) M.node_string

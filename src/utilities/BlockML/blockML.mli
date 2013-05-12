@@ -130,7 +130,6 @@ module ChildrenSpec : sig
   end
 
   module Make (Node : Map_ext.ORDERED_TYPE) : S with type node = Node.t
-  module MakeUnsafe (Node : sig type t end) : S with type node = Node.t
 
 end
 
@@ -168,8 +167,8 @@ module Instance : sig
 
   module type UNSAFE_SPEC = sig
     include UNSAFE_STRINGABLE
-    module Children : ChildrenSpec.S with type node = t
-    val spec : t -> Children.t
+    val spec :
+      t -> (Occurrence.t Primitive.specification * (t * Occurrence.t) list)
     val possible_roots : t list
   end
 
@@ -207,9 +206,5 @@ module Grammar : sig
     val compare : t -> t -> int
   end
   module Make (M : M) : S with type t = M.t
-  module type M_UNSAFE = sig
-    include UNSAFE_STRINGABLE
-    val compare : t -> t -> int
-  end
-  module MakeUnsafe (M : M_UNSAFE) : S with type t = M.t
+  module MakeUnsafe (M : UNSAFE_STRINGABLE) : S with type t = M.t
 end
