@@ -38,6 +38,30 @@ module Occurrence = struct
 end
 
 
+module Primitive = struct
+
+  type t = Int | Text
+
+  type 'a specification = t -> 'a
+  type occurrence_specification = Occurrence.t specification
+
+  let none _ = Occurrence.none
+  let anys _ = Occurrence.any
+  let one_value value (prim : t) (prim' : t) =
+    if prim' = prim then value else Occurrence.none
+  let one = one_value Occurrence.one
+  let any = one_value Occurrence.any
+  let option = one_value Occurrence.option
+  let one_int = one Int
+  let one_text = one Text
+  let any_int = any Int
+  let any_text = any Text
+  let option_int = option Int
+  let option_text = option Text
+
+end
+
+
 module type S = sig
   type node
   type node_pos = node Position.t
@@ -50,22 +74,6 @@ module type S = sig
     val anys : node list -> Occurrence.t t
     val ones : node list -> Occurrence.t t
     val options : node list -> Occurrence.t t
-  end
-  module Primitive : sig
-    type t = Int | Text
-    type 'a specification = t -> 'a
-    type occurrence_specification = Occurrence.t specification
-    val none : occurrence_specification
-    val anys : occurrence_specification
-    val one : t -> occurrence_specification
-    val any : t -> occurrence_specification
-    val option : t -> occurrence_specification
-    val one_int : occurrence_specification
-    val one_text : occurrence_specification
-    val any_int : occurrence_specification
-    val any_text : occurrence_specification
-    val option_int : occurrence_specification
-    val option_text : occurrence_specification
   end
   type 'a specification
   val make : 'a Primitive.specification -> 'a NodeMap.t -> 'a specification
@@ -95,29 +103,6 @@ module Make (Node : Map_ext.ORDERED_TYPE) = struct
     let any node = anys [node]
     let one node = ones [node]
     let option node = options [node]
-  end
-
-  module Primitive = struct
-
-    type t = Int | Text
-
-    type 'a specification = t -> 'a
-    type occurrence_specification = Occurrence.t specification
-
-    let none _ = Occurrence.none
-    let anys _ = Occurrence.any
-    let one_value value (prim : t) (prim' : t) =
-      if prim' = prim then value else Occurrence.none
-    let one = one_value Occurrence.one
-    let any = one_value Occurrence.any
-    let option = one_value Occurrence.option
-    let one_int = one Int
-    let one_text = one Text
-    let any_int = any Int
-    let any_text = any Text
-    let option_int = option Int
-    let option_text = option Text
-
   end
 
   type 'a specification =

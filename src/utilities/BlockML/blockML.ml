@@ -4,6 +4,7 @@ open Result
 
 module Generic = Block_generic
 module Occurrence = Children_spec.Occurrence
+module Primitive = Children_spec.Primitive
 
 type ('node, 'node_pos) occurrence_error =
   [ `Bad_int_occurrence of 'node_pos * int * Occurrence.t
@@ -88,36 +89,36 @@ module Grammar = struct
 
     let spec = function
       | Grammar ->
-	Children.make Children.Primitive.none
+	Children.make Primitive.none
 	  (Children.NodeMap.ones [Possible_roots ; Children_specs])
       | Possible_roots ->
-	Children.make Children.Primitive.any_text Children.NodeMap.empty
+	Children.make Primitive.any_text Children.NodeMap.empty
       | Children_specs ->
-	Children.make Children.Primitive.none
+	Children.make Primitive.none
 	  (Children.NodeMap.any Children_spec)
       | Children_spec ->
-	Children.make Children.Primitive.none
+	Children.make Primitive.none
 	  (Children.NodeMap.of_list
 	     [(Name, Occurrence.one) ;
 	      (Int, Occurrence.option) ;
 	      (Text, Occurrence.option) ;
 	      (Children, Occurrence.option)])
       | Name ->
-	Children.make Children.Primitive.one_text Children.NodeMap.empty
+	Children.make Primitive.one_text Children.NodeMap.empty
       | Int ->
-	Children.make Children.Primitive.none (Children.NodeMap.one Cardinality)
+	Children.make Primitive.none (Children.NodeMap.one Cardinality)
       | Text ->
-	Children.make Children.Primitive.none (Children.NodeMap.one Cardinality)
+	Children.make Primitive.none (Children.NodeMap.one Cardinality)
       | Children ->
-	Children.make Children.Primitive.none (Children.NodeMap.any Child)
+	Children.make Primitive.none (Children.NodeMap.any Child)
       | Child ->
-	Children.make Children.Primitive.none
+	Children.make Primitive.none
 	  (Children.NodeMap.ones [Name ; Cardinality])
       | Cardinality ->
-	Children.make Children.Primitive.none
+	Children.make Primitive.none
 	  (Children.NodeMap.ones [Min ; Max])
-      | Min -> Children.make Children.Primitive.one_int Children.NodeMap.empty
-      | Max -> Children.make Children.Primitive.one_int Children.NodeMap.empty
+      | Min -> Children.make Primitive.one_int Children.NodeMap.empty
+      | Max -> Children.make Primitive.one_int Children.NodeMap.empty
 
   end
 
@@ -184,8 +185,8 @@ module Grammar = struct
       let int_cardinality = extract_cardinality_option block Int in
       let text_cardinality = extract_cardinality_option block Text in
       let primitives = function
-	| MChildren.Primitive.Int -> int_cardinality
-	| MChildren.Primitive.Text -> text_cardinality in
+	| Primitive.Int -> int_cardinality
+	| Primitive.Text -> text_cardinality in
       children_spec_of_block block >>= fun children_map ->
       let added_spec = MChildren.make primitives children_map in
       return (MMap.add name added_spec children_spec)
@@ -214,7 +215,7 @@ module Grammar = struct
 	let spec node = match Map.find node children_spec with
 	  | Ok children_spec -> children_spec
 	  | Error `Not_found ->
-	    Children.make Children.Primitive.none Children.NodeMap.empty
+	    Children.make Primitive.none Children.NodeMap.empty
 
       end in
       return (module Instance.Make (Spec) : S)

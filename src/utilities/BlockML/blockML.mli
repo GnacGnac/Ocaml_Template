@@ -71,6 +71,23 @@ module Occurrence : sig
   val to_string : t -> string
 end
 
+module Primitive : sig
+  type t = Int | Text
+  type 'a specification = t -> 'a
+  type occurrence_specification = Occurrence.t specification
+  val none : occurrence_specification
+  val anys : occurrence_specification
+  val one : t -> occurrence_specification
+  val any : t -> occurrence_specification
+  val option : t -> occurrence_specification
+  val one_int : occurrence_specification
+  val one_text : occurrence_specification
+  val any_int : occurrence_specification
+  val any_text : occurrence_specification
+  val option_int : occurrence_specification
+  val option_text : occurrence_specification
+end
+
 type ('node, 'node_pos) occurrence_error =
   [ `Bad_int_occurrence of 'node_pos * int * Occurrence.t
   | `Bad_text_occurrence of 'node_pos * int * Occurrence.t
@@ -103,22 +120,6 @@ module ChildrenSpec : sig
       val anys : node list -> Occurrence.t t
       val ones : node list -> Occurrence.t t
       val options : node list -> Occurrence.t t
-    end
-    module Primitive : sig
-      type t = Int | Text
-      type 'a specification = t -> 'a
-      type occurrence_specification = Occurrence.t specification
-      val none : occurrence_specification
-      val anys : occurrence_specification
-      val one : t -> occurrence_specification
-      val any : t -> occurrence_specification
-      val option : t -> occurrence_specification
-      val one_int : occurrence_specification
-      val one_text : occurrence_specification
-      val any_int : occurrence_specification
-      val any_text : occurrence_specification
-      val option_int : occurrence_specification
-      val option_text : occurrence_specification
     end
     type 'a specification
     val make : 'a Primitive.specification -> 'a NodeMap.t -> 'a specification

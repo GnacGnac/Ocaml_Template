@@ -63,7 +63,7 @@ module M = struct
 
   module Children = BlockML.ChildrenSpec.Make (Ord)
   module Occurrence = BlockML.Occurrence
-  module Primitive = Children.Primitive
+  module Primitive = BlockML.Primitive
 
   let node_spec primitive_children node_children attribute_children =
     let f_node (node, occurrences) = (Html_node node, occurrences) in
