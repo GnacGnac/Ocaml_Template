@@ -81,38 +81,23 @@ module Grammar = struct
 
     let possible_roots = [Grammar]
 
-    let spec _  = assert false (* TODO: transform function
+    let spec = function
       | Grammar ->
-	Children.make Primitive.none
-	  (Children.NodeMap.ones [Possible_roots ; Children_specs])
-      | Possible_roots ->
-	Children.make Primitive.any_text Children.NodeMap.empty
-      | Children_specs ->
-	Children.make Primitive.none
-	  (Children.NodeMap.any Children_spec)
+	(Primitive.none, ChildrenSpec.ones [Possible_roots ; Children_specs])
+      | Possible_roots -> (Primitive.any_text, ChildrenSpec.empty)
+      | Children_specs -> (Primitive.none, ChildrenSpec.any Children_spec)
       | Children_spec ->
-	Children.make Primitive.none
-	  (Children.NodeMap.of_list
-	     [(Name, Occurrence.one) ;
-	      (Int, Occurrence.option) ;
-	      (Text, Occurrence.option) ;
-	      (Children, Occurrence.option)])
-      | Name ->
-	Children.make Primitive.one_text Children.NodeMap.empty
-      | Int ->
-	Children.make Primitive.none (Children.NodeMap.one Cardinality)
-      | Text ->
-	Children.make Primitive.none (Children.NodeMap.one Cardinality)
-      | Children ->
-	Children.make Primitive.none (Children.NodeMap.any Child)
-      | Child ->
-	Children.make Primitive.none
-	  (Children.NodeMap.ones [Name ; Cardinality])
-      | Cardinality ->
-	Children.make Primitive.none
-	  (Children.NodeMap.ones [Min ; Max])
-      | Min -> Children.make Primitive.one_int Children.NodeMap.empty
-      | Max -> Children.make Primitive.one_int Children.NodeMap.empty *)
+	(Primitive.none,
+	 [(Name, Occurrence.one) ; (Int, Occurrence.option) ;
+	  (Text, Occurrence.option) ; (Children, Occurrence.option)])
+      | Name ->	(Primitive.one_text, ChildrenSpec.empty)
+      | Int -> (Primitive.none, ChildrenSpec.one Cardinality)
+      | Text -> (Primitive.none, ChildrenSpec.one Cardinality)
+      | Children -> (Primitive.none, ChildrenSpec.any Child)
+      | Child -> (Primitive.none, ChildrenSpec.ones [Name ; Cardinality])
+      | Cardinality -> (Primitive.none, ChildrenSpec.ones [Min ; Max])
+      | Min -> (Primitive.one_int, ChildrenSpec.empty)
+      | Max -> (Primitive.one_int, ChildrenSpec.empty)
 
   end
 

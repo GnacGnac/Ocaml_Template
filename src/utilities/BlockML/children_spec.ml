@@ -62,6 +62,18 @@ module Primitive = struct
 end
 
 
+type 'a unsafe_children_specification = ('a * Occurrence.t) list
+
+let empty = []
+let all occurrence list = List.map (fun a -> (a, occurrence)) list
+let anys list = all Occurrence.any list
+let ones list = all Occurrence.one list
+let options list = all Occurrence.option list
+let any a = anys [a]
+let one a = ones [a]
+let option a = options [a]
+
+
 module type S = sig
   type node
   type node_pos = node Position.t
@@ -96,7 +108,7 @@ module Make (Node : Map_ext.ORDERED_TYPE) = struct
 
   module NodeMap = struct 
     include Map_ext.Make (Node)
-    let all i l = of_list (List.map (fun x -> (x, i)) l)
+    let all i l = of_list (all i l)
     let anys = all Occurrence.any
     let ones = all Occurrence.one
     let options = all Occurrence.option

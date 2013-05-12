@@ -108,6 +108,17 @@ type ('node, 'node_pos) parse_error =
 
 module ChildrenSpec : sig
 
+  type 'a unsafe_children_specification = ('a * Occurrence.t) list
+
+  val empty : 'a unsafe_children_specification
+  val all : Occurrence.t -> 'a list -> 'a unsafe_children_specification
+  val any : 'a -> 'a unsafe_children_specification
+  val one : 'a -> 'a unsafe_children_specification
+  val option : 'a -> 'a unsafe_children_specification
+  val anys : 'a list -> 'a unsafe_children_specification
+  val ones : 'a list -> 'a unsafe_children_specification
+  val options : 'a list -> 'a unsafe_children_specification
+
   module type S = sig
     type node
     type node_pos = node Position.t
