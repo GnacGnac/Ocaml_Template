@@ -4,7 +4,6 @@ open Result
 
 module M = struct
   type t = Term | Var | App | Abs
-  let compare = Pervasives.compare
   let node_string =
     [(Term, "term") ; (Var, "var") ; (App, "app") ; (Abs, "abs")]
 end
