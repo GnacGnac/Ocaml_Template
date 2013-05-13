@@ -95,7 +95,8 @@ module Grammar = struct
       | Text -> (Primitive.none, ChildrenSpec.one Cardinality)
       | Children -> (Primitive.none, ChildrenSpec.any Child)
       | Child -> (Primitive.none, ChildrenSpec.ones [Name ; Cardinality])
-      | Cardinality -> (Primitive.none, ChildrenSpec.ones [Min ; Max])
+      | Cardinality ->
+	(Primitive.none, [(Min, Occurrence.one) ; (Max, Occurrence.option)])
       | Min -> (Primitive.one_int, ChildrenSpec.empty)
       | Max -> (Primitive.one_int, ChildrenSpec.empty)
 
