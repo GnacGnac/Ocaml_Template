@@ -45,11 +45,11 @@ let string s =
 
 type attribute =
   | Color | Face | Type | Value | Border | Cellpadding | Cellspacing | Colspan
-  | Rowspan | Action | Name | Method | Size | Bgcolor
+  | Rowspan | Action | Name | Method | Size | Bgcolor | Selected
 
 type html_node =
   | Html | Body | Input | Font | Bold | Italic | Br | Paragraph | Table
-  | Tr | Td | Center | Form | Block
+  | Tr | Td | Center | Form | Block | Select | Option
 
 type item = Attribute of attribute | Html_node of html_node
 
@@ -73,7 +73,8 @@ module M = struct
      (Border, "border") ; (Cellpadding, "cellpadding") ;
      (Cellspacing, "cellspacing") ; (Colspan, "colspan") ;
      (Rowspan, "rowspan") ; (Action, "action") ; (Name, "name") ;
-     (Method, "method") ; (Size, "size") ; (Bgcolor, "bgcolor")]
+     (Method, "method") ; (Size, "size") ; (Bgcolor, "bgcolor") ;
+     (Selected, "selected")]
   let attribute_assoc_ =
     List.map (fun (x, y) -> (Attribute x, y)) attribute_assoc_
   let attribute_assoc = make_node_assoc attribute_assoc_
@@ -83,7 +84,8 @@ module M = struct
     [(Html, "html") ; (Body, "body") ; (Input, "input") ; (Font, "font") ;
      (Bold, "b") ; (Italic, "i") ; (Br, "br") ;
      (Paragraph, "paragraph") ; (Table, "table") ; (Tr, "tr") ; (Td, "td") ;
-     (Center, "center") ; (Form, "form") ; (Block, "block")]
+     (Center, "center") ; (Form, "form") ; (Block, "block") ;
+     (Select, "select") ; (Option, "option")]
   let html_node_assoc_ =
     List.map (fun (x, y) -> (Html_node x, y)) html_node_assoc_
   let html_node_assoc = make_node_assoc html_node_assoc_
@@ -120,7 +122,7 @@ module M = struct
   let body_node_children =
     List.map (fun child -> (child, Occurrence.any))
       [Input ; Font ; Bold ; Italic ; Br ; Paragraph ; Table ; Tr ; Td ;
-       Center ; Form ; Block]
+       Center ; Form ; Block ; Select]
 
   let body_spec = node_spec Primitive.anys body_node_children []
 
@@ -150,6 +152,10 @@ module M = struct
 
   let block_spec = body_spec
 
+  let select_spec = node_spec Primitive.none [(Option, Occurrence.any)] []
+
+  let option_spec = node_spec Primitive.one_text [] [Value ; Selected]
+
   let node_spec = function
     | Html -> html_spec
     | Body -> body_spec
@@ -165,6 +171,8 @@ module M = struct
     | Center -> center_spec
     | Form -> form_spec
     | Block -> block_spec
+    | Select -> select_spec
+    | Option -> option_spec
 
   let int_attribute = Children.make Primitive.one_int Children.NodeMap.empty
 
@@ -185,6 +193,7 @@ module M = struct
     | Method -> string_attribute
     | Size -> int_attribute
     | Bgcolor -> string_attribute
+    | Selected -> string_attribute
 
 
   let spec = function
@@ -245,7 +254,12 @@ let form ?method_ ?action children =
   node Form (method_ @ action @ children)
 let spaces n = text (String_ext.repeat n "&nbsp;")
 let space = spaces 1
-let block children = node Block children
+let block = node Block
+let select = node Select
+let option ?selected ?value children =
+  let selected = get_attribute Selected selected in
+  let value = get_attribute Value value in
+  node Option (selected @ value @ children)
 
 
 let string_of_primitive = function
@@ -298,32 +312,43 @@ module EditableInfos = struct
     { line_add_cells : Instance.t list ;
       add_value : string ;
       add_button : string ;
-      action_buttons : (string * string) list }
+      action_value : string ;
+      action_button : string ;
+      actions : (string * string) list }
 
-  let make line_add_cells add_value add_button action_buttons =
-    { line_add_cells ; add_value ; add_button ; action_buttons }
+  let make
+      line_add_cells add_value add_button action_value action_button actions =
+    { line_add_cells ; add_value ; add_button ; action_value ; action_button ;
+      actions}
 
   let line_add_cells infos = infos.line_add_cells
   let add_value infos = infos.add_value
   let add_button infos = infos.add_button
-  let action_buttons infos = infos.action_buttons
+  let action_value infos = infos.action_value
+  let action_button infos = infos.action_button
+  let actions infos = infos.actions
 
 end
 
 let result_table
     ?border ?cellpadding ?cellspacing
-    name cell_id method_ line_names ?editable_infos contents =
+    destination name cell_id method_ line_names ?editable_infos contents =
   let td_one ?colspan cell = td ?colspan [center [cell]] in
   let editable = editable_infos <> None in
   let add_value = Option.map EditableInfos.add_value editable_infos in
   let name_add = Option.map EditableInfos.add_button editable_infos in
-  let names_action =
-    Option.map EditableInfos.action_buttons editable_infos in
   let f_contents index tr_contents =
     let tr_contents =
       let name = cell_id index in
-      tr_contents @
-	(if editable then [input ~type_:"checkbox" ~name ()] else []) in
+      let needs_checkbox = match editable_infos with
+	| None -> false
+	| Some infos -> EditableInfos.actions infos <> [] in
+      let checkbox =
+	if editable then
+	  if needs_checkbox then [input ~type_:"checkbox" ~name ()]
+	  else [space]
+	else [] in
+      tr_contents @ checkbox in
     let tr_contents = List.map td_one tr_contents in
     let bgcolor = if index mod 2 = 0 then None else Some "#D3D3D3" in
     tr ?bgcolor tr_contents in
@@ -340,17 +365,25 @@ let result_table
   let line_add =
     if editable then [tr ~bgcolor:"#CEF6F5" (List.map td_one line_add)]
     else [] in
-  let line_edit =
-    tr ~bgcolor:"#F5A9A9"
-      [td ~colspan:cell_number [space] ;
-       td
-	 [(* input
-	     ~type_:"submit" ?name:name_edit ~value:"&Eacute;diter" () ;
-	  br ; br ;
-	  input
-	    ~type_:"submit" ?name:name_delete ~value:"Supprimer" () *)]] in
-  let line_edit = if editable then [line_edit] else [] in
-  form ~action:"/" ~method_
+  let line_edit = match editable_infos with
+    | None -> []
+    | Some infos ->
+      let action_value = EditableInfos.action_value infos in
+      let action = EditableInfos.action_button infos in
+      let actions = EditableInfos.actions infos in
+      let f_action i (text, value) =
+	let selected = if i = 0 then Some "selected" else None in
+	option ~value ?selected [text_string text] in
+      let actions = List_ext.mapi f_action actions in
+      if actions = [] then []
+      else
+	[tr ~bgcolor:"#F5A9A9"
+	    [td ~colspan:cell_number [space] ;
+	     td
+	       [select actions ;
+		br ; br ;
+		input ~type_:"submit" ~name:action ~value:action_value ()]]] in
+  form ~action:destination ~method_
     [table ?border ?cellpadding ?cellspacing
 	([tr ~bgcolor:"#A9A9F5"
 	     [td_one ~colspan:(cell_number + (if editable then 1 else 0))

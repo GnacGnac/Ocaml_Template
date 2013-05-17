@@ -24,15 +24,19 @@ val form        : ?method_:string -> ?action:string -> t list -> t
 val space       : t
 val spaces      : int -> t
 val block       : t list -> t
+val select      : t list -> t
+val option      : ?selected:string -> ?value:string -> t list -> t
 
 val to_string : t -> string
 
 module EditableInfos : sig
   type t
-  val make : html list -> string -> string -> (string * string) list -> t
+  val make :
+    html list -> string -> string -> string -> string ->
+    (string * string) list -> t
 end
 
 val result_table :
   ?border:int -> ?cellpadding:int -> ?cellspacing:int ->
-  string -> (int -> string) -> string -> string list ->
+  string -> string -> (int -> string) -> string -> string list ->
   ?editable_infos:EditableInfos.t -> t list list -> t
