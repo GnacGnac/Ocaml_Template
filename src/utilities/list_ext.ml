@@ -45,3 +45,7 @@ let assoc e l =
 let removei i =
   let f j res item = res @ (if j = i then [] else [item]) in
   foldi f []
+
+let map_nth i f =
+  let f' j a = (if j = i then f else (fun a -> a)) a in
+  mapi f'
