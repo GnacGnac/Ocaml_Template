@@ -209,6 +209,7 @@ let get_int_attribute = get_generic_attribute Instance.int
 
 let node html_node = node (Html_node html_node)
 
+let text_string s = text (string s)
 let html = node Html
 let body = node Body
 let input ?type_ ?value ?name ?size () =
@@ -309,34 +310,35 @@ module EditableInfos = struct
 
 end
 
-let result_table_edit_opt
-    name cell_id method_ line_names editable_infos_opt contents =
-  let editable = editable_infos_opt <> None in
-  let add_value = Option.map EditableInfos.add_value editable_infos_opt in
-  let name_add = Option.map EditableInfos.add_button editable_infos_opt in
+let result_table
+    ?border ?cellpadding ?cellspacing
+    name cell_id method_ line_names ?editable_infos contents =
+  let td_one ?colspan cell = td ?colspan [center [cell]] in
+  let editable = editable_infos <> None in
+  let add_value = Option.map EditableInfos.add_value editable_infos in
+  let name_add = Option.map EditableInfos.add_button editable_infos in
   let names_action =
-    Option.map EditableInfos.action_buttons editable_infos_opt in
+    Option.map EditableInfos.action_buttons editable_infos in
   let f_contents index tr_contents =
     let tr_contents =
       let name = cell_id index in
       tr_contents @
-	(if editable then [[input ~type_:"checkbox" ~name ()]] else []) in
-    let tr_contents = List.map td tr_contents in
+	(if editable then [input ~type_:"checkbox" ~name ()] else []) in
+    let tr_contents = List.map td_one tr_contents in
     let bgcolor = if index mod 2 = 0 then None else Some "#D3D3D3" in
     tr ?bgcolor tr_contents in
   let contents = List_ext.mapi f_contents contents in
   let cell_number = List.length line_names in
+  let line_names = List.map text line_names in
   let line_names =
-    List.map (fun line_name -> [text line_name]) line_names in
-  let line_names =
-    List.map td (line_names @ (if editable then [[space]] else [])) in
-  let line_add = match editable_infos_opt with
+    List.map td_one (line_names @ (if editable then [space] else [])) in
+  let line_add = match editable_infos with
     | None -> []
     | Some infos ->
-      (EditableInfos.line_add_cells infos) ::
-	[[input ~type_:"submit" ?name:name_add ?value:add_value ()]] in
+      (EditableInfos.line_add_cells infos) @
+	[input ~type_:"submit" ?name:name_add ?value:add_value ()] in
   let line_add =
-    if editable then [tr ~bgcolor:"#CEF6F5" (List.map td line_add)]
+    if editable then [tr ~bgcolor:"#CEF6F5" (List.map td_one line_add)]
     else [] in
   let line_edit =
     tr ~bgcolor:"#F5A9A9"
@@ -349,19 +351,11 @@ let result_table_edit_opt
 	    ~type_:"submit" ?name:name_delete ~value:"Supprimer" () *)]] in
   let line_edit = if editable then [line_edit] else [] in
   form ~action:"/" ~method_
-    [table
+    [table ?border ?cellpadding ?cellspacing
 	([tr ~bgcolor:"#A9A9F5"
-	     [td ~colspan:(cell_number + (if editable then 1 else 0))
-		 [center [bold [text name]]]] ;
+	     [td_one ~colspan:(cell_number + (if editable then 1 else 0))
+		 (bold [text name])] ;
 	  tr ~bgcolor:"#CEF6F5" line_names] @
 	    line_add @
 	    contents @
 	    line_edit)]
-
-let result_editable_table
-    name cell_id method_ line_names editable_infos contents =
-  result_table_edit_opt
-    name cell_id method_ line_names (Some editable_infos) contents
-
-let result_table name cell_id method_ line_names contents =
-  result_table_edit_opt name cell_id method_ line_names None contents

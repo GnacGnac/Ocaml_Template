@@ -16,13 +16,16 @@ open BlockML
 open Debug
 open Grammar_example
 
-let read_file file =
-  let ic = open_in file in
-  let rec aux s =
-    try
-      let s' = input_line ic in
-      aux (s ^ s' ^ "\n")
-    with End_of_file -> s in
-  aux ""
+let editable_infos =
+  Html.EditableInfos.make
+    [Html.input () ; Html.input ()] "Add" "add" []
 
-let _ = Printf.printf "%s%!" (Html.string (read_file Sys.argv.(1)))
+let table =
+  Html.html
+    [Html.body
+	[Html.result_table ~border:1 ~cellspacing:0 ~cellpadding:4
+	    "My table" string_of_int "GET" ["Name" ; "Value"]
+	    ~editable_infos
+	    (List.map (List.map Html.text_string)
+	       [["Lau" ; "36"] ; ["Nico & Lau" ; "Céur"]])]]
+let _ = Printf.printf "%s\n%!" (Html.to_string table)
