@@ -1,5 +1,6 @@
 
 type t
+type html = t
 
 val text      : string -> t
 val html      : t list -> t
@@ -22,3 +23,11 @@ val spaces    : int -> t
 val block     : t list -> t
 
 val to_string : t -> string
+
+module EditableInfos : sig
+  type t
+  val make : html list -> string -> string -> (string * string) list -> t
+end
+
+val result_table :
+  string -> (int -> string) -> string -> string list -> t list list
