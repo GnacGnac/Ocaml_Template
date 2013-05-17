@@ -41,3 +41,7 @@ let mapi f l =
 let assoc e l =
   try return (List.assoc e l)
   with Not_found -> error `Not_found
+
+let removei i =
+  let f j res item = res @ (if j = i then [] else [item]) in
+  foldi f []

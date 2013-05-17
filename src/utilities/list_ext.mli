@@ -16,3 +16,5 @@ val fold_bind :
 val repeat : int -> 'a -> 'a list
 
 val assoc : 'a -> ('a * 'b) list -> ('b, [> `Not_found]) Result.t
+
+val removei : int -> 'a list -> 'a list
