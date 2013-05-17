@@ -333,7 +333,8 @@ end
 let result_table
     ?border ?cellpadding ?cellspacing
     destination name cell_id method_ line_names ?editable_infos contents =
-  let td_one ?colspan cell = td ?colspan [center [cell]] in
+  let td ?colspan contents = td ?colspan [center contents] in
+  let td_one ?colspan cell = td ?colspan [cell] in
   let editable = editable_infos <> None in
   let add_value = Option.map EditableInfos.add_value editable_infos in
   let name_add = Option.map EditableInfos.add_button editable_infos in
