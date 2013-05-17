@@ -4,6 +4,8 @@ val to_string : string -> ('a -> string) -> 'a list -> string
 val to_string_err :
   string -> ('a -> (string, 'b) Result.t) -> 'a list -> (string, 'b) Result.t
 
+val foldi : (int -> 'a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+
 val mapi : (int -> 'a -> 'b) -> 'a list -> 'b list
 
 val bind : ('a -> ('b, 'c) Result.t) -> 'a list -> ('b list, 'c) Result.t
