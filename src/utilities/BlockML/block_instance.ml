@@ -175,7 +175,10 @@ module MakeUnsafe (Spec : UNSAFE_SPEC) = struct
 
     module Children = Children_spec.Make (M)
 
-    let spec _ = assert false (* TODO: transform Spec.spec *)
+    let spec node =
+      let (primitives, list) = Spec.spec node in
+      let map = Children.NodeMap.of_list list in
+      Children.make primitives map
 
     let possible_roots =
       let f roots root = Set.add root roots in

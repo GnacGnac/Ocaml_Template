@@ -2,6 +2,8 @@
 type t
 type html = t
 
+val string : string -> string
+
 val text      : string -> t
 val html      : t list -> t
 val body      : t list -> t

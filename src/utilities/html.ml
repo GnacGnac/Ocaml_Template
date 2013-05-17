@@ -2,6 +2,47 @@
 open Result
 
 
+let acute s = s ^ "acute"
+let grave s = s ^ "grave"
+let circ s = s ^ "circ"
+let uml s = s ^ "uml"
+
+let make_base_ints base has_bar =
+  let base = int_of_char base.[1] in
+  let rec aux i acc =
+    if i > 3 then acc
+    else aux (i + 1) (acc @ [base + i + (if has_bar & i = 3 then 1 else 0)]) in
+  aux 0 []
+
+let string_voyel_accents voyel base_accent has_bar =
+  let f base_int modifier =
+    let s = String.copy base_accent in
+    s.[1] <- char_of_int base_int ;
+    (s, modifier voyel) in
+  let base_ints = make_base_ints base_accent has_bar in
+  let modifiers = [grave ; acute ; circ ; uml] in
+  List.map2 f base_ints modifiers
+
+let string_voyel (voyel, base_min, base_maj, has_bar) =
+  (string_voyel_accents voyel base_min has_bar) @
+  (string_voyel_accents (String.uppercase voyel) base_maj has_bar)
+
+let special_characters = (* TODO: complete *)
+  List.map
+    (fun (to_replace, replacement) -> (to_replace, "&" ^ replacement ^ ";"))
+    ([("&", "amp")] @
+     (List.flatten
+	(List.map string_voyel
+	   [("a", "à", "À", true) ; ("e", "è", "È", false) ;
+	    ("i", "ì", "Ì", false) ; ("o", "ò", "Ò", true) ;
+	    ("u", "ù", "Ù", false)])))
+
+let string s =
+  let f res (to_replace, replacement) =
+    Str.global_replace (Str.regexp to_replace) replacement res in
+  List.fold_left f s special_characters
+
+
 type attribute =
   | Color | Face | Type | Value | Border | Cellpadding | Cellspacing | Colspan
   | Rowspan | Action | Name | Method | Size | Bgcolor
