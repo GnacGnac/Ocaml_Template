@@ -214,7 +214,7 @@ module type PARSE_RESULT = sig
 end
 
 val parse_from_external :
-  (module String_ext.UNSAFE_STRINGABLE) -> string ->
+  (module String_ext.UNSAFE_STRINGABLE) -> string -> string ->
   ((module PARSE_RESULT),
    [> `Grammar_error of
        [> Grammar.node parse_error

@@ -215,10 +215,10 @@ module type PARSE_RESULT = sig
   val parse_result : (t, [> Node.t parse_error]) Result.t
 end
 
-let parse_from_external unsafe_stringable file =
+let parse_from_external unsafe_stringable grammar_file file =
   let module M = (val unsafe_stringable : String_ext.UNSAFE_STRINGABLE) in
   let module Grammar = Grammar.MakeUnsafe (M) in
-  match Grammar.from_file file with
+  match Grammar.from_file grammar_file with
   | Ok instance ->
     let module Instance = struct
       include (val instance : Grammar.S)
