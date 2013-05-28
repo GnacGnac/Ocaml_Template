@@ -144,21 +144,10 @@ module ChildrenSpec : sig
 
 end
 
-module type STRINGABLE = sig
-  type t
-  val to_string : t -> string
-  val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
-end
-
-module type UNSAFE_STRINGABLE = sig
-  type t
-  val node_string : (t * string) list
-end
-
 module Instance : sig
 
   module type SPEC = sig
-    include STRINGABLE
+    include String_ext.STRINGABLE
     module Set : Set_ext.S with type elt = t
     module Children : ChildrenSpec.S with type node = t
     val spec : t -> Children.t
@@ -177,7 +166,7 @@ module Instance : sig
   module Make (Spec : SPEC) : S with type Node.t = Spec.t
 
   module type UNSAFE_SPEC = sig
-    include UNSAFE_STRINGABLE
+    include String_ext.UNSAFE_STRINGABLE
     val spec :
       t -> (Occurrence.t Primitive.specification * (t * Occurrence.t) list)
     val possible_roots : t list
@@ -213,11 +202,11 @@ module Grammar : sig
         | `Grammar_unrecognized_node of string Position.t]) Result.t
   end
   module type M = sig
-    include STRINGABLE
+    include String_ext.STRINGABLE
     val compare : t -> t -> int
   end
   module Make (M : M) : S with type t = M.t
-  module MakeUnsafe (M : UNSAFE_STRINGABLE) : S with type t = M.t
+  module MakeUnsafe (M : String_ext.UNSAFE_STRINGABLE) : S with type t = M.t
 end
 
 
@@ -227,7 +216,7 @@ module type PARSE_RESULT = sig
 end
 
 val parse_from_external :
-  (module UNSAFE_STRINGABLE) -> string ->
+  (module String_ext.UNSAFE_STRINGABLE) -> string ->
   ((module PARSE_RESULT),
    [> `Grammar_error of
        [> (Grammar.node, Grammar.node Position.t) parse_error

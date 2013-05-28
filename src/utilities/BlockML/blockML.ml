@@ -26,17 +26,6 @@ type ('node, 'node_pos) parse_error =
 
 module ChildrenSpec = Children_spec
 
-module type STRINGABLE = sig
-  type t
-  val to_string : t -> string
-  val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
-end
-
-module type UNSAFE_STRINGABLE = sig
-  type t
-  val node_string : (t * string) list
-end
-
 module Instance = Block_instance
 
 
@@ -105,7 +94,7 @@ module Grammar = struct
   module G = Instance.MakeUnsafe (Spec)
 
   module type M = sig
-    include STRINGABLE
+    include String_ext.STRINGABLE
     val compare : t -> t -> int
   end
 
@@ -202,7 +191,7 @@ module Grammar = struct
 
   end
 
-  module MakeUnsafe (M : UNSAFE_STRINGABLE) = struct
+  module MakeUnsafe (M : String_ext.UNSAFE_STRINGABLE) = struct
 
     module M' = struct
 
@@ -241,7 +230,7 @@ module type PARSE_RESULT = sig
 end
 
 let parse_from_external unsafe_stringable file =
-  let module M = (val unsafe_stringable : UNSAFE_STRINGABLE) in
+  let module M = (val unsafe_stringable : String_ext.UNSAFE_STRINGABLE) in
   let module Grammar = Grammar.MakeUnsafe (M) in
   match Grammar.from_file file with
   | Ok instance ->

@@ -1,4 +1,16 @@
 
+module type STRINGABLE = sig
+  type t
+  val to_string : t -> string
+  val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
+end
+
+module type UNSAFE_STRINGABLE = sig
+  type t
+  val node_string : (t * string) list
+end
+
+
 module Set = Set_ext.Make (String)
 
 module Map = Map_ext.Make (String)
