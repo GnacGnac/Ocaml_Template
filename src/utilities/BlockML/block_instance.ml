@@ -13,31 +13,23 @@ module type SPEC = sig
 end
 
 
+type 'node analyze_error =
+  [ 'node Children_spec.occurrence_error
+  | `Not_a_root_node of 'node option Position.t]
+
+type 'node parse_error =
+  [ 'node analyze_error
+  | `File_does_not_exist of string
+  | `Could_not_open_file of string
+  | `Unrecognized_char of char Position.t
+  | `Unterminated_comment of unit Position.t
+  | `Parse_error of unit Position.t
+  | `Unrecognized_node of string Position.t]
+
 module type S = sig
   include Block_generic.S
-  type node_pos = Node.t Position.t
-  val analyze :
-    t ->
-    (unit,
-     [> `Bad_int_occurrence of node_pos * int * Children_spec.Occurrence.t
-      | `Bad_sub_node_occurrence of
-	  node_pos * Node.t * int * Children_spec.Occurrence.t
-      | `Bad_text_occurrence of node_pos * int * Children_spec.Occurrence.t
-      | `Not_a_root_node of Node.t option Position.t]) Result.t       
-  val parse :
-  string ->
-    (t,
-     [> `Bad_int_occurrence of node_pos * int * Children_spec.Occurrence.t
-      | `Bad_sub_node_occurrence of
-	  node_pos * Node.t * int * Children_spec.Occurrence.t
-      | `Bad_text_occurrence of node_pos * int * Children_spec.Occurrence.t
-      | `File_does_not_exist of string
-      | `Could_not_open_file of string
-      | `Unrecognized_char of char Position.t
-      | `Unterminated_comment of unit Position.t
-      | `Parse_error of unit Position.t
-      | `Not_a_root_node of Node.t option Position.t
-      | `Unrecognized_node of string Position.t]) Result.t
+  val analyze : t -> (unit, [> Node.t analyze_error]) Result.t
+  val parse : string -> (t, [> Node.t parse_error]) Result.t
   val save :
     string -> t -> (unit, [> `Could_not_save_in_file of string]) Result.t
 end
@@ -46,8 +38,6 @@ end
 module Make (Spec : SPEC) = struct
 
   include Block_generic.Make (Spec)
-
-  type node_pos = Node.t Position.t
 
   let analyze_name block name =
     let f_error = function

@@ -74,9 +74,13 @@ let one a = ones [a]
 let option a = options [a]
 
 
+type 'node occurrence_error =
+  [ `Bad_int_occurrence of 'node Position.t * int * Occurrence.t
+  | `Bad_text_occurrence of 'node Position.t * int * Occurrence.t
+  | `Bad_sub_node_occurrence of 'node Position.t * 'node * int * Occurrence.t]
+
 module type S = sig
   type node
-  type node_pos = node Position.t
   module NodeMap : sig
     include Map_ext.S with type key = node
     val all : Occurrence.t -> node list -> Occurrence.t t
@@ -91,12 +95,8 @@ module type S = sig
   val make : 'a Primitive.specification -> 'a NodeMap.t -> 'a specification
   type t = Occurrence.t specification
   val check :
-    node_pos -> t -> int specification ->
-    (unit,
-     [> `Bad_int_occurrence of node_pos * int * Occurrence.t
-      | `Bad_text_occurrence of node_pos * int * Occurrence.t
-      | `Bad_sub_node_occurrence of
-	  node_pos * node * int * Occurrence.t]) Result.t
+    node Position.t -> t -> int specification ->
+    (unit, [> node occurrence_error]) Result.t
 end
 
 

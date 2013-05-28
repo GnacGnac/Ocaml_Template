@@ -6,23 +6,9 @@ module Generic = Block_generic
 module Occurrence = Children_spec.Occurrence
 module Primitive = Children_spec.Primitive
 
-type ('node, 'node_pos) occurrence_error =
-  [ `Bad_int_occurrence of 'node_pos * int * Occurrence.t
-  | `Bad_text_occurrence of 'node_pos * int * Occurrence.t
-  | `Bad_sub_node_occurrence of 'node_pos * 'node * int * Occurrence.t]
-
-type ('node, 'node_pos) analyze_error =
-  [ ('node, 'node_pos) occurrence_error
-  | `Not_a_root_node of 'node option Position.t]
-
-type ('node, 'node_pos) parse_error =
-  [ ('node, 'node_pos) analyze_error
-  | `File_does_not_exist of string
-  | `Could_not_open_file of string
-  | `Unrecognized_char of char Position.t
-  | `Unterminated_comment of unit Position.t
-  | `Parse_error of unit Position.t
-  | `Unrecognized_node of string Position.t]
+type 'node occurrence_error = 'node Children_spec.occurrence_error
+type 'node analyze_error = 'node Block_instance.analyze_error
+type 'node parse_error = 'node Block_instance.parse_error
 
 module ChildrenSpec = Children_spec
 
@@ -53,7 +39,7 @@ module Grammar = struct
     val from_file :
       string ->
       ((module S),
-       [> (node, node Position.t) parse_error
+       [> node parse_error
         | `Grammar_unrecognized_node of string Position.t]) Result.t
   end
 
@@ -226,7 +212,7 @@ end
 
 module type PARSE_RESULT = sig
   include Instance.S
-  val parse_result : (t, [> (Node.t, node_pos) parse_error]) Result.t
+  val parse_result : (t, [> Node.t parse_error]) Result.t
 end
 
 let parse_from_external unsafe_stringable file =

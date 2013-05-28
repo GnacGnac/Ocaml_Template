@@ -37,7 +37,7 @@ module Generic : sig
     val get_children_with_pos : t -> (t list, [> `No_children]) Result.t
     val to_string : t -> string
 
-  (* Unsafe functions: raises assertion failure. *)
+    (* Unsafe functions: raise assertion failure. *)
     val extract_int : t -> int
     val extract_text : t -> string
     val extract_node_no_pos : Node.t -> t -> contents
@@ -88,17 +88,17 @@ module Primitive : sig
   val option_text : occurrence_specification
 end
 
-type ('node, 'node_pos) occurrence_error =
-  [ `Bad_int_occurrence of 'node_pos * int * Occurrence.t
-  | `Bad_text_occurrence of 'node_pos * int * Occurrence.t
-  | `Bad_sub_node_occurrence of 'node_pos * 'node * int * Occurrence.t]
+type 'node occurrence_error =
+  [ `Bad_int_occurrence of 'node Position.t * int * Occurrence.t
+  | `Bad_text_occurrence of 'node Position.t * int * Occurrence.t
+  | `Bad_sub_node_occurrence of 'node Position.t * 'node * int * Occurrence.t]
 
-type ('node, 'node_pos) analyze_error =
-  [ ('node, 'node_pos) occurrence_error
+type 'node analyze_error =
+  [ 'node occurrence_error
   | `Not_a_root_node of 'node option Position.t]
 
-type ('node, 'node_pos) parse_error =
-  [ ('node, 'node_pos) analyze_error
+type 'node parse_error =
+  [ 'node analyze_error
   | `File_does_not_exist of string
   | `Could_not_open_file of string
   | `Unrecognized_char of char Position.t
@@ -121,7 +121,6 @@ module ChildrenSpec : sig
 
   module type S = sig
     type node
-    type node_pos = node Position.t
     module NodeMap : sig
       include Map_ext.S with type key = node
       val all : Occurrence.t -> node list -> Occurrence.t t
@@ -136,8 +135,8 @@ module ChildrenSpec : sig
     val make : 'a Primitive.specification -> 'a NodeMap.t -> 'a specification
     type t = Occurrence.t specification
     val check :
-      node_pos -> t -> int specification ->
-      (unit, [> (node, node_pos) occurrence_error]) Result.t
+      node Position.t -> t -> int specification ->
+      (unit, [> node occurrence_error]) Result.t
   end
 
   module Make (Node : Map_ext.ORDERED_TYPE) : S with type node = Node.t
@@ -156,9 +155,8 @@ module Instance : sig
 
   module type S = sig
     include Generic.S
-    type node_pos = Node.t Position.t
-    val analyze : t -> (unit, [> (Node.t, node_pos) analyze_error]) Result.t
-    val parse : string -> (t, [> (Node.t, node_pos) parse_error]) Result.t
+    val analyze : t -> (unit, [> Node.t analyze_error]) Result.t
+    val parse : string -> (t, [> Node.t parse_error]) Result.t
     val save :
       string -> t -> (unit, [> `Could_not_save_in_file of string]) Result.t
   end
@@ -198,7 +196,7 @@ module Grammar : sig
     val from_file :
       string ->
       ((module S),
-       [> (node, node Position.t) parse_error
+       [> node parse_error
         | `Grammar_unrecognized_node of string Position.t]) Result.t
   end
   module type M = sig
@@ -212,12 +210,12 @@ end
 
 module type PARSE_RESULT = sig
   include Instance.S
-  val parse_result : (t, [> (Node.t, node_pos) parse_error]) Result.t
+  val parse_result : (t, [> Node.t parse_error]) Result.t
 end
 
 val parse_from_external :
   (module String_ext.UNSAFE_STRINGABLE) -> string ->
   ((module PARSE_RESULT),
    [> `Grammar_error of
-       [> (Grammar.node, Grammar.node Position.t) parse_error
+       [> Grammar.node parse_error
         | `Grammar_unrecognized_node of string Position.t]]) Result.t
