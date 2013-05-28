@@ -233,3 +233,21 @@ module Grammar = struct
   include G
 
 end
+
+
+module type PARSE_RESULT = sig
+  include Instance.S
+  val parse_result : (t, [> (Node.t, node_pos) parse_error]) Result.t
+end
+
+let parse_from_external unsafe_stringable file =
+  let module M = (val unsafe_stringable : UNSAFE_STRINGABLE) in
+  let module Grammar = Grammar.MakeUnsafe (M) in
+  match Grammar.from_file file with
+  | Ok instance ->
+    let module Instance = struct
+      include (val instance : Grammar.S)
+      let parse_result = parse file
+    end in
+    return (module Instance : PARSE_RESULT)
+  | Error err -> error (`Grammar_error err)

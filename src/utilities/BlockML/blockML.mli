@@ -219,3 +219,16 @@ module Grammar : sig
   module Make (M : M) : S with type t = M.t
   module MakeUnsafe (M : UNSAFE_STRINGABLE) : S with type t = M.t
 end
+
+
+module type PARSE_RESULT = sig
+  include Instance.S
+  val parse_result : (t, [> (Node.t, node_pos) parse_error]) Result.t
+end
+
+val parse_from_external :
+  (module UNSAFE_STRINGABLE) -> string ->
+  ((module PARSE_RESULT),
+   [> `Grammar_error of
+       [> (Grammar.node, Grammar.node Position.t) parse_error
+        | `Grammar_unrecognized_node of string Position.t]]) Result.t
