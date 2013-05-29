@@ -1,29 +1,16 @@
 
-(*
 open Result
 
 
-type param_name = string
-type param_value = string
-type params = (string * string) list
-
-let make_url url params =
-  let f_param (name, value) = name ^ "=" ^ value in
-  let params = "?" ^ (List_ext.to_string "&" f_param params) in
-  url ^ params
-
-let get_param_value params name =
-  try return (List.assoc name params)
-  with Not_found -> error (`No_such_parameter name)
-
-let mem_params params name = List.mem_assoc name params
-
-let make_params l = l
-
-
 module type S = sig
+  module Name : String_ext.OF_STRING
+  module Value : String_ext.OF_STRING
+  module Action : String_ext.OF_STRING
+  module Html : String_ext.TO_STRING
   val port : int
-  val pages : string -> params -> Html.t
+  val pages :
+    (Action.t, [> `Unrecognized_page of string]) Result.t ->
+    (Name.t * Value.t) list -> Html.t
 end
 
 
@@ -67,12 +54,36 @@ module Make (S : S) = struct
 
   let string_of_param_value value = replace_url_special_chars value
 
+  let name_of_string s =
+    map_error (function `Unrecognized_string s -> `Unrecognized_name s)
+      (S.Name.of_string s)
+
+  let value_of_string s =
+    map_error (function `Unrecognized_string s -> `Unrecognized_value s)
+      (S.Value.of_string s)
+
+  let action_of_string s =
+    map_error (function `Unrecognized_string s -> `Unrecognized_page s)
+      (S.Action.of_string s)
+
+  let quote_error s = "`" ^ s ^ "`"
+
+  let string_of_error = function
+    | `Unrecognized_name s -> "unrecognized name " ^ (quote_error s)
+    | `Unrecognized_value s -> "unrecognized value " ^ (quote_error s)
+
   let param_name_value p =
     let index = String.index_from p 0 '=' in
     let name = String.sub p 0 index in
     let value = String.sub p (index+1) ((String.length p) - (index+1)) in
     let value = string_of_param_value value in
-    (name, value)
+    match
+      (name_of_string name >>= fun name ->
+       value_of_string value >>= fun value ->
+       return (name, value))
+    with
+    | Ok res -> [res]
+    | Error err -> Error.show_warning (string_of_error err) ; []
 
   let get_params url =
     if String.contains url '?' then
@@ -80,21 +91,24 @@ module Make (S : S) = struct
       let length = (String.length url) - index in
       let params = String.sub url index length in
       let params = Str.split (Str.regexp "&") params in
-      List.map param_name_value params
+      let f res p = res @ (param_name_value p) in
+      List.fold_left f [] params
     else []
 
   let words s = Str.split (Str.regexp "[ \t]+") s
 
   let requested_page url =
-    if String.contains url '?' then
-      let index = String.index_from url 0 '?' in
-      String.sub url 0 index
-    else url
+    let url =
+      if String.contains url '?' then
+	let index = String.index_from url 0 '?' in
+	String.sub url 0 index
+      else url in
+    action_of_string url
 
   let treat_url outc url =
     let page = requested_page url in
     let params = get_params url in
-    let output = Html.to_string (S.pages page params) in
+    let output = S.Html.to_string (S.pages page params) in
     output_string outc output
 
   let is_endline s = (String.length s = 1) && (Char.code s.[0] = 13)
@@ -149,4 +163,3 @@ module Make (S : S) = struct
     Unix.establish_server treat_message sockaddr
 
 end
-*)
