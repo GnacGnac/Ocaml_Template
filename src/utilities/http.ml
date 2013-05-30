@@ -9,7 +9,7 @@ module type S = sig
   module Html : String_ext.TO_STRING
   val port : int
   val pages :
-    (Action.t, [> `Unrecognized_page of string]) Result.t ->
+    (Action.t, [`Unrecognized_page of string]) Result.t ->
     (Name.t * Value.t) list -> Html.t
 end
 
@@ -172,7 +172,7 @@ module type UNSAFE_S = sig
   module Html : String_ext.TO_STRING
   val port : int
   val pages :
-    (Action.t, [> `Unrecognized_page of string]) Result.t ->
+    (Action.t, [`Unrecognized_page of string]) Result.t ->
     (Name.t * Value.t) list -> Html.t
 end
 
