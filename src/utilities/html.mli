@@ -11,6 +11,12 @@ module type PARAMETER = sig
   module Action : String_ext.TO_STRING
 end
 
+module type UNSAFE_PARAMETER = sig
+  module Name : String_ext.UNSAFE_STRINGABLE
+  module Value : String_ext.UNSAFE_STRINGABLE
+  module Action : String_ext.UNSAFE_STRINGABLE
+end
+
 module type S = sig
   type name
   type value
@@ -59,4 +65,7 @@ module type S = sig
 end
 
 module Make (Parameter : PARAMETER) :
+  S with type name = Parameter.Name.t and type value = Parameter.Value.t
+
+module MakeUnsafe (Parameter : UNSAFE_PARAMETER) :
   S with type name = Parameter.Name.t and type value = Parameter.Value.t

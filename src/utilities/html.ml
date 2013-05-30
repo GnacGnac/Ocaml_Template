@@ -123,6 +123,12 @@ module type PARAMETER = sig
   module Action : String_ext.TO_STRING
 end
 
+module type UNSAFE_PARAMETER = sig
+  module Name : String_ext.UNSAFE_STRINGABLE
+  module Value : String_ext.UNSAFE_STRINGABLE
+  module Action : String_ext.UNSAFE_STRINGABLE
+end
+
 
 module type S = sig
   type name
@@ -368,5 +374,18 @@ module Make (Parameter : PARAMETER) = struct
 	      line_add @
 	      contents @
 	      line_edit)]
+
+end
+
+
+module MakeUnsafe (Parameter : UNSAFE_PARAMETER) = struct
+
+  module SafeParameter = struct
+    module Name = String_ext.MakeStringable (Parameter.Name)
+    module Value = String_ext.MakeStringable (Parameter.Value)
+    module Action = String_ext.MakeStringable (Parameter.Action)
+  end
+
+  include Make (SafeParameter)
 
 end
