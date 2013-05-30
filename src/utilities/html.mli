@@ -1,10 +1,4 @@
 
-type method_ = Get | Post
-type type_ = Text | Password | Text_area | Submit | Checkbox
-type color = Rgb of int * int * int
-type face = Arial
-type selected = Selected_value
-
 module type PARAMETER = sig
   module Name : String_ext.TO_STRING
   module Value : String_ext.TO_STRING
@@ -23,6 +17,12 @@ module type S = sig
   type action
   type t
   type html = t
+
+  type method_ = Get | Post
+  type type_ = Text | Password | Text_area | Submit | Checkbox
+  type color = Rgb of int * int * int
+  type face = Arial
+  type selected = Selected_value
 
   val string : string -> string
 

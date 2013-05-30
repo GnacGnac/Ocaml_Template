@@ -42,37 +42,6 @@ let string s =
     Str.global_replace (Str.regexp to_replace) replacement res in
   List.fold_left f s special_characters
 
-
-type method_ = Get | Post
-let string_of_method_ = function
-  | Get -> "GET"
-  | Post -> "POST"
-
-type type_ = Text | Password | Text_area | Submit | Checkbox
-let string_of_type_ = function
-  | Text -> "text"
-  | Password -> "password"
-  | Text_area -> "textarea"
-  | Submit -> "submit"
-  | Checkbox -> "checkbox"
-
-type color = Rgb of int * int * int
-let string_of_color = function
-  | Rgb (red, green, blue) ->
-    let hex_digit = function
-      | i when i < 10 -> string_of_int i
-      | i -> String.make 1 (char_of_int ((int_of_char 'A') - 10 + i)) in
-    let to_hex i = (hex_digit ((i/16) mod 16)) ^ (hex_digit (i mod 16)) in
-    "#" ^ (to_hex red) ^ (to_hex green) ^ (to_hex blue)
-
-type face = Arial
-let string_of_face = function
-  | Arial -> "arial"
-
-type selected = Selected_value
-let string_of_selected = function
-  | Selected_value -> "selected"
-
 type attribute =
 | Color | Face | Type | Value | Border | Cellpadding | Cellspacing | Colspan
 | Rowspan | Action | Name | Method | Size | Bgcolor | Selected
@@ -137,6 +106,12 @@ module type S = sig
   type t
   type html = t
 
+  type method_ = Get | Post
+  type type_ = Text | Password | Text_area | Submit | Checkbox
+  type color = Rgb of int * int * int
+  type face = Arial
+  type selected = Selected_value
+
   val string : string -> string
 
   val text        : string -> t
@@ -183,6 +158,36 @@ module Make (Parameter : PARAMETER) = struct
   type name = Parameter.Name.t
   type value = Parameter.Value.t
   type action = Parameter.Action.t
+
+  type method_ = Get | Post
+  let string_of_method_ = function
+    | Get -> "GET"
+    | Post -> "POST"
+
+  type type_ = Text | Password | Text_area | Submit | Checkbox
+  let string_of_type_ = function
+    | Text -> "text"
+    | Password -> "password"
+    | Text_area -> "textarea"
+    | Submit -> "submit"
+    | Checkbox -> "checkbox"
+
+  type color = Rgb of int * int * int
+  let string_of_color = function
+    | Rgb (red, green, blue) ->
+      let hex_digit = function
+	| i when i < 10 -> string_of_int i
+	| i -> String.make 1 (char_of_int ((int_of_char 'A') - 10 + i)) in
+      let to_hex i = (hex_digit ((i/16) mod 16)) ^ (hex_digit (i mod 16)) in
+      "#" ^ (to_hex red) ^ (to_hex green) ^ (to_hex blue)
+
+  type face = Arial
+  let string_of_face = function
+    | Arial -> "arial"
+
+  type selected = Selected_value
+  let string_of_selected = function
+    | Selected_value -> "selected"
 
   type t =
   | Text of string
