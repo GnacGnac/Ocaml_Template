@@ -1,4 +1,7 @@
 
+open Result
+
+
 module type TO_STRING = sig
   type t
   val to_string : t -> string
@@ -17,7 +20,25 @@ end
 
 module type UNSAFE_STRINGABLE = sig
   type t
-  val node_string : (t * string) list
+  val string_assoc : (t * string) list
+end
+
+
+module MakeStringable (UnsafeStringable : UNSAFE_STRINGABLE) = struct
+  type t = UnsafeStringable.t
+  let string_assoc =
+    List.map (fun (x, y) -> (x, String.lowercase y))
+      UnsafeStringable.string_assoc
+  let assoc_string = List.map (fun (x, y) -> (y, x)) string_assoc
+  let to_string node = match List_ext.assoc node string_assoc with
+    | Ok s -> s
+    | Error _ ->
+      (* Should not happen. If so, check that every node is associated a
+	 string in [UnsafeStringable.string_assoc]. *)
+      assert false
+  let of_string s =
+    map_error (fun `Not_found -> `Unrecognized_string s)
+      (List_ext.assoc (String.lowercase s) assoc_string)
 end
 
 

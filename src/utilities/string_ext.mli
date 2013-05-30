@@ -17,8 +17,11 @@ end
 
 module type UNSAFE_STRINGABLE = sig
   type t
-  val node_string : (t * string) list
+  val string_assoc : (t * string) list
 end
+
+module MakeStringable (UnsafeStringable : UNSAFE_STRINGABLE) :
+  STRINGABLE with type t = UnsafeStringable.t
 
 module Set : Set_ext.S with type elt = string
 

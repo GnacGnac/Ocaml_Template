@@ -124,8 +124,7 @@ end
 
 
 module type UNSAFE_SPEC = sig
-  type t
-  val node_string : (t * string) list
+  include String_ext.UNSAFE_STRINGABLE
   val spec :
     t ->
     (Children_spec.Occurrence.t Children_spec.Primitive.specification *
@@ -143,25 +142,9 @@ module MakeUnsafe (Spec : UNSAFE_SPEC) = struct
       let compare = Pervasives.compare
     end
 
-    include M
+    include String_ext.MakeStringable (Spec)
 
     module Set = Set_ext.Make (M)
-
-    let node_string =
-      List.map (fun (x, y) -> (x, String.lowercase y)) Spec.node_string
-
-    let string_node = List.map (fun (x, y) -> (y, x)) node_string
-
-    let to_string node = match List_ext.assoc node node_string with
-      | Ok s -> s
-      | Error _ ->
-	(* Should not happen. If so, check that every node is associated a
-	   string in [node_string]. *)
-	assert false
-
-    let of_string s =
-      map_error (fun `Not_found -> `Unrecognized_string s)
-	(List_ext.assoc (String.lowercase s) string_node)
 
     module Children = Children_spec.Make (M)
 

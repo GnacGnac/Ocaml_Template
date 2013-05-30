@@ -51,7 +51,7 @@ module Grammar = struct
 
     include M
 
-    let node_string =
+    let string_assoc =
       [(Grammar, "grammar") ; (Possible_roots, "possible_roots") ;
        (Children_specs, "children_specs") ; (Children_spec, "children_spec") ;
        (Name, "name") ; (Int, "int") ; (Text, "text") ; (Children, "children") ;
@@ -185,23 +185,8 @@ module Grammar = struct
 
     module M' = struct
 
-      type t = M.t
+      include String_ext.MakeStringable (M)
       let compare = Pervasives.compare
-
-      let node_string =
-	List.map (fun (x, y) -> (x, String.lowercase y)) M.node_string
-      let string_node = List.map (fun (x, y) -> (y, x)) node_string
-
-      let of_string s =
-	map_error (fun `Not_found -> `Unrecognized_string s)
-	  (List_ext.assoc (String.lowercase s) string_node)
-
-      let to_string node = match List_ext.assoc node node_string with
-	| Ok s -> s
-	| Error _ ->
-	  (* Should not happen. If so, check that every node is associated a
-	     string in [node_string]. *)
-	  assert false
 
     end
 

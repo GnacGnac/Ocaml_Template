@@ -4,7 +4,7 @@ open Result
 
 module M = struct
   type t = Term | Var | App | Abs
-  let node_string =
+  let string_assoc =
     [(Term, "term") ; (Var, "var") ; (App, "app") ; (Abs, "abs")]
 end
 
