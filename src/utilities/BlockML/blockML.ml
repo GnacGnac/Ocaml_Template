@@ -10,6 +10,10 @@ type 'node occurrence_error = 'node Children_spec.occurrence_error
 type 'node analyze_error = 'node Block_instance.analyze_error
 type 'node parse_error = 'node Block_instance.parse_error
 
+type 'node grammar_parse_error =
+  [ 'node parse_error
+  | `Grammar_unrecognized_node of string Position.t]
+
 module ChildrenSpec = Children_spec
 
 module Instance = Block_instance

@@ -106,6 +106,10 @@ type 'node parse_error =
   | `Parse_error of unit Position.t
   | `Unrecognized_node of string Position.t]
 
+type 'node grammar_parse_error =
+  [ 'node parse_error
+  | `Grammar_unrecognized_node of string Position.t]
+
 module ChildrenSpec : sig
 
   type 'a unsafe_children_specification = ('a * Occurrence.t) list
@@ -195,9 +199,7 @@ module Grammar : sig
     module type S = Instance.S with type Node.t = t
     val from_file :
       string ->
-      ((module S),
-       [> node parse_error
-        | `Grammar_unrecognized_node of string Position.t]) Result.t
+      ((module S), [> node grammar_parse_error]) Result.t
   end
   module type M = sig
     include String_ext.STRINGABLE
@@ -216,6 +218,4 @@ end
 val parse_from_external :
   (module String_ext.UNSAFE_STRINGABLE) -> string -> string ->
   ((module PARSE_RESULT),
-   [> `Grammar_error of
-       [> Grammar.node parse_error
-        | `Grammar_unrecognized_node of string Position.t]]) Result.t
+   [> `Grammar_error of [> Grammar.node grammar_parse_error]]) Result.t
