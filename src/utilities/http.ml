@@ -163,3 +163,30 @@ module Make (S : S) = struct
     Unix.establish_server treat_message sockaddr
 
 end
+
+
+module type UNSAFE_S = sig
+  module Name : String_ext.UNSAFE_STRINGABLE
+  module Value : String_ext.UNSAFE_STRINGABLE
+  module Action : String_ext.UNSAFE_STRINGABLE
+  module Html : String_ext.TO_STRING
+  val port : int
+  val pages :
+    (Action.t, [> `Unrecognized_page of string]) Result.t ->
+    (Name.t * Value.t) list -> Html.t
+end
+
+module MakeUnsafe (S : UNSAFE_S) = struct
+
+  module SafeParameter = struct
+    module Name = String_ext.MakeStringable (S.Name)
+    module Value = String_ext.MakeStringable (S.Value)
+    module Action = String_ext.MakeStringable (S.Action)
+    module Html = S.Html
+    let port = S.port
+    let pages = S.pages
+  end
+
+  include Make (SafeParameter)
+
+end
