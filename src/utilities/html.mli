@@ -65,7 +65,13 @@ module type S = sig
 end
 
 module Make (Parameter : PARAMETER) :
-  S with type name = Parameter.Name.t and type value = Parameter.Value.t
+  S with
+      type name = Parameter.Name.t and
+      type value = Parameter.Value.t and
+      type action = Parameter.Action.t
 
 module MakeUnsafe (Parameter : UNSAFE_PARAMETER) :
-  S with type name = Parameter.Name.t and type value = Parameter.Value.t
+  S with
+      type name = Parameter.Name.t and
+      type value = Parameter.Value.t and
+      type action = Parameter.Action.t
