@@ -345,8 +345,9 @@ module Make (Parameter : PARAMETER) = struct
     let line_add = match editable_infos with
       | None -> []
       | Some infos ->
-	(EditableInfos.line_add_cells infos) @
-	  [input ~type_:Submit ?name:name_add ?value:add_value ()] in
+	[form ~action:destination ~method_
+	    ((EditableInfos.line_add_cells infos) @
+		[input ~type_:Submit ?name:name_add ?value:add_value ()])] in
     let line_add =
       if editable then
 	[tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line_add)]
@@ -370,15 +371,13 @@ module Make (Parameter : PARAMETER) = struct
 		 [select ~name:action actions ;
 		  br ; br ;
 		  input ~type_:Submit ~value:action_value ()]]] in
-    form ~action:destination ~method_
-      [table ?border ?cellpadding ?cellspacing
-	  ([tr ~bgcolor:(Rgb (0xa9, 0xa9, 0xf5))
-	       [td_one ~colspan:(cell_number + (if editable then 1 else 0))
-		   (bold [text name])] ;
-	    tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) line_names] @
-	      line_add @
-	      contents @
-	      line_edit)]
+    table ?border ?cellpadding ?cellspacing
+      ([tr ~bgcolor:(Rgb (0xa9, 0xa9, 0xf5))
+	   [td_one ~colspan:(cell_number + (if editable then 1 else 0))
+	       (bold [text name])] ;
+	tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) line_names] @
+	  line_add @
+	  [form ~action:destination ~method_ (contents @ line_edit)])
 
 end
 
