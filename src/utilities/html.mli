@@ -48,6 +48,7 @@ module type S = sig
   val block       : t list -> t
   val select      : t list -> t
   val option      : ?selected:selected -> ?value:value -> t list -> t
+  val strike      : t list -> t
 
   val to_string : t -> string
 

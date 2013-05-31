@@ -65,7 +65,7 @@ let string_of_attribute = function
 
 type node =
 | Html | Body | Input | Font | Bold | Italic | Br | Paragraph | Table
-| Tr | Td | Center | Form | Block | Select | Option
+| Tr | Td | Center | Form | Block | Select | Option | Strike
 
 let string_of_node = function
   | Html -> "html"
@@ -84,6 +84,7 @@ let string_of_node = function
   | Block -> "block"
   | Select -> "select"
   | Option -> "option"
+  | Strike -> "strike"
 
 
 module type PARAMETER = sig
@@ -136,6 +137,7 @@ module type S = sig
   val block       : t list -> t
   val select      : t list -> t
   val option      : ?selected:selected -> ?value:value -> t list -> t
+  val strike      : t list -> t
 
   val to_string : t -> string
 
@@ -256,6 +258,7 @@ module Make (Parameter : PARAMETER) = struct
     let selected = get_selected_attribute Selected selected in
     let value = get_value_attribute Value value in
     node Option (selected @ value)
+  let strike = node Strike []
 
 
   let string_of_attribute_value attribute value =
