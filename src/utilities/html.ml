@@ -246,7 +246,7 @@ module Make (Parameter : PARAMETER) = struct
     let method_ = get_method_attribute Method method_ in
     let action = get_action_attribute Action action in
     node Form (method_ @ action)
-  let spaces n = text (String_ext.repeat n "&nbsp;")
+  let spaces n = exact_text (String_ext.repeat n "&nbsp;")
   let space = spaces 1
   let block = node Block []
   let select ?name =
