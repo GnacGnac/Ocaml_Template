@@ -80,9 +80,10 @@ module Make (N : NODE) = struct
 
   let get_children_from_children_with_pos f block =
     let f' res a =
-      (match f (Position.contents a) with
+      res @
+	(match f (Position.contents a) with
 	| None -> []
-	| Some e -> [Position.change_contents e a]) @ res in
+	| Some e -> [Position.change_contents e a]) in
     get_children_with_pos block >>= fun children ->
     return (List.fold_left f' [] children)
 
