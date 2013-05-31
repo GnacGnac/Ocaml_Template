@@ -113,7 +113,7 @@ module type S = sig
   val string : string -> string
 
   val text        : string -> t
-  val text_string : string -> t
+  val exact_text  : string -> t
   val html        : t list -> t
   val body        : t list -> t
   val input       :
@@ -194,6 +194,8 @@ module Make (Parameter : PARAMETER) = struct
 
   let node node attributes children = Node (node, attributes, children)
 
+  let string = string
+
   let get_generic_attribute f attribute = function
     | None -> []
     | Some value -> [(attribute, f value)]
@@ -207,16 +209,15 @@ module Make (Parameter : PARAMETER) = struct
   let get_face_attribute = get_generic_attribute string_of_face
   let get_selected_attribute = get_generic_attribute string_of_selected
   let get_action_attribute = get_generic_attribute Parameter.Action.to_string
+  let get_value_attribute = get_generic_attribute string
 
-  let string = string
-
-  let text s = Text s
-  let text_string s = text (string s)
+  let exact_text s = Text s
+  let text s = exact_text (string s)
   let html = node Html []
   let body = node Body []
   let input ?type_ ?value ?name ?size () =
     let type_ = get_type_attribute Type type_ in
-    let value = get_attribute Value value in
+    let value = get_value_attribute Value value in
     let name = get_name_attribute Name name in
     let size = get_int_attribute Size size in
     node Input (type_ @ value @ name @ size) []
@@ -253,7 +254,7 @@ module Make (Parameter : PARAMETER) = struct
     node Select name
   let option ?selected ?value =
     let selected = get_selected_attribute Selected selected in
-    let value = get_attribute Value value in
+    let value = get_value_attribute Value value in
     node Option (selected @ value)
   let strike = node Strike []
 
@@ -358,10 +359,10 @@ module Make (Parameter : PARAMETER) = struct
 	let action_value = EditableInfos.action_value infos in
 	let action = EditableInfos.action_button infos in
 	let actions = EditableInfos.actions infos in
-	let f_action i (text, name) =
+	let f_action i (s, name) =
 	  let value = Parameter.Name.to_string name in
 	  let selected = if i = 0 then Some Selected_value else None in
-	  option ~value ?selected [text_string text] in
+	  option ~value ?selected [text s] in
 	let actions = List_ext.mapi f_action actions in
 	if actions = [] then []
 	else

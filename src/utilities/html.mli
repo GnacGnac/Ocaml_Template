@@ -24,7 +24,7 @@ module type S = sig
   val string : string -> string
 
   val text        : string -> t
-  val text_string : string -> t
+  val exact_text  : string -> t
   val html        : t list -> t
   val body        : t list -> t
   val input       :
