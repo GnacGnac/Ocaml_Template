@@ -89,20 +89,17 @@ let string_of_node = function
 
 module type PARAMETER = sig
   module Name : String_ext.TO_STRING
-  module Value : String_ext.TO_STRING
   module Action : String_ext.TO_STRING
 end
 
 module type UNSAFE_PARAMETER = sig
   module Name : String_ext.UNSAFE_STRINGABLE
-  module Value : String_ext.UNSAFE_STRINGABLE
   module Action : String_ext.UNSAFE_STRINGABLE
 end
 
 
 module type S = sig
   type name
-  type value
   type action
   type t
   type html = t
@@ -120,7 +117,7 @@ module type S = sig
   val html        : t list -> t
   val body        : t list -> t
   val input       :
-    ?type_:type_ -> ?value:value -> ?name:name -> ?size:int -> unit -> t
+    ?type_:type_ -> ?value:string -> ?name:name -> ?size:int -> unit -> t
   val font        : ?color:color -> ?face:face -> t list -> t
   val bold        : t list -> t
   val italic      : t list -> t
@@ -136,7 +133,7 @@ module type S = sig
   val spaces      : int -> t
   val block       : t list -> t
   val select      : t list -> t
-  val option      : ?selected:selected -> ?value:value -> t list -> t
+  val option      : ?selected:selected -> ?value:string -> t list -> t
   val strike      : t list -> t
 
   val to_string : t -> string
@@ -144,8 +141,8 @@ module type S = sig
   module EditableInfos : sig
     type t
     val make :
-      html list -> value -> name -> value -> name ->
-      (string * value) list -> t
+      html list -> string -> name -> string -> name ->
+      (string * name) list -> t
   end
 
   val result_table :
@@ -158,7 +155,6 @@ end
 module Make (Parameter : PARAMETER) = struct
 
   type name = Parameter.Name.t
-  type value = Parameter.Value.t
   type action = Parameter.Action.t
 
   type method_ = Get | Post
@@ -205,7 +201,6 @@ module Make (Parameter : PARAMETER) = struct
   let get_attribute = get_generic_attribute (fun s -> s)
   let get_int_attribute = get_generic_attribute string_of_int
   let get_name_attribute = get_generic_attribute Parameter.Name.to_string
-  let get_value_attribute = get_generic_attribute Parameter.Value.to_string
   let get_method_attribute = get_generic_attribute string_of_method_
   let get_type_attribute = get_generic_attribute string_of_type_
   let get_color_attribute = get_generic_attribute string_of_color
@@ -221,7 +216,7 @@ module Make (Parameter : PARAMETER) = struct
   let body = node Body []
   let input ?type_ ?value ?name ?size () =
     let type_ = get_type_attribute Type type_ in
-    let value = get_value_attribute Value value in
+    let value = get_attribute Value value in
     let name = get_name_attribute Name name in
     let size = get_int_attribute Size size in
     node Input (type_ @ value @ name @ size) []
@@ -256,7 +251,7 @@ module Make (Parameter : PARAMETER) = struct
   let select = node Select []
   let option ?selected ?value =
     let selected = get_selected_attribute Selected selected in
-    let value = get_value_attribute Value value in
+    let value = get_attribute Value value in
     node Option (selected @ value)
   let strike = node Strike []
 
@@ -296,11 +291,11 @@ module Make (Parameter : PARAMETER) = struct
 
     type t =
       { line_add_cells : html list ;
-	add_value : value ;
+	add_value : string ;
 	add_button : name ;
-	action_value : value ;
+	action_value : string ;
 	action_button : name ;
-	actions : (string * value) list }
+	actions : (string * name) list }
 
     let make
 	line_add_cells add_value add_button action_value action_button actions =
@@ -360,7 +355,8 @@ module Make (Parameter : PARAMETER) = struct
 	let action_value = EditableInfos.action_value infos in
 	let action = EditableInfos.action_button infos in
 	let actions = EditableInfos.actions infos in
-	let f_action i (text, value) =
+	let f_action i (text, name) =
+	  let value = Parameter.Name.to_string name in
 	  let selected = if i = 0 then Some Selected_value else None in
 	  option ~value ?selected [text_string text] in
 	let actions = List_ext.mapi f_action actions in
@@ -390,7 +386,6 @@ module MakeUnsafe (Parameter : UNSAFE_PARAMETER) = struct
 
   module SafeParameter = struct
     module Name = String_ext.MakeStringable (Parameter.Name)
-    module Value = String_ext.MakeStringable (Parameter.Value)
     module Action = String_ext.MakeStringable (Parameter.Action)
   end
 

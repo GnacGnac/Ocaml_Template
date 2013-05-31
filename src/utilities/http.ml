@@ -4,13 +4,12 @@ open Result
 
 module type S = sig
   module Name : String_ext.OF_STRING
-  module Value : String_ext.OF_STRING
   module Action : String_ext.OF_STRING
   module Html : String_ext.TO_STRING
   val port : int
   val pages :
     (Action.t, [`Unrecognized_page of string]) Result.t ->
-    (Name.t * Value.t) list -> Html.t
+    (Name.t * string) list -> Html.t
 end
 
 
@@ -58,10 +57,6 @@ module Make (S : S) = struct
     map_error (function `Unrecognized_string s -> `Unrecognized_name s)
       (S.Name.of_string s)
 
-  let value_of_string s =
-    map_error (function `Unrecognized_string s -> `Unrecognized_value s)
-      (S.Value.of_string s)
-
   let action_of_string s =
     map_error (function `Unrecognized_string s -> `Unrecognized_page s)
       (S.Action.of_string s)
@@ -70,7 +65,6 @@ module Make (S : S) = struct
 
   let string_of_error = function
     | `Unrecognized_name s -> "unrecognized name " ^ (quote_error s)
-    | `Unrecognized_value s -> "unrecognized value " ^ (quote_error s)
 
   let param_name_value p =
     let index = String.index_from p 0 '=' in
@@ -79,7 +73,6 @@ module Make (S : S) = struct
     let value = string_of_param_value value in
     match
       (name_of_string name >>= fun name ->
-       value_of_string value >>= fun value ->
        return (name, value))
     with
     | Ok res -> [res]
@@ -167,20 +160,18 @@ end
 
 module type UNSAFE_S = sig
   module Name : String_ext.UNSAFE_STRINGABLE
-  module Value : String_ext.UNSAFE_STRINGABLE
   module Action : String_ext.UNSAFE_STRINGABLE
   module Html : String_ext.TO_STRING
   val port : int
   val pages :
     (Action.t, [`Unrecognized_page of string]) Result.t ->
-    (Name.t * Value.t) list -> Html.t
+    (Name.t * string) list -> Html.t
 end
 
 module MakeUnsafe (S : UNSAFE_S) = struct
 
   module SafeParameter = struct
     module Name = String_ext.MakeStringable (S.Name)
-    module Value = String_ext.MakeStringable (S.Value)
     module Action = String_ext.MakeStringable (S.Action)
     module Html = S.Html
     let port = S.port
