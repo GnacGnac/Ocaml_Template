@@ -146,8 +146,8 @@ module type S = sig
   end
 
   val result_table :
-    ?border:int -> ?cellpadding:int -> ?cellspacing:int ->
-    action -> string -> (int -> name) -> method_ -> string list ->
+    ?border:int -> ?cellpadding:int -> ?cellspacing:int -> ?method_:method_ ->
+    action -> string -> (int -> name) -> string list ->
     ?editable_infos:EditableInfos.t -> t list list -> t
 end
 
@@ -314,8 +314,8 @@ module Make (Parameter : PARAMETER) = struct
   end
 
   let result_table
-      ?border ?cellpadding ?cellspacing
-      destination name cell_id method_ line_names ?editable_infos contents =
+      ?border ?cellpadding ?cellspacing ?method_
+      destination name cell_id line_names ?editable_infos contents =
     let td ?colspan contents = td ?colspan [center contents] in
     let td_one ?colspan cell = td ?colspan [cell] in
     let editable = editable_infos <> None in
@@ -349,7 +349,7 @@ module Make (Parameter : PARAMETER) = struct
 	  [input ~type_:Submit ?name:name_add ?value:add_value ()] in
     let line_add =
       if editable then
-	[form ~action:destination ~method_
+	[form ~action:destination ?method_
 	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line_add)]]
       else [] in
     let line_edit = match editable_infos with
@@ -377,7 +377,7 @@ module Make (Parameter : PARAMETER) = struct
 	       (bold [text name])] ;
 	tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) line_names] @
 	  line_add @
-	  [form ~action:destination ~method_ (contents @ line_edit)])
+	  [form ~action:destination ?method_ (contents @ line_edit)])
 
 end
 

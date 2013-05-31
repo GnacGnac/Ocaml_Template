@@ -57,8 +57,8 @@ module type S = sig
   end
 
   val result_table :
-    ?border:int -> ?cellpadding:int -> ?cellspacing:int ->
-    action -> string -> (int -> name) -> method_ -> string list ->
+    ?border:int -> ?cellpadding:int -> ?cellspacing:int -> ?method_:method_ ->
+    action -> string -> (int -> name) -> string list ->
     ?editable_infos:EditableInfos.t -> t list list -> t
 end
 
