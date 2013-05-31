@@ -133,7 +133,8 @@ module type S = sig
   val spaces      : int -> t
   val block       : t list -> t
   val select      : t list -> t
-  val option      : ?selected:selected -> ?value:string -> t list -> t
+  val option      :
+    ?selected:selected -> ?name:name -> ?value:string -> t list -> t
   val strike      : t list -> t
 
   val to_string : t -> string
@@ -249,10 +250,11 @@ module Make (Parameter : PARAMETER) = struct
   let space = spaces 1
   let block = node Block []
   let select = node Select []
-  let option ?selected ?value =
+  let option ?selected ?name ?value =
     let selected = get_selected_attribute Selected selected in
+    let name = get_name_attribute Name name in
     let value = get_attribute Value value in
-    node Option (selected @ value)
+    node Option (selected @ name @ value)
   let strike = node Strike []
 
 
@@ -358,7 +360,7 @@ module Make (Parameter : PARAMETER) = struct
 	let f_action i (text, name) =
 	  let value = Parameter.Name.to_string name in
 	  let selected = if i = 0 then Some Selected_value else None in
-	  option ~value ?selected [text_string text] in
+	  option ~name:action ~value ?selected [text_string text] in
 	let actions = List_ext.mapi f_action actions in
 	if actions = [] then []
 	else
@@ -367,8 +369,7 @@ module Make (Parameter : PARAMETER) = struct
 	       td
 		 [select actions ;
 		  br ; br ;
-		  input
-		    ~type_:Submit ~name:action ~value:action_value ()]]] in
+		  input ~type_:Submit ~value:action_value ()]]] in
     form ~action:destination ~method_
       [table ?border ?cellpadding ?cellspacing
 	  ([tr ~bgcolor:(Rgb (0xa9, 0xa9, 0xf5))
