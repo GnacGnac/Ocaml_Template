@@ -43,9 +43,8 @@ module type S = sig
   val space       : t
   val spaces      : int -> t
   val block       : t list -> t
-  val select      : t list -> t
-  val option      :
-    ?selected:selected -> ?name:name -> ?value:string -> t list -> t
+  val select      : ?name:name -> t list -> t
+  val option      : ?selected:selected -> ?value:string -> t list -> t
   val strike      : t list -> t
 
   val to_string : t -> string

@@ -132,9 +132,8 @@ module type S = sig
   val space       : t
   val spaces      : int -> t
   val block       : t list -> t
-  val select      : t list -> t
-  val option      :
-    ?selected:selected -> ?name:name -> ?value:string -> t list -> t
+  val select      : ?name:name -> t list -> t
+  val option      : ?selected:selected -> ?value:string -> t list -> t
   val strike      : t list -> t
 
   val to_string : t -> string
@@ -249,12 +248,13 @@ module Make (Parameter : PARAMETER) = struct
   let spaces n = text (String_ext.repeat n "&nbsp;")
   let space = spaces 1
   let block = node Block []
-  let select = node Select []
-  let option ?selected ?name ?value =
-    let selected = get_selected_attribute Selected selected in
+  let select ?name =
     let name = get_name_attribute Name name in
+    node Select name
+  let option ?selected ?value =
+    let selected = get_selected_attribute Selected selected in
     let value = get_attribute Value value in
-    node Option (selected @ name @ value)
+    node Option (selected @ value)
   let strike = node Strike []
 
 
@@ -360,14 +360,14 @@ module Make (Parameter : PARAMETER) = struct
 	let f_action i (text, name) =
 	  let value = Parameter.Name.to_string name in
 	  let selected = if i = 0 then Some Selected_value else None in
-	  option ~name:action ~value ?selected [text_string text] in
+	  option ~value ?selected [text_string text] in
 	let actions = List_ext.mapi f_action actions in
 	if actions = [] then []
 	else
 	  [tr ~bgcolor:(Rgb (0xF5, 0xA9, 0xA9))
 	      [td ~colspan:cell_number [space] ;
 	       td
-		 [select actions ;
+		 [select ~name:action actions ;
 		  br ; br ;
 		  input ~type_:Submit ~value:action_value ()]]] in
     form ~action:destination ~method_
