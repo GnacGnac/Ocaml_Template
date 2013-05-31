@@ -345,12 +345,12 @@ module Make (Parameter : PARAMETER) = struct
     let line_add = match editable_infos with
       | None -> []
       | Some infos ->
-	[form ~action:destination ~method_
-	    ((EditableInfos.line_add_cells infos) @
-		[input ~type_:Submit ?name:name_add ?value:add_value ()])] in
+	(EditableInfos.line_add_cells infos) @
+	  [input ~type_:Submit ?name:name_add ?value:add_value ()] in
     let line_add =
       if editable then
-	[tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line_add)]
+	[form ~action:destination ~method_
+	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line_add)]]
       else [] in
     let line_edit = match editable_infos with
       | None -> []
