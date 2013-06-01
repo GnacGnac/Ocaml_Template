@@ -49,17 +49,23 @@ module type S = sig
 
   val to_string : t -> string
 
+  module Button : sig
+    type t
+    val make : string -> name -> action -> t
+  end
+
   module EditableInfos : sig
     type t
     val make :
-      html list -> string -> name -> string -> name ->
-      (string * name) list -> t
+      line_add_cells:(html list) ->
+      add_button:Button.t -> edit_button:Button.t ->
+      edit_options:((string * name) list) ->
+      cell_id:(int -> name) -> t
   end
 
   val result_table :
     ?border:int -> ?cellpadding:int -> ?cellspacing:int -> ?method_:method_ ->
-    action -> string -> (int -> name) -> string list ->
-    ?editable_infos:EditableInfos.t -> t list list -> t
+    string -> string list -> ?editable_infos:EditableInfos.t -> t list list -> t
 end
 
 module Make (Parameter : PARAMETER) :

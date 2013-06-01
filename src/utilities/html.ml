@@ -138,17 +138,23 @@ module type S = sig
 
   val to_string : t -> string
 
+  module Button : sig
+    type t
+    val make : string -> name -> action -> t
+  end
+
   module EditableInfos : sig
     type t
     val make :
-      html list -> string -> name -> string -> name ->
-      (string * name) list -> t
+      line_add_cells:(html list) ->
+      add_button:Button.t -> edit_button:Button.t ->
+      edit_options:((string * name) list) ->
+      cell_id:(int -> name) -> t
   end
 
   val result_table :
     ?border:int -> ?cellpadding:int -> ?cellspacing:int -> ?method_:method_ ->
-    action -> string -> (int -> name) -> string list ->
-    ?editable_infos:EditableInfos.t -> t list list -> t
+    string -> string list -> ?editable_infos:EditableInfos.t -> t list list -> t
 end
 
 
@@ -290,50 +296,60 @@ module Make (Parameter : PARAMETER) = struct
   let to_string = to_string ""
 
 
+  module Button = struct
+
+    type t = { label : string ; name : name ; destination : action }
+
+    let make label name destination = { label ; name ; destination }
+
+    let label button = button.label
+    let name button = button.name
+    let destination button = button.destination
+
+  end
+
   module EditableInfos = struct
 
     type t =
       { line_add_cells : html list ;
-	add_value : string ;
-	add_button : name ;
-	action_value : string ;
-	action_button : name ;
-	actions : (string * name) list }
+	add_button : Button.t ;
+	edit_button : Button.t ;
+	edit_options : (string * name) list ;
+	cell_id : int -> name }
 
     let make
-	line_add_cells add_value add_button action_value action_button actions =
-      { line_add_cells ; add_value ; add_button ; action_value ; action_button ;
-	actions}
+	~line_add_cells ~add_button ~edit_button ~edit_options ~cell_id =
+      { line_add_cells ; add_button ; edit_button ; edit_options ; cell_id }
 
     let line_add_cells infos = infos.line_add_cells
-    let add_value infos = infos.add_value
     let add_button infos = infos.add_button
-    let action_value infos = infos.action_value
-    let action_button infos = infos.action_button
-    let actions infos = infos.actions
+    let edit_button infos = infos.edit_button
+    let edit_options infos = infos.edit_options
+    let cell_id infos = infos.cell_id
 
   end
 
+  let button_infos f infos =
+    let button = f infos in
+    (Button.label button, Button.name button, Button.destination button)
+
   let result_table
-      ?border ?cellpadding ?cellspacing ?method_
-      destination name cell_id line_names ?editable_infos contents =
+      ?border ?cellpadding ?cellspacing ?method_ name line_names
+      ?editable_infos contents =
     let td ?colspan contents = td ?colspan [center contents] in
     let td_one ?colspan cell = td ?colspan [cell] in
-    let editable = editable_infos <> None in
-    let add_value = Option.map EditableInfos.add_value editable_infos in
-    let name_add = Option.map EditableInfos.add_button editable_infos in
+    let (editable, has_edit_option) = match editable_infos with
+      | None -> (false, false)
+      | Some infos -> (true, EditableInfos.edit_options infos <> []) in
     let f_contents index tr_contents =
-      let tr_contents =
-	let name = cell_id index in
-	let needs_checkbox = match editable_infos with
-	  | None -> false
-	  | Some infos -> EditableInfos.actions infos <> [] in
-	let checkbox =
-	  if editable then
-	    if needs_checkbox then [input ~type_:Checkbox ~name ()]
-	    else [space]
-	  else [] in
-	tr_contents @ checkbox in
+      let tr_contents = match editable_infos with
+	| None -> []
+	| Some infos ->
+	  let name = EditableInfos.cell_id infos index in
+	  let checkbox =
+	    if has_edit_option then [input ~type_:Checkbox ~name ()]
+	    else [space] in
+	  tr_contents @ checkbox in
       let tr_contents = List.map td_one tr_contents in
       let bgcolor =
 	if index mod 2 = 0 then None else Some (Rgb (0xD3, 0xD3, 0xD3)) in
@@ -346,39 +362,40 @@ module Make (Parameter : PARAMETER) = struct
     let line_add = match editable_infos with
       | None -> []
       | Some infos ->
-	(EditableInfos.line_add_cells infos) @
-	  [input ~type_:Submit ?name:name_add ?value:add_value ()] in
-    let line_add =
-      if editable then
-	[form ~action:destination ?method_
-	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line_add)]]
-      else [] in
-    let line_edit = match editable_infos with
+	let (value, name, action) =
+	  button_infos EditableInfos.add_button infos in
+	let line =
+	  (EditableInfos.line_add_cells infos) @
+	    [input ~type_:Submit ~name ~value ()] in
+	[form ~action ?method_
+	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line)]] in
+    let contents = match editable_infos with
       | None -> []
       | Some infos ->
-	let action_value = EditableInfos.action_value infos in
-	let action = EditableInfos.action_button infos in
-	let actions = EditableInfos.actions infos in
-	let f_action i (s, name) =
+	let (value, name, action) =
+	  button_infos EditableInfos.edit_button infos in
+	let f_option i (s, name) =
 	  let value = Parameter.Name.to_string name in
 	  let selected = if i = 0 then Some Selected_value else None in
 	  option ~value ?selected [text s] in
-	let actions = List_ext.mapi f_action actions in
-	if actions = [] then []
+	let edit_options =
+	  List_ext.mapi f_option (EditableInfos.edit_options infos) in
+	if edit_options = [] then contents
 	else
-	  [tr ~bgcolor:(Rgb (0xF5, 0xA9, 0xA9))
-	      [td ~colspan:cell_number [space] ;
-	       td
-		 [select ~name:action actions ;
-		  br ; br ;
-		  input ~type_:Submit ~value:action_value ()]]] in
+	  [form ~action ?method_
+	      (contents @
+		 [tr ~bgcolor:(Rgb (0xF5, 0xA9, 0xA9))
+		     [td ~colspan:cell_number [space] ;
+		      td
+			[select ~name edit_options ;
+			 br ; br ;
+			 input ~type_:Submit ~value ()]]])] in
     table ?border ?cellpadding ?cellspacing
       ([tr ~bgcolor:(Rgb (0xa9, 0xa9, 0xf5))
 	   [td_one ~colspan:(cell_number + (if editable then 1 else 0))
 	       (bold [text name])] ;
 	tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) line_names] @
-	  line_add @
-	  [form ~action:destination ?method_ (contents @ line_edit)])
+	  line_add @ contents)
 
 end
 
