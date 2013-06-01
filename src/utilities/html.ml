@@ -342,14 +342,14 @@ module Make (Parameter : PARAMETER) = struct
       | None -> (false, false)
       | Some infos -> (true, EditableInfos.edit_options infos <> []) in
     let f_contents index tr_contents =
-      let tr_contents = match editable_infos with
-	| None -> []
-	| Some infos ->
-	  let name = EditableInfos.cell_id infos index in
-	  let checkbox =
+      let tr_contents =
+	tr_contents @
+	  (match editable_infos with
+	  | None -> []
+	  | Some infos ->
+	    let name = EditableInfos.cell_id infos index in
 	    if has_edit_option then [input ~type_:Checkbox ~name ()]
-	    else [space] in
-	  tr_contents @ checkbox in
+	    else [space]) in
       let tr_contents = List.map td_one tr_contents in
       let bgcolor =
 	if index mod 2 = 0 then None else Some (Rgb (0xD3, 0xD3, 0xD3)) in
