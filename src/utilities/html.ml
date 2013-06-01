@@ -370,7 +370,7 @@ module Make (Parameter : PARAMETER) = struct
 	[form ~action ?method_
 	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line)]] in
     let contents = match editable_infos with
-      | None -> []
+      | None -> contents
       | Some infos ->
 	let (value, name, action) =
 	  button_infos EditableInfos.edit_button infos in
