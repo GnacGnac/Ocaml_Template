@@ -23,4 +23,5 @@ val map_nth : int -> ('a -> 'a) -> 'a list -> 'a list
 
 val make : int -> 'a -> 'a list
 
-val find : ('a -> bool) -> 'a list -> ('a, [> `Not_found]) Result.t
+val find_and_apply :
+  ('a -> 'b option) -> 'a list -> ('b, [> `Not_found]) Result.t

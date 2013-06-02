@@ -56,6 +56,10 @@ let make i a =
     else aux (j-1) (a :: acc) in
   aux i []
 
-let find f l =
-  try return (List.find f l)
-  with Not_found -> error `Not_found
+let find_and_apply f l =
+  let f' res a = match res with
+    | Some _ -> res
+    | None -> f a in
+  match List.fold_left f' None l with
+  | None -> error `Not_found
+  | Some a -> return a
