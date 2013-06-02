@@ -377,9 +377,10 @@ module Make (Parameter : PARAMETER) = struct
 	      input ~type_:Hidden ~name:table_id ~value:"" ()]] in
 	[form ~action ?method_
 	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line)]] in
-    let contents = match editable_infos with
-      | None -> contents
-      | Some infos ->
+    let contents = match editable_infos, contents with
+      | None, _ -> contents
+      | _, [] -> []
+      | Some infos, _ ->
 	let (value, name, action) =
 	  button_infos EditableInfos.edit_button infos in
 	let f_option i (s, name) =
