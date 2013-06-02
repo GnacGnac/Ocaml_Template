@@ -372,8 +372,9 @@ module Make (Parameter : PARAMETER) = struct
 	let table_id = EditableInfos.table_id infos in
 	let line =
 	  (EditableInfos.line_add_cells infos) @
-	    [input ~type_:Submit ~name ~value () ;
-	     input ~type_:Hidden ~name:table_id ~value:"" ()] in
+	    [block[
+	      input ~type_:Submit ~name ~value () ;
+	      input ~type_:Hidden ~name:table_id ~value:"" ()]] in
 	[form ~action ?method_
 	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line)]] in
     let contents = match editable_infos with
