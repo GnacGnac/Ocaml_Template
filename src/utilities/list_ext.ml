@@ -55,3 +55,7 @@ let make i a =
     if j <= 0 then acc
     else aux (j-1) (a :: acc) in
   aux i []
+
+let find f l =
+  try return (List.find f l)
+  with Not_found -> error `Not_found

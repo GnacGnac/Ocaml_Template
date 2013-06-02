@@ -22,3 +22,5 @@ val removei : int -> 'a list -> 'a list
 val map_nth : int -> ('a -> 'a) -> 'a list -> 'a list
 
 val make : int -> 'a -> 'a list
+
+val find : ('a -> bool) -> 'a list -> ('a, [> `Not_found]) Result.t
