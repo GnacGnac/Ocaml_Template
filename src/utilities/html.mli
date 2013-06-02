@@ -16,7 +16,7 @@ module type S = sig
   type html = t
 
   type method_ = Get | Post
-  type type_ = Text | Password | Text_area | Submit | Checkbox
+  type type_ = Text | Password | Text_area | Submit | Checkbox | Hidden
   type color = Rgb of int * int * int
   type face = Arial
   type selected = Selected_value
@@ -60,7 +60,7 @@ module type S = sig
       line_add_cells:(html list) ->
       add_button:Button.t -> edit_button:Button.t ->
       edit_options:((string * name) list) ->
-      cell_id:(int -> name) -> t
+      table_id:name -> cell_id:(int -> name) -> t
   end
 
   val result_table :

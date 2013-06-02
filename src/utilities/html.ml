@@ -105,7 +105,7 @@ module type S = sig
   type html = t
 
   type method_ = Get | Post
-  type type_ = Text | Password | Text_area | Submit | Checkbox
+  type type_ = Text | Password | Text_area | Submit | Checkbox | Hidden
   type color = Rgb of int * int * int
   type face = Arial
   type selected = Selected_value
@@ -149,7 +149,7 @@ module type S = sig
       line_add_cells:(html list) ->
       add_button:Button.t -> edit_button:Button.t ->
       edit_options:((string * name) list) ->
-      cell_id:(int -> name) -> t
+      table_id:name -> cell_id:(int -> name) -> t
   end
 
   val result_table :
@@ -168,13 +168,14 @@ module Make (Parameter : PARAMETER) = struct
     | Get -> "GET"
     | Post -> "POST"
 
-  type type_ = Text | Password | Text_area | Submit | Checkbox
+  type type_ = Text | Password | Text_area | Submit | Checkbox | Hidden
   let string_of_type_ = function
     | Text -> "text"
     | Password -> "password"
     | Text_area -> "textarea"
     | Submit -> "submit"
     | Checkbox -> "checkbox"
+    | Hidden -> "hidden"
 
   type color = Rgb of int * int * int
   let string_of_color = function
@@ -315,16 +316,20 @@ module Make (Parameter : PARAMETER) = struct
 	add_button : Button.t ;
 	edit_button : Button.t ;
 	edit_options : (string * name) list ;
+	table_id : name ;
 	cell_id : int -> name }
 
     let make
-	~line_add_cells ~add_button ~edit_button ~edit_options ~cell_id =
-      { line_add_cells ; add_button ; edit_button ; edit_options ; cell_id }
+	~line_add_cells ~add_button ~edit_button ~edit_options ~table_id
+	~cell_id =
+      { line_add_cells ; add_button ; edit_button ; edit_options ; table_id ;
+	cell_id }
 
     let line_add_cells infos = infos.line_add_cells
     let add_button infos = infos.add_button
     let edit_button infos = infos.edit_button
     let edit_options infos = infos.edit_options
+    let table_id infos = infos.table_id
     let cell_id infos = infos.cell_id
 
   end
@@ -364,9 +369,11 @@ module Make (Parameter : PARAMETER) = struct
       | Some infos ->
 	let (value, name, action) =
 	  button_infos EditableInfos.add_button infos in
+	let table_id = EditableInfos.table_id infos in
 	let line =
 	  (EditableInfos.line_add_cells infos) @
-	    [input ~type_:Submit ~name ~value ()] in
+	    [input ~type_:Submit ~name ~value () ;
+	     input ~type_:Hidden ~name:table_id ~value:"" ()] in
 	[form ~action ?method_
 	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line)]] in
     let contents = match editable_infos with
