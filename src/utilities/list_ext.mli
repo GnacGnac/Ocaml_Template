@@ -20,3 +20,5 @@ val assoc : 'a -> ('a * 'b) list -> ('b, [> `Not_found]) Result.t
 val removei : int -> 'a list -> 'a list
 
 val map_nth : int -> ('a -> 'a) -> 'a list -> 'a list
+
+val make : int -> 'a -> 'a list

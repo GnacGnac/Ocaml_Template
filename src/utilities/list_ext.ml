@@ -49,3 +49,9 @@ let removei i =
 let map_nth i f =
   let f' j a = (if j = i then f else (fun a -> a)) a in
   mapi f'
+
+let make i a =
+  let rec aux j acc =
+    if j <= 0 then acc
+    else aux (j-1) (a :: acc) in
+  aux i []
