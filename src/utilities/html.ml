@@ -356,9 +356,9 @@ module Make (Parameter : PARAMETER) = struct
 	    if has_edit_option then [input ~type_:Checkbox ~name ()]
 	    else [space]) in
       let tr_contents = List.map td_one tr_contents in
-      let bgcolor =
-	if index mod 2 = 0 then None else Some (Rgb (0xD3, 0xD3, 0xD3)) in
-      tr ?bgcolor tr_contents in
+      let (r, g, b) =
+	if index mod 2 = 0 then (0xFF, 0xFF, 0xFF) else (0xD3, 0xD3, 0xD3) in
+      tr ~bgcolor:(Rgb (r, g, b)) tr_contents in
     let contents = List_ext.mapi f_contents contents in
     let cell_number = List.length line_names in
     let line_names = List.map text line_names in
