@@ -140,7 +140,7 @@ module type S = sig
 
   module Button : sig
     type t
-    val make : string -> name -> action -> t
+    val make : string -> name -> t
   end
 
   module EditableInfos : sig
@@ -149,11 +149,11 @@ module type S = sig
       line_add_cells:(html list) ->
       add_button:Button.t -> edit_button:Button.t ->
       edit_options:((string * name) list) ->
-      table_id:name -> cell_id:(int -> name) -> t
+      cell_id:(int -> name) -> t
   end
 
   val result_table :
-    ?border:int -> ?cellpadding:int -> ?cellspacing:int -> ?method_:method_ ->
+    ?border:int -> ?cellpadding:int -> ?cellspacing:int ->
     string -> string list -> ?editable_infos:EditableInfos.t -> t list list -> t
 end
 
@@ -299,13 +299,12 @@ module Make (Parameter : PARAMETER) = struct
 
   module Button = struct
 
-    type t = { label : string ; name : name ; destination : action }
+    type t = { label : string ; name : name }
 
-    let make label name destination = { label ; name ; destination }
+    let make label name = { label ; name }
 
     let label button = button.label
     let name button = button.name
-    let destination button = button.destination
 
   end
 
@@ -316,31 +315,27 @@ module Make (Parameter : PARAMETER) = struct
 	add_button : Button.t ;
 	edit_button : Button.t ;
 	edit_options : (string * name) list ;
-	table_id : name ;
 	cell_id : int -> name }
 
     let make
-	~line_add_cells ~add_button ~edit_button ~edit_options ~table_id
-	~cell_id =
-      { line_add_cells ; add_button ; edit_button ; edit_options ; table_id ;
-	cell_id }
+	~line_add_cells ~add_button ~edit_button ~edit_options ~cell_id =
+      { line_add_cells ; add_button ; edit_button ; edit_options ; cell_id }
 
     let line_add_cells infos = infos.line_add_cells
     let add_button infos = infos.add_button
     let edit_button infos = infos.edit_button
     let edit_options infos = infos.edit_options
-    let table_id infos = infos.table_id
     let cell_id infos = infos.cell_id
 
   end
 
   let button_infos f infos =
     let button = f infos in
-    (Button.label button, Button.name button, Button.destination button)
+    (Button.label button, Button.name button)
 
   let result_table
-      ?border ?cellpadding ?cellspacing ?method_ name line_names
-      ?editable_infos contents =
+      ?border ?cellpadding ?cellspacing name line_names ?editable_infos
+      contents =
     let td ?colspan contents = td ?colspan [center contents] in
     let td_one ?colspan cell = td ?colspan [cell] in
     let (editable, has_edit_option) = match editable_infos with
@@ -367,22 +362,16 @@ module Make (Parameter : PARAMETER) = struct
     let line_add = match editable_infos with
       | None -> []
       | Some infos ->
-	let (value, name, action) =
-	  button_infos EditableInfos.add_button infos in
-	let table_id = EditableInfos.table_id infos in
+	let (value, name) = button_infos EditableInfos.add_button infos in
 	let line =
 	  (EditableInfos.line_add_cells infos) @
-	    [block[
-	      input ~type_:Submit ~name ~value () ;
-	      input ~type_:Hidden ~name:table_id ~value:"" ()]] in
-	[form ~action ?method_
-	    [tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line)]] in
+	    [input ~type_:Submit ~name ~value ()] in
+	[tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line)] in
     let contents = match editable_infos, contents with
       | None, _ -> contents
       | _, [] -> []
       | Some infos, _ ->
-	let (value, name, action) =
-	  button_infos EditableInfos.edit_button infos in
+	let (value, name) = button_infos EditableInfos.edit_button infos in
 	let f_option i (s, name) =
 	  let value = Parameter.Name.to_string name in
 	  let selected = if i = 0 then Some Selected_value else None in
@@ -391,14 +380,13 @@ module Make (Parameter : PARAMETER) = struct
 	  List_ext.mapi f_option (EditableInfos.edit_options infos) in
 	if edit_options = [] then contents
 	else
-	  [form ~action ?method_
-	      (contents @
-		 [tr ~bgcolor:(Rgb (0xF5, 0xA9, 0xA9))
-		     [td ~colspan:cell_number [space] ;
-		      td
-			[select ~name edit_options ;
-			 br ; br ;
-			 input ~type_:Submit ~value ()]]])] in
+	  contents @
+	    [tr ~bgcolor:(Rgb (0xF5, 0xA9, 0xA9))
+		[td ~colspan:cell_number [space] ;
+		 td
+		   [select ~name edit_options ;
+		    br ; br ;
+		    input ~type_:Submit ~value ()]]] in
     table ?border ?cellpadding ?cellspacing
       ([tr ~bgcolor:(Rgb (0xa9, 0xa9, 0xf5))
 	   [td_one ~colspan:(cell_number + (if editable then 1 else 0))

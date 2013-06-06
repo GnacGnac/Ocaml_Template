@@ -51,7 +51,7 @@ module type S = sig
 
   module Button : sig
     type t
-    val make : string -> name -> action -> t
+    val make : string -> name -> t
   end
 
   module EditableInfos : sig
@@ -60,11 +60,11 @@ module type S = sig
       line_add_cells:(html list) ->
       add_button:Button.t -> edit_button:Button.t ->
       edit_options:((string * name) list) ->
-      table_id:name -> cell_id:(int -> name) -> t
+      cell_id:(int -> name) -> t
   end
 
   val result_table :
-    ?border:int -> ?cellpadding:int -> ?cellspacing:int -> ?method_:method_ ->
+    ?border:int -> ?cellpadding:int -> ?cellspacing:int ->
     string -> string list -> ?editable_infos:EditableInfos.t -> t list list -> t
 end
 
