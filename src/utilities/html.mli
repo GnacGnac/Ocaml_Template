@@ -59,7 +59,7 @@ module type S = sig
     val make :
       line_add_cells:(html list) ->
       add_button:Button.t -> edit_button:Button.t ->
-      edit_options:((string * name) list) ->
+      edit_selected:name -> edit_options:((string * name) list) ->
       cell_id:(int -> name) -> t
   end
 

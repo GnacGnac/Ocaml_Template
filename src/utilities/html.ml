@@ -148,7 +148,7 @@ module type S = sig
     val make :
       line_add_cells:(html list) ->
       add_button:Button.t -> edit_button:Button.t ->
-      edit_options:((string * name) list) ->
+      edit_selected:name -> edit_options:((string * name) list) ->
       cell_id:(int -> name) -> t
   end
 
@@ -314,16 +314,20 @@ module Make (Parameter : PARAMETER) = struct
       { line_add_cells : html list ;
 	add_button : Button.t ;
 	edit_button : Button.t ;
+	edit_selected : name ;
 	edit_options : (string * name) list ;
 	cell_id : int -> name }
 
     let make
-	~line_add_cells ~add_button ~edit_button ~edit_options ~cell_id =
-      { line_add_cells ; add_button ; edit_button ; edit_options ; cell_id }
+	~line_add_cells ~add_button ~edit_button ~edit_selected ~edit_options
+	~cell_id =
+      { line_add_cells ; add_button ; edit_button ; edit_selected ;
+	edit_options ; cell_id }
 
     let line_add_cells infos = infos.line_add_cells
     let add_button infos = infos.add_button
     let edit_button infos = infos.edit_button
+    let edit_selected infos = infos.edit_selected
     let edit_options infos = infos.edit_options
     let cell_id infos = infos.cell_id
 
@@ -372,6 +376,7 @@ module Make (Parameter : PARAMETER) = struct
       | _, [] -> []
       | Some infos, _ ->
 	let (value, name) = button_infos EditableInfos.edit_button infos in
+	let selected_name = EditableInfos.edit_selected infos in
 	let f_option i (s, name) =
 	  let value = Parameter.Name.to_string name in
 	  let selected = if i = 0 then Some Selected_value else None in
@@ -384,9 +389,9 @@ module Make (Parameter : PARAMETER) = struct
 	    [tr ~bgcolor:(Rgb (0xF5, 0xA9, 0xA9))
 		[td ~colspan:cell_number [space] ;
 		 td
-		   [select ~name edit_options ;
+		   [select ~name:selected_name edit_options ;
 		    br ; br ;
-		    input ~type_:Submit ~value ()]]] in
+		    input ~type_:Submit ~name ~value ()]]] in
     table ?border ?cellpadding ?cellspacing
       ([tr ~bgcolor:(Rgb (0xa9, 0xa9, 0xf5))
 	   [td_one ~colspan:(cell_number + (if editable then 1 else 0))
