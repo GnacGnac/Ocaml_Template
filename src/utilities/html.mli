@@ -46,6 +46,7 @@ module type S = sig
   val select      : ?name:name -> t list -> t
   val option      : ?selected:selected -> ?value:string -> t list -> t
   val strike      : t list -> t
+  val a           : ?href:action -> t list -> t
 
   val to_string : t -> string
 

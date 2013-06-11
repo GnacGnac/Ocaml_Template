@@ -44,7 +44,7 @@ let string s =
 
 type attribute =
 | Color | Face | Type | Value | Border | Cellpadding | Cellspacing | Colspan
-| Rowspan | Action | Name | Method | Size | Bgcolor | Selected
+| Rowspan | Action | Name | Method | Size | Bgcolor | Selected | Href
 
 let string_of_attribute = function
   | Color -> "color"
@@ -62,10 +62,11 @@ let string_of_attribute = function
   | Size -> "size"
   | Bgcolor -> "bgcolor"
   | Selected -> "selected"
+  | Href -> "href"
 
 type node =
 | Html | Body | Input | Font | Bold | Italic | Br | Paragraph | Table
-| Tr | Td | Center | Form | Block | Select | Option | Strike
+| Tr | Td | Center | Form | Block | Select | Option | Strike | A
 
 let string_of_node = function
   | Html -> "html"
@@ -85,6 +86,7 @@ let string_of_node = function
   | Select -> "select"
   | Option -> "option"
   | Strike -> "strike"
+  | A -> "a"
 
 
 module type PARAMETER = sig
@@ -135,6 +137,7 @@ module type S = sig
   val select      : ?name:name -> t list -> t
   val option      : ?selected:selected -> ?value:string -> t list -> t
   val strike      : t list -> t
+  val a           : ?href:action -> t list -> t
 
   val to_string : t -> string
 
@@ -264,6 +267,9 @@ module Make (Parameter : PARAMETER) = struct
     let value = get_value_attribute Value value in
     node Option (selected @ value)
   let strike = node Strike []
+  let a ?href =
+    let action = get_action_attribute Href href in
+    node A action
 
 
   let string_of_attribute_value attribute value =
