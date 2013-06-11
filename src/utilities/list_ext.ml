@@ -63,3 +63,7 @@ let find_and_apply f l =
   match List.fold_left f' None l with
   | None -> error `Not_found
   | Some a -> return a
+
+let nth l i =
+  try return (List.nth l i)
+  with Failure "nth" | Invalid_argument "List.nth" -> error `Out_of_bounds
