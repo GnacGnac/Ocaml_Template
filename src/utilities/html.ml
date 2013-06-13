@@ -399,7 +399,7 @@ module Make (Parameter : PARAMETER) = struct
 		    br ; br ;
 		    input ~type_:Submit ~name ~value ()]]] in
     table ?border ?cellpadding ?cellspacing
-      ([tr ~bgcolor:(Rgb (0xa9, 0xa9, 0xf5))
+      ([tr ~bgcolor:(Rgb (0xA9, 0xA9, 0xF5))
 	   [td_one ~colspan:(cell_number + (if editable then 1 else 0))
 	       (bold [text name])] ;
 	tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) line_names] @
