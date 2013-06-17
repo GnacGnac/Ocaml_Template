@@ -16,11 +16,11 @@ let get_env var =
 
 let open_in file =
   try return (open_in file)
-  with Sys_error _ -> error (`Could_not_open_file file)
+  with Sys_error _ -> error (`Could_not_open_in_file file)
 
 let open_out file =
   try return (open_out file)
-  with Sys_error _ -> error (`Could_not_open_file file)
+  with Sys_error _ -> error (`Could_not_open_out_file file)
 
 let is_file_empty file =
   if Sys.file_exists file then
@@ -34,18 +34,20 @@ let remove file =
   with Sys_error err -> error (`Could_not_remove_file (file, err))
 
 let read_file file =
-  open_in file >>= fun ic ->
-  let rec aux s =
-    try
-      let s' = input_line ic in
-      aux (s ^ s' ^ "\n")
-    with End_of_file -> s in
-  let res = aux "" in
-  close_in ic ;
-  return res
+  map_error (function `Could_not_open_in_file s -> `Could_not_read_file s)
+    (open_in file >>= fun ic ->
+     let rec aux s =
+       try
+	 let s' = input_line ic in
+	 aux (s ^ s' ^ "\n")
+       with End_of_file -> s in
+     let res = aux "" in
+     close_in ic ;
+     return res)
 
 let write_file file s =
-  open_out file >>= fun oc ->
-  output_string oc s ;
-  close_out oc ;
-  return ()
+  map_error (function `Could_not_open_out_file s -> `Could_not_write_file s)
+    (open_out file >>= fun oc ->
+     output_string oc s ;
+     close_out oc ;
+     return ())
