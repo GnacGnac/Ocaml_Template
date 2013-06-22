@@ -18,6 +18,7 @@ module type S = sig
   type method_ = Get | Post
   type type_ = Text | Password | Text_area | Submit | Checkbox | Hidden
   type color = Rgb of int * int * int
+  val red : color
   type face = Arial
   type selected = Selected_value
 

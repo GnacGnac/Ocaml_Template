@@ -109,6 +109,7 @@ module type S = sig
   type method_ = Get | Post
   type type_ = Text | Password | Text_area | Submit | Checkbox | Hidden
   type color = Rgb of int * int * int
+  val red : color
   type face = Arial
   type selected = Selected_value
 
@@ -188,6 +189,8 @@ module Make (Parameter : PARAMETER) = struct
 	| i -> String.make 1 (char_of_int ((int_of_char 'A') - 10 + i)) in
       let to_hex i = (hex_digit ((i/16) mod 16)) ^ (hex_digit (i mod 16)) in
       "#" ^ (to_hex red) ^ (to_hex green) ^ (to_hex blue)
+
+  let red = Rgb (0xFF, 0, 0)
 
   type face = Arial
   let string_of_face = function
@@ -343,6 +346,12 @@ module Make (Parameter : PARAMETER) = struct
     let button = f infos in
     (Button.label button, Button.name button)
 
+  let bg_main = Rgb (0xA9, 0xA9, 0xF5)
+  let bg_title = Rgb (0xCE, 0xF6, 0xF5)
+  let bg1 = Rgb (0xFF, 0xFF, 0xFF)
+  let bg2 = Rgb (0xD3, 0xD3, 0xD3)
+  let bg_submit = Rgb (0xF5, 0xA9, 0xA9)
+
   let result_table
       ?border ?cellpadding ?cellspacing name line_names ?editable_infos
       contents =
@@ -361,9 +370,8 @@ module Make (Parameter : PARAMETER) = struct
 	    if has_edit_option then [input ~type_:Checkbox ~name ()]
 	    else [space]) in
       let tr_contents = List.map td_one tr_contents in
-      let (r, g, b) =
-	if index mod 2 = 0 then (0xFF, 0xFF, 0xFF) else (0xD3, 0xD3, 0xD3) in
-      tr ~bgcolor:(Rgb (r, g, b)) tr_contents in
+      let bgcolor = if index mod 2 = 0 then bg1 else bg2 in
+      tr ~bgcolor tr_contents in
     let contents = List_ext.mapi f_contents contents in
     let cell_number = List.length line_names in
     let line_names = List.map text line_names in
@@ -376,7 +384,7 @@ module Make (Parameter : PARAMETER) = struct
 	let line =
 	  (EditableInfos.line_add_cells infos) @
 	    [input ~type_:Submit ~name ~value ()] in
-	[tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) (List.map td_one line)] in
+	[tr ~bgcolor:bg_title (List.map td_one line)] in
     let contents = match editable_infos, contents with
       | None, _ -> contents
       | _, [] -> []
@@ -392,17 +400,17 @@ module Make (Parameter : PARAMETER) = struct
 	if edit_options = [] then contents
 	else
 	  contents @
-	    [tr ~bgcolor:(Rgb (0xF5, 0xA9, 0xA9))
+	    [tr ~bgcolor:bg_submit
 		[td ~colspan:cell_number [space] ;
 		 td
 		   [select ~name:selected_name edit_options ;
 		    br ; br ;
 		    input ~type_:Submit ~name ~value ()]]] in
     table ?border ?cellpadding ?cellspacing
-      ([tr ~bgcolor:(Rgb (0xA9, 0xA9, 0xF5))
+      ([tr ~bgcolor:bg_main
 	   [td_one ~colspan:(cell_number + (if editable then 1 else 0))
 	       (bold [text name])] ;
-	tr ~bgcolor:(Rgb (0xCE, 0xF6, 0xF5)) line_names] @
+	tr ~bgcolor:bg_title line_names] @
 	  line_add @ contents)
 
 end
