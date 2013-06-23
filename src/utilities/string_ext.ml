@@ -58,3 +58,25 @@ let remove_chars s cl =
       if List.mem s.[i] cl then aux (i+1)
       else (String.make 1 s.[i]) ^ (aux (i+1)) in
   aux 0
+
+
+let matched_indices_group nb_indices s =
+  let rec aux acc i = if i <= 0 then acc else aux (i :: acc) (i - 1) in
+  let res = aux [] nb_indices in
+  let f i = int_of_string (Str.matched_group i s) in
+  List.map f res
+
+let sep = "_"
+
+let parse_indices base nb_indices s =
+  let index = sep ^ "\\([0-9]+\\)" in
+  let indices = List_ext.make nb_indices index in
+  let indices = List.fold_left (^) "" indices in
+  let str = Str.regexp ("^" ^ base ^ indices ^ "$") in
+  let success = Str.string_match str s 0 in
+  if success then Some (matched_indices_group nb_indices s)
+  else None
+
+let add_indices base indices =
+  let f res i = res ^ sep ^ (string_of_int i) in
+  base ^ (List.fold_left f "" indices)
