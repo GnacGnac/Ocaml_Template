@@ -14,6 +14,8 @@ let make num den = { num ; den }
 
 let zero = make zero_big_int unit_big_int
 
+let is_null amount = eq_big_int (num amount) zero_big_int
+
 let add amount1 amount2 =
   let num1 = mult_big_int (num amount1) (den amount2) in
   let num2 = mult_big_int (num amount2) (den amount1) in
@@ -30,9 +32,11 @@ let mul amount1 amount2 =
   make num den
 
 let div amount1 amount2 =
-  let n = mult_big_int (num amount1) (den amount2) in
-  let d = mult_big_int (den amount1) (num amount2) in
-  make n d
+  if is_null amount2 then error `Division_by_zero
+  else
+    let n = mult_big_int (num amount1) (den amount2) in
+    let d = mult_big_int (den amount1) (num amount2) in
+    return (make n d)
 
 
 let sign amount =
@@ -46,13 +50,11 @@ let absolute_value amount =
 
 let to_int amount =
   let error = error (`Not_an_int amount) in
-  if not (eq_big_int (den amount) zero_big_int) then
-    let f_sign = match sign amount with
-      | Pos -> (fun i -> i)
-      | Neg -> minus_big_int in
-    let i = f_sign (absolute_value amount) in
-    if is_int_big_int i then return (int_of_big_int i)
-    else error
+  let f_sign = match sign amount with
+    | Pos -> (fun i -> i)
+    | Neg -> minus_big_int in
+  let i = f_sign (absolute_value amount) in
+  if is_int_big_int i then return (int_of_big_int i)
   else error
 let of_int i = make (big_int_of_int i) unit_big_int
 
