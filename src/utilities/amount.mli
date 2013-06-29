@@ -8,6 +8,7 @@ val of_string : string -> (t, [> `Not_an_amount of string]) Result.t
 
 val to_string : t -> string
 
+val is_null : t -> bool
 val zero : t
 val add  : t -> t -> t
 val sub  : t -> t -> t
