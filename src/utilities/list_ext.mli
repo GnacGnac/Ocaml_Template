@@ -27,3 +27,5 @@ val find_and_apply :
   ('a -> 'b option) -> 'a list -> ('b, [> `Not_found]) Result.t
 
 val nth : 'a list -> int -> ('a, [> `Out_of_bounds]) Result.t
+
+val make_with_next : 'a -> ('a -> 'a) -> int -> 'a list

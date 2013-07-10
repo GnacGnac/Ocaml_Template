@@ -67,3 +67,9 @@ let find_and_apply f l =
 let nth l i =
   try return (List.nth l i)
   with Failure "nth" | Invalid_argument "List.nth" -> error `Out_of_bounds
+
+let make_with_next a f length =
+  let rec aux i acc a =
+    if i > length then acc
+    else aux (i + 1) (acc @ [a]) (f a) in
+  aux 1 [] a
