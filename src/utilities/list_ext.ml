@@ -80,3 +80,8 @@ let index_of a =
     | _ when b = a -> Ok i
     | _ -> res in
   foldi f (error `Not_found)
+
+let filter_and_apply f =
+  let f' res a =
+    res @ (match f a with None -> [] | Some b -> [b]) in
+  List.fold_left f' []
