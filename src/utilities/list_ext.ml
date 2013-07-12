@@ -73,3 +73,10 @@ let make_with_next a f length =
     if i > length then acc
     else aux (i + 1) (acc @ [a]) (f a) in
   aux 1 [] a
+
+let index_of a =
+  let f i res b = match res with
+    | Ok _ -> res
+    | _ when b = a -> Ok i
+    | _ -> res in
+  foldi f (error `Not_found)
