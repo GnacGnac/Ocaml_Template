@@ -31,7 +31,7 @@ module type S = sig
   val analyze : t -> (unit, [> Node.t analyze_error]) Result.t
   val parse : string -> (t, [> Node.t parse_error]) Result.t
   val save :
-    string -> t -> (unit, [> `Could_not_save_in_file of string]) Result.t
+    string -> t -> (unit, [> `Could_not_write_file of string]) Result.t
 end
 
 
@@ -118,7 +118,7 @@ module Make (Spec : SPEC) = struct
     analyze block >>= fun () ->
     return block
 
-  let save file block = Sys_ext.save file (to_string block)
+  let save file block = Sys_ext.write_file file (to_string block)
 
 end
 

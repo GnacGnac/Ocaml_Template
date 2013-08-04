@@ -162,7 +162,7 @@ module Instance : sig
     val analyze : t -> (unit, [> Node.t analyze_error]) Result.t
     val parse : string -> (t, [> Node.t parse_error]) Result.t
     val save :
-      string -> t -> (unit, [> `Could_not_save_in_file of string]) Result.t
+      string -> t -> (unit, [> `Could_not_write_file of string]) Result.t
   end
 
   module Make (Spec : SPEC) : S with type Node.t = Spec.t

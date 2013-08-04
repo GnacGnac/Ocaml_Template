@@ -6,8 +6,11 @@ module type S = sig
   module Name : String_ext.OF_STRING
   module Action : String_ext.OF_STRING
   module Html : String_ext.TO_STRING
+  val application_name : string
+  val inet_addr : string
   val port : int
   val pages :
+    Unix.sockaddr ->
     (Action.t, [`Unrecognized_page of string]) Result.t ->
     (Name.t * string) list -> Html.t
 end
@@ -98,10 +101,10 @@ module Make (S : S) = struct
       else url in
     action_of_string url
 
-  let treat_url outc url =
+  let treat_url sockaddr outc url =
     let page = requested_page url in
     let params = get_params url in
-    let output = S.Html.to_string (S.pages page params) in
+    let output = S.Html.to_string (S.pages sockaddr page params) in
     output_string outc output
 
   let is_endline s = (String.length s = 1) && (Char.code s.[0] = 13)
@@ -132,28 +135,75 @@ module Make (S : S) = struct
     | s :: _ -> No_kind
     | _ -> No_kind
 
-  let treat_message inc outc =
+  let treat_message sockaddr inc outc =
     let rec aux kind =
       try
 	let s = input_line inc in
 	let is_endline = is_endline s in
 	match kind, check_kind s with
-	  | (Get url, _) when is_endline -> treat_url outc url
+	  | (Get url, _) when is_endline -> treat_url sockaddr outc url
 	  | (Post (url, length), _) when is_endline ->
 	    let params = String.make length '*' in
 	    let _ = input inc params 0 length in
-	    treat_url outc (url ^ "?" ^ params)
+	    treat_url sockaddr outc (url ^ "?" ^ params)
 	  | (Post (url, _), Content_length length) -> aux (Post (url, length))
 	  | (_, ((Get _ | Post _) as kind)) -> aux kind
 	  | _ -> aux kind
       with End_of_file -> () in
     aux No_kind
 
-  let localhost = Unix.inet_addr_of_string "127.0.0.1"
+  let rec waitpid_non_intr pid =
+    try Unix.waitpid [] pid
+    with Unix.Unix_error (Unix.EINTR, _, _) -> waitpid_non_intr pid
+
+  (* FD_CLOEXEC should be supported on all Unix systems these days,
+     but just in case... *)
+  let try_set_close_on_exec fd =
+    try Unix.set_close_on_exec fd; true with Invalid_argument _ -> false
+
+  let rec accept_non_intr s =
+    try Unix.accept s
+    with Unix.Unix_error (Unix.EINTR, _, _) -> accept_non_intr s
+
+  let establish_server server_fun sockaddr =
+    let sock =
+      Unix.socket (Unix.domain_of_sockaddr sockaddr) Unix.SOCK_STREAM 0 in
+    Unix.setsockopt sock Unix.SO_REUSEADDR true;
+    Unix.bind sock sockaddr;
+    Unix.listen sock 5;
+    while true do
+      let (s, caller) = accept_non_intr sock in
+      match Unix.fork() with
+	0 ->
+	  (* The son exits, the grandson works *)
+	  if Unix.fork() <> 0 then exit 0;
+          Unix.close sock;
+          ignore(try_set_close_on_exec s);
+          let inchan = Unix.in_channel_of_descr s in
+          let outchan = Unix.out_channel_of_descr s in
+          server_fun caller inchan outchan;
+          (* Do not close inchan nor outchan, as the server_fun could
+             have done it already, and we are about to exit anyway
+             (PR#3794) *)
+          exit 0
+      | id -> Unix.close s; ignore(waitpid_non_intr id) (* Reclaim the son *)
+    done
 
   let launch () =
-    let sockaddr = Unix.ADDR_INET (localhost, S.port) in
-    Unix.establish_server treat_message sockaddr
+    let inet_addr = Unix.inet_addr_of_string S.inet_addr in
+    let sockaddr = Unix.ADDR_INET (inet_addr, S.port) in
+    let log_file = Filename.temp_file S.application_name ".log" in
+    let base_msg =
+      "erver running on " ^ S.inet_addr ^ ":" ^ (string_of_int S.port) ^ "." in
+    let stdin_msg = S.application_name ^ " s" ^ base_msg in
+    let log_msg = "S" ^ base_msg in
+    Printf.printf "%s\n%!" stdin_msg ;
+    begin match Sys_ext.write_file log_file log_msg with
+    | Ok () -> ()
+    | Error (`Could_not_write_file file) ->
+      Printf.eprintf "Warning: could not write log file %s.\n%!" log_file
+    end ;
+    establish_server treat_message sockaddr
 
 end
 
@@ -162,8 +212,11 @@ module type UNSAFE_S = sig
   module Name : String_ext.UNSAFE_STRINGABLE
   module Action : String_ext.UNSAFE_STRINGABLE
   module Html : String_ext.TO_STRING
+  val application_name : string
+  val inet_addr : string
   val port : int
   val pages :
+    Unix.sockaddr ->
     (Action.t, [`Unrecognized_page of string]) Result.t ->
     (Name.t * string) list -> Html.t
 end
@@ -174,6 +227,8 @@ module MakeUnsafe (S : UNSAFE_S) = struct
     module Name = String_ext.MakeStringable (S.Name)
     module Action = String_ext.MakeStringable (S.Action)
     module Html = S.Html
+    let application_name = S.application_name
+    let inet_addr = S.inet_addr
     let port = S.port
     let pages = S.pages
   end
