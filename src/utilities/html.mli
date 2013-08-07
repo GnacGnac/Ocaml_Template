@@ -25,34 +25,41 @@ module type S = sig
   val bg_submit : color
   val red : color
   type face = Arial
-  type selected = Selected_value
+  type alignment = Left | Right | Center | Top | Down | Justify
+  type size = Percent of int | Pixel of int | Absolute of int | Auto
+  type style_attribute =
+  | Text_align of alignment
+  | Color of color
+  | Background_color of color
+  type style_attributes = style_attribute list
+
+  type 'a attribute_node = ?class_:string -> ?style:style_attributes -> 'a
 
   val string : string -> string
 
   val text        : string -> t
   val exact_text  : string -> t
-  val html        : t list -> t
-  val body        : t list -> t
-  val input       :
-    ?type_:type_ -> ?value:string -> ?name:name -> ?size:int -> unit -> t
-  val font        : ?color:color -> ?face:face -> t list -> t
-  val bold        : t list -> t
-  val italic      : t list -> t
-  val paragraph   : t list -> t
-  val center      : t list -> t
-  val br          : t
-  val table       :
-    ?border:int -> ?cellpadding:int -> ?cellspacing:int -> t list -> t
-  val tr          : ?bgcolor:color -> t list -> t
-  val td          : ?colspan:int -> ?rowspan:int -> t list -> t
-  val form        : ?method_:method_ -> ?action:action -> t list -> t
+  val html        : (t list -> t) attribute_node
+  val body        : (t list -> t) attribute_node
+  val div         : (t list -> t) attribute_node
+  val span        : (t list -> t) attribute_node
+  val strong      : (t list -> t) attribute_node
+  val em          : (t list -> t) attribute_node
+  val paragraph   : (t list -> t) attribute_node
+  val br          : (unit -> t) attribute_node
   val space       : t
   val spaces      : int -> t
-  val block       : t list -> t
-  val select      : ?name:name -> t list -> t
-  val option      : ?selected:selected -> ?value:string -> t list -> t
-  val strike      : t list -> t
-  val a           : ?href:action -> t list -> t
+  val form        :
+    (?method_:method_ -> ?action:action -> t list -> t) attribute_node
+  val input       :
+    (?type_:type_ -> ?value:string -> ?name:name -> unit -> t) attribute_node
+  val a           : (?href:string -> t list -> t) attribute_node
+  val table       : (t list -> t) attribute_node
+  val tr          : (t list -> t) attribute_node
+  val td          : (?colspan:int -> ?rowspan:int -> t list -> t) attribute_node
+  val select      : (?name:name -> t list -> t) attribute_node
+  val option      :
+    (?selected:unit -> ?value:string -> t list -> t) attribute_node
 
   val to_string : t -> string
 
@@ -71,7 +78,7 @@ module type S = sig
   end
 
   val result_table :
-    ?border:int -> ?cellpadding:int -> ?cellspacing:int ->
+    ?class_:string -> ?style:style_attributes ->
     string -> string list -> ?editable_infos:EditableInfos.t -> t list list -> t
 end
 
