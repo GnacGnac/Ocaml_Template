@@ -21,20 +21,29 @@ module type S = sig
 
   type method_ = Get | Post
   type type_ = Text | Password | Text_area | Submit | Checkbox | Hidden
-  type color = Rgb of int * int * int
+  type color = Rgb of int * int * int | Transparent
   val bg_main : color
   val bg_title : color
   val bg1 : color
   val bg2 : color
   val bg_submit : color
   val red : color
+  val transparent : color
   type face = Arial
+  type font_family = Face of face
   type alignment = Left | Right | Center | Top | Down | Justify
   type size = Percent of int | Pixel of int | Absolute of int | Auto
+  type cursor = Pointer
   type style_attribute =
   | Text_align of alignment
   | Color of color
   | Background_color of color
+  | Cursor of cursor
+  | Border of size
+  | Margin of size
+  | Padding of size
+  | Font_size of size
+  | Font_family of font_family list
   type style_attributes = style_attribute list
 
   type 'a attribute_node = ?class_:string -> ?style:style_attributes -> 'a
@@ -64,6 +73,8 @@ module type S = sig
   val select      : (?name:name -> t list -> t) attribute_node
   val option      :
     (?selected:unit -> ?value:string -> t list -> t) attribute_node
+  val style       : (?type_:string -> t list -> t) attribute_node
+  val class_def   : ?node:string -> string -> style_attributes -> t
 
   val to_string : t -> string
 
@@ -106,12 +117,13 @@ module Make (Parameter : PARAMETER) = struct
     | Checkbox -> "checkbox"
     | Hidden -> "hidden"
 
-  type color = Rgb of int * int * int
+  type color = Rgb of int * int * int | Transparent
   let string_of_color = function
     | Rgb (red, green, blue) ->
       "rgb(" ^ (string_of_int (red mod 256)) ^ "," ^
 	(string_of_int (green mod 256)) ^ "," ^ (string_of_int (blue mod 256)) ^
 	")"
+    | Transparent -> "transparent"
 
   let red = Rgb (255, 0, 0)
   let white = Rgb (255, 255, 255)
@@ -120,10 +132,17 @@ module Make (Parameter : PARAMETER) = struct
   let bg1 = white
   let bg2 = Rgb (0xD3, 0xD3, 0xD3)
   let bg_submit = Rgb (0xF5, 0xA9, 0xA9)
+  let transparent = Transparent
 
   type face = Arial
-  let string_of_face = function
+  let string_of_face_plain = function
     | Arial -> "arial"
+  let string_of_face face = "\"" ^ (string_of_face_plain face) ^ "\""
+
+  type font_family = Face of face
+  let string_of_font_family = function
+    | Face face -> string_of_face face
+  let string_of_font_family_list = List_ext.to_string "," string_of_font_family
 
   type alignment = Left | Right | Center | Top | Down | Justify
   let string_of_alignment = function
@@ -141,15 +160,32 @@ module Make (Parameter : PARAMETER) = struct
     | Absolute i -> string_of_int i
     | Auto -> "auto"
 
+  type cursor = Pointer
+  let string_of_cursor = function
+    | Pointer -> "pointer"
+
   type style_attribute =
   | Text_align of alignment
   | Color of color
   | Background_color of color
+  | Cursor of cursor
+  | Border of size
+  | Margin of size
+  | Padding of size
+  | Font_size of size
+  | Font_family of font_family list
 
   let components_of_style_attribute = function
     | Text_align alignment -> ("text-align", string_of_alignment alignment)
     | Color color -> ("color", string_of_color color)
     | Background_color color -> ("background-color", string_of_color color)
+    | Cursor cursor -> ("cursor", string_of_cursor cursor)
+    | Border size -> ("border", string_of_size size)
+    | Margin size -> ("margin", string_of_size size)
+    | Padding size -> ("padding", string_of_size size)
+    | Font_size size -> ("font-size", string_of_size size)
+    | Font_family font_family_list ->
+      ("font-family", string_of_font_family_list font_family_list)
 
   let string_of_style_attribute attribute =
     let (attribute, value) = components_of_style_attribute attribute in
@@ -161,10 +197,18 @@ module Make (Parameter : PARAMETER) = struct
     List.fold_left (^) "" attributes
 
   type attribute =
-  | Type of type_ | Value of string | Action of Parameter.Action.t
-  | Name of Parameter.Name.t | Method of method_ | Class of string
-  | Style of style_attributes | Href of string | Selected | Colspan of int
+  | Type of type_
+  | Value of string
+  | Action of Parameter.Action.t
+  | Name of Parameter.Name.t
+  | Method of method_
+  | Class of string
+  | Style of style_attributes
+  | Href of string
+  | Selected
+  | Colspan of int
   | Rowspan of int
+  | Style_type of string
 
   let components_of_attribute = function
     | Type type_ -> ("type", string_of_type_ type_)
@@ -179,10 +223,27 @@ module Make (Parameter : PARAMETER) = struct
     | Selected -> ("selected", "selected")
     | Colspan i -> ("colspan", string_of_int i)
     | Rowspan i -> ("rowspan", string_of_int i)
+    | Style_type s -> ("type", s)
 
   type node =
-  | Html | Body | Input | Br | Paragraph | Table | Tr | Td | Form | Select
-  | Option | A | Span | Div | Strong | Em
+  | Html
+  | Body
+  | Input
+  | Br
+  | Paragraph
+  | Table
+  | Tr
+  | Td
+  | Form
+  | Select
+  | Option
+  | A
+  | Span
+  | Div
+  | Strong
+  | Em
+  | Style_node
+  | Class_def of string option * string * style_attributes
 
   let string_of_node = function
     | Html -> "html"
@@ -201,6 +262,8 @@ module Make (Parameter : PARAMETER) = struct
     | Div -> "div"
     | Strong -> "strong"
     | Em -> "em"
+    | Style_node -> "style"
+    | Class_def _ -> assert false (* do not use on this argument *)
 
   let acute s = s ^ "acute"
   let grave s = s ^ "grave"
@@ -280,6 +343,8 @@ module Make (Parameter : PARAMETER) = struct
   let get_selected_attribute = get_generic_attribute (fun () -> Selected)
   let get_colspan_attribute = get_generic_attribute (fun i -> Colspan i)
   let get_rowspan_attribute = get_generic_attribute (fun i -> Rowspan i)
+  let get_style_type_attribute =
+    get_generic_attribute (fun attribute -> Style_type attribute)
 
   let exact_text s = Text s
   let text s = exact_text (string s)
@@ -318,23 +383,41 @@ module Make (Parameter : PARAMETER) = struct
     let selected = get_selected_attribute selected in
     let value = get_value_attribute value in
     node Option (selected @ value) ?class_ ?style children
+  let style ?class_ ?style ?type_ children =
+    let type_ = get_style_type_attribute type_ in
+    node Style_node type_ ?class_ ?style children
+  let class_def ?node name attributes =
+    Node (Class_def (node, name, attributes), [], [])
 
+
+  let string_of_style_attributes_with_space space attributes =
+    let f attribute = space ^ (string_of_style_attribute attribute) ^ "\n" in
+    let attributes = List.map f attributes in
+    List.fold_left (^) "" attributes
 
   let string_of_attribute attribute =
     let (attribute, value) = components_of_attribute attribute in
     attribute ^ "=\"" ^ value ^ "\""
   let string_of_attributes attributes =
-    let attributes = List.map string_of_attribute attributes in
-    let attributes = List.map (fun attribute -> [" " ; attribute]) attributes in
-    let attributes = List.flatten attributes in
+    let f attribute = " " ^ (string_of_attribute attribute) in
+    let attributes = List.map f attributes in
     List.fold_left (^) "" attributes
+
+  let to_string_class_def space node name attributes =
+    let prefix = match node with
+      | None -> "."
+      | Some node -> node ^ " " in
+    let name = prefix ^ name in
+    Printf.sprintf "%s%s {\n%s%s}"
+      space name
+      (string_of_style_attributes_with_space (space ^ "  ") attributes) space
 
   let rec to_string space = function
     | Text s -> space ^ s
     | Node (node, attributes, children) ->
       to_string_node space node attributes children
 
-  and to_string_node space node attributes children =
+  and to_string_regular_node space node attributes children =
     let name = string_of_node node in
     match children with
     | [] ->
@@ -345,6 +428,11 @@ module Make (Parameter : PARAMETER) = struct
 	(string_of_attributes attributes)
 	(to_string_children (space ^ "  ") children)
 	space name
+
+  and to_string_node space node attributes children = match node with
+    | Class_def (node, name, attributes) ->
+      to_string_class_def space node name attributes
+    | _ -> to_string_regular_node space node attributes children
 
   and to_string_children space children =
     List_ext.to_string "\n" (to_string space) children

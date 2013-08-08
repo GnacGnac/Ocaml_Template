@@ -17,20 +17,29 @@ module type S = sig
 
   type method_ = Get | Post
   type type_ = Text | Password | Text_area | Submit | Checkbox | Hidden
-  type color = Rgb of int * int * int
+  type color = Rgb of int * int * int | Transparent
   val bg_main : color
   val bg_title : color
   val bg1 : color
   val bg2 : color
   val bg_submit : color
   val red : color
+  val transparent : color
   type face = Arial
+  type font_family = Face of face
   type alignment = Left | Right | Center | Top | Down | Justify
   type size = Percent of int | Pixel of int | Absolute of int | Auto
+  type cursor = Pointer
   type style_attribute =
   | Text_align of alignment
   | Color of color
   | Background_color of color
+  | Cursor of cursor
+  | Border of size
+  | Margin of size
+  | Padding of size
+  | Font_size of size
+  | Font_family of font_family list
   type style_attributes = style_attribute list
 
   type 'a attribute_node = ?class_:string -> ?style:style_attributes -> 'a
@@ -60,6 +69,8 @@ module type S = sig
   val select      : (?name:name -> t list -> t) attribute_node
   val option      :
     (?selected:unit -> ?value:string -> t list -> t) attribute_node
+  val style       : (?type_:string -> t list -> t) attribute_node
+  val class_def   : ?node:string -> string -> style_attributes -> t
 
   val to_string : t -> string
 
