@@ -30,6 +30,10 @@ module type S = sig
   type alignment = Left | Right | Center | Top | Down | Justify
   type size = Percent of int | Pixel of int | Absolute of int | Auto
   type cursor = Pointer
+  type class_name =
+  | Class_node of string
+  | Sub_class of string * string
+  | New_class of string
   type style_attribute =
   | Text_align of alignment
   | Color of color
@@ -70,7 +74,7 @@ module type S = sig
   val option      :
     (?selected:unit -> ?value:string -> t list -> t) attribute_node
   val style       : (?type_:string -> t list -> t) attribute_node
-  val class_def   : ?node:string -> string -> style_attributes -> t
+  val class_def   : class_name -> style_attributes -> t
 
   val to_string : t -> string
 

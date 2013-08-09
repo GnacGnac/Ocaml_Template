@@ -34,6 +34,10 @@ module type S = sig
   type alignment = Left | Right | Center | Top | Down | Justify
   type size = Percent of int | Pixel of int | Absolute of int | Auto
   type cursor = Pointer
+  type class_name =
+  | Class_node of string
+  | Sub_class of string * string
+  | New_class of string
   type style_attribute =
   | Text_align of alignment
   | Color of color
@@ -74,7 +78,7 @@ module type S = sig
   val option      :
     (?selected:unit -> ?value:string -> t list -> t) attribute_node
   val style       : (?type_:string -> t list -> t) attribute_node
-  val class_def   : ?node:string -> string -> style_attributes -> t
+  val class_def   : class_name -> style_attributes -> t
 
   val to_string : t -> string
 
@@ -164,6 +168,15 @@ module Make (Parameter : PARAMETER) = struct
   let string_of_cursor = function
     | Pointer -> "pointer"
 
+  type class_name =
+  | Class_node of string
+  | Sub_class of string * string
+  | New_class of string
+  let string_of_class_name = function
+    | Class_node s -> s
+    | Sub_class (node, class_) -> node ^ "." ^ class_
+    | New_class class_ -> "." ^ class_
+
   type style_attribute =
   | Text_align of alignment
   | Color of color
@@ -243,7 +256,7 @@ module Make (Parameter : PARAMETER) = struct
   | Strong
   | Em
   | Style_node
-  | Class_def of string option * string * style_attributes
+  | Class_def of class_name * style_attributes
 
   let string_of_node = function
     | Html -> "html"
@@ -386,8 +399,8 @@ module Make (Parameter : PARAMETER) = struct
   let style ?class_ ?style ?type_ children =
     let type_ = get_style_type_attribute type_ in
     node Style_node type_ ?class_ ?style children
-  let class_def ?node name attributes =
-    Node (Class_def (node, name, attributes), [], [])
+  let class_def class_name attributes =
+    Node (Class_def (class_name, attributes), [], [])
 
 
   let string_of_style_attributes_with_space space attributes =
@@ -403,11 +416,8 @@ module Make (Parameter : PARAMETER) = struct
     let attributes = List.map f attributes in
     List.fold_left (^) "" attributes
 
-  let to_string_class_def space node name attributes =
-    let prefix = match node with
-      | None -> "."
-      | Some node -> node ^ " " in
-    let name = prefix ^ name in
+  let to_string_class_def space class_name attributes =
+    let name = string_of_class_name class_name in
     Printf.sprintf "%s%s {\n%s%s}"
       space name
       (string_of_style_attributes_with_space (space ^ "  ") attributes) space
@@ -430,8 +440,8 @@ module Make (Parameter : PARAMETER) = struct
 	space name
 
   and to_string_node space node attributes children = match node with
-    | Class_def (node, name, attributes) ->
-      to_string_class_def space node name attributes
+    | Class_def (class_name, attributes) ->
+      to_string_class_def space class_name attributes
     | _ -> to_string_regular_node space node attributes children
 
   and to_string_children space children =
