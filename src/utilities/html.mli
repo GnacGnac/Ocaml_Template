@@ -55,6 +55,7 @@ module type S = sig
   val html        : (t list -> t) attribute_node
   val head        : (t list -> t) attribute_node
   val body        : (t list -> t) attribute_node
+  val title       : (t list -> t) attribute_node
   val div         : (t list -> t) attribute_node
   val span        : (t list -> t) attribute_node
   val strong      : (t list -> t) attribute_node

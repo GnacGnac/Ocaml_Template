@@ -59,6 +59,7 @@ module type S = sig
   val html        : (t list -> t) attribute_node
   val head        : (t list -> t) attribute_node
   val body        : (t list -> t) attribute_node
+  val title       : (t list -> t) attribute_node
   val div         : (t list -> t) attribute_node
   val span        : (t list -> t) attribute_node
   val strong      : (t list -> t) attribute_node
@@ -243,6 +244,7 @@ module Make (Parameter : PARAMETER) = struct
   | Html
   | Head
   | Body
+  | Title
   | Input
   | Br
   | Paragraph
@@ -264,6 +266,7 @@ module Make (Parameter : PARAMETER) = struct
     | Html -> "html"
     | Head -> "head"
     | Body -> "body"
+    | Title -> "title"
     | Input -> "input"
     | Br -> "br"
     | Paragraph -> "paragraph"
@@ -367,6 +370,7 @@ module Make (Parameter : PARAMETER) = struct
   let html = node Html []
   let head = node Head []
   let body = node Body []
+  let title = node Title []
   let div = node Div []
   let span = node Span []
   let strong = node Strong []
