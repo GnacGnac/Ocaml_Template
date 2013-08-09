@@ -57,6 +57,7 @@ module type S = sig
   val text        : string -> t
   val exact_text  : string -> t
   val html        : (t list -> t) attribute_node
+  val head        : (t list -> t) attribute_node
   val body        : (t list -> t) attribute_node
   val div         : (t list -> t) attribute_node
   val span        : (t list -> t) attribute_node
@@ -240,6 +241,7 @@ module Make (Parameter : PARAMETER) = struct
 
   type node =
   | Html
+  | Head
   | Body
   | Input
   | Br
@@ -260,6 +262,7 @@ module Make (Parameter : PARAMETER) = struct
 
   let string_of_node = function
     | Html -> "html"
+    | Head -> "head"
     | Body -> "body"
     | Input -> "input"
     | Br -> "br"
@@ -362,6 +365,7 @@ module Make (Parameter : PARAMETER) = struct
   let exact_text s = Text s
   let text s = exact_text (string s)
   let html = node Html []
+  let head = node Head []
   let body = node Body []
   let div = node Div []
   let span = node Span []

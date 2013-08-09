@@ -53,6 +53,7 @@ module type S = sig
   val text        : string -> t
   val exact_text  : string -> t
   val html        : (t list -> t) attribute_node
+  val head        : (t list -> t) attribute_node
   val body        : (t list -> t) attribute_node
   val div         : (t list -> t) attribute_node
   val span        : (t list -> t) attribute_node
