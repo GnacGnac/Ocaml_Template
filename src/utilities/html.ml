@@ -69,8 +69,8 @@ module type S = sig
   val space       : t
   val spaces      : int -> t
   val form        :
-    (?method_:method_ -> ?action:action -> ?onsubmit:string -> t list -> t)
-    attribute_node
+    (?method_:method_ -> ?action:action -> ?onsubmit:string -> ?name:name ->
+     t list -> t) attribute_node
   val input       :
     (?type_:type_ -> ?value:string -> ?name:name -> unit -> t) attribute_node
   val a           : (?href:string -> t list -> t) attribute_node
@@ -383,11 +383,12 @@ module Make (Parameter : PARAMETER) = struct
   let br ?class_ ?style () = node Br [] ?class_ ?style []
   let spaces n = exact_text (String_ext.repeat n "&nbsp;")
   let space = spaces 1
-  let form ?class_ ?style ?method_ ?action ?onsubmit children =
+  let form ?class_ ?style ?method_ ?action ?onsubmit ?name children =
     let method_ = get_method_attribute method_ in
     let action = get_action_attribute action in
     let onsubmit = get_onsubmit_attribute onsubmit in
-    node Form (method_ @ action @ onsubmit) ?class_ ?style children
+    let name = get_name_attribute name in
+    node Form (method_ @ action @ onsubmit @ name) ?class_ ?style children
   let input ?class_ ?style ?type_ ?value ?name () =
     let type_ = get_type_attribute type_ in
     let value = get_value_attribute value in

@@ -65,8 +65,8 @@ module type S = sig
   val space       : t
   val spaces      : int -> t
   val form        :
-    (?method_:method_ -> ?action:action -> ?onsubmit:string -> t list -> t)
-    attribute_node
+    (?method_:method_ -> ?action:action -> ?onsubmit:string -> ?name:name ->
+     t list -> t) attribute_node
   val input       :
     (?type_:type_ -> ?value:string -> ?name:name -> unit -> t) attribute_node
   val a           : (?href:string -> t list -> t) attribute_node
