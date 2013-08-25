@@ -82,6 +82,7 @@ module type S = sig
     (?selected:unit -> ?value:string -> t list -> t) attribute_node
   val style       : (?type_:string -> t list -> t) attribute_node
   val class_def   : class_name -> style_attributes -> t
+  val script      : string -> t
 
   val to_string : t -> string
 
@@ -264,6 +265,7 @@ module Make (Parameter : PARAMETER) = struct
   | Em
   | Style_node
   | Class_def of class_name * style_attributes
+  | Script
 
   let string_of_node = function
     | Html -> "html"
@@ -286,6 +288,7 @@ module Make (Parameter : PARAMETER) = struct
     | Em -> "em"
     | Style_node -> "style"
     | Class_def _ -> assert false (* do not use on this argument *)
+    | Script -> "script"
 
   let acute s = s ^ "acute"
   let grave s = s ^ "grave"
@@ -415,6 +418,7 @@ module Make (Parameter : PARAMETER) = struct
     node Style_node type_ ?class_ ?style children
   let class_def class_name attributes =
     Node (Class_def (class_name, attributes), [], [])
+  let script s = node Script [] [exact_text s]
 
 
   let string_of_style_attributes_with_space space attributes =

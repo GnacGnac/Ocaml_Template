@@ -78,6 +78,7 @@ module type S = sig
     (?selected:unit -> ?value:string -> t list -> t) attribute_node
   val style       : (?type_:string -> t list -> t) attribute_node
   val class_def   : class_name -> style_attributes -> t
+  val script      : string -> t
 
   val to_string : t -> string
 
