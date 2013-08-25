@@ -69,7 +69,8 @@ module type S = sig
   val space       : t
   val spaces      : int -> t
   val form        :
-    (?method_:method_ -> ?action:action -> t list -> t) attribute_node
+    (?method_:method_ -> ?action:action -> ?onsubmit:string -> t list -> t)
+    attribute_node
   val input       :
     (?type_:type_ -> ?value:string -> ?name:name -> unit -> t) attribute_node
   val a           : (?href:string -> t list -> t) attribute_node
@@ -224,6 +225,7 @@ module Make (Parameter : PARAMETER) = struct
   | Colspan of int
   | Rowspan of int
   | Style_type of string
+  | On_submit of string
 
   let components_of_attribute = function
     | Type type_ -> ("type", string_of_type_ type_)
@@ -239,6 +241,7 @@ module Make (Parameter : PARAMETER) = struct
     | Colspan i -> ("colspan", string_of_int i)
     | Rowspan i -> ("rowspan", string_of_int i)
     | Style_type s -> ("type", s)
+    | On_submit s -> ("onsubmit", s)
 
   type node =
   | Html
@@ -364,6 +367,7 @@ module Make (Parameter : PARAMETER) = struct
   let get_rowspan_attribute = get_generic_attribute (fun i -> Rowspan i)
   let get_style_type_attribute =
     get_generic_attribute (fun attribute -> Style_type attribute)
+  let get_onsubmit_attribute = get_generic_attribute (fun s -> On_submit s)
 
   let exact_text s = Text s
   let text s = exact_text (string s)
@@ -379,10 +383,11 @@ module Make (Parameter : PARAMETER) = struct
   let br ?class_ ?style () = node Br [] ?class_ ?style []
   let spaces n = exact_text (String_ext.repeat n "&nbsp;")
   let space = spaces 1
-  let form ?class_ ?style ?method_ ?action children =
+  let form ?class_ ?style ?method_ ?action ?onsubmit children =
     let method_ = get_method_attribute method_ in
     let action = get_action_attribute action in
-    node Form (method_ @ action) ?class_ ?style children
+    let onsubmit = get_onsubmit_attribute onsubmit in
+    node Form (method_ @ action @ onsubmit) ?class_ ?style children
   let input ?class_ ?style ?type_ ?value ?name () =
     let type_ = get_type_attribute type_ in
     let value = get_value_attribute value in
