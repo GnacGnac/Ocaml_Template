@@ -28,6 +28,7 @@ module type S = sig
   val bg2 : color
   val bg_submit : color
   val red : color
+  val blue : color
   val transparent : color
   type face = Arial
   type font_family = Face of face
@@ -134,6 +135,7 @@ module Make (Parameter : PARAMETER) = struct
     | Transparent -> "transparent"
 
   let red = Rgb (255, 0, 0)
+  let blue = Rgb (0, 0, 255)
   let white = Rgb (255, 255, 255)
   let bg_main = Rgb (0xA9, 0xA9, 0xF5)
   let bg_title = Rgb (0xCE, 0xF6, 0xF5)
