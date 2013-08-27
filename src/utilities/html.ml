@@ -33,8 +33,10 @@ module type S = sig
   type face = Arial
   type font_family = Face of face
   type alignment = Left | Right | Center | Top | Down | Justify
-  type size = Percent of int | Pixel of int | Absolute of int | Auto
+  type size = Percent of int | Pixel of int | Absolute of int | Auto | Em of int
   type cursor = Pointer
+  type position = Absolute_position
+  type list_style_type = No_list_style_type
   type class_name =
   | Class_node of string
   | Sub_class of string * string
@@ -49,6 +51,9 @@ module type S = sig
   | Padding of size
   | Font_size of size
   | Font_family of font_family list
+  | Position of position
+  | List_style_type of list_style_type
+  | Alignment of (alignment * size)
   type style_attributes = style_attribute list
 
   type 'a attribute_node = ?class_:string -> ?style:style_attributes -> 'a
@@ -163,16 +168,25 @@ module Make (Parameter : PARAMETER) = struct
     | Down -> "down"
     | Justify -> "justify"
 
-  type size = Percent of int | Pixel of int | Absolute of int | Auto
+  type size = Percent of int | Pixel of int | Absolute of int | Auto | Em of int
   let string_of_size = function
     | Percent i -> (string_of_int i) ^ "%"
     | Pixel i -> (string_of_int i) ^ "px"
     | Absolute i -> string_of_int i
     | Auto -> "auto"
+    | Em i -> (string_of_int i) ^ "em"
 
   type cursor = Pointer
   let string_of_cursor = function
     | Pointer -> "pointer"
+
+  type position = Absolute_position
+  let string_of_position = function
+    | Absolute_position -> "absolute"
+
+  type list_style_type = No_list_style_type
+  let string_of_list_style_type = function
+    | No_list_style_type -> "none"
 
   type class_name =
   | Class_node of string
@@ -193,6 +207,9 @@ module Make (Parameter : PARAMETER) = struct
   | Padding of size
   | Font_size of size
   | Font_family of font_family list
+  | Position of position
+  | List_style_type of list_style_type
+  | Alignment of (alignment * size)
 
   let components_of_style_attribute = function
     | Text_align alignment -> ("text-align", string_of_alignment alignment)
@@ -205,6 +222,11 @@ module Make (Parameter : PARAMETER) = struct
     | Font_size size -> ("font-size", string_of_size size)
     | Font_family font_family_list ->
       ("font-family", string_of_font_family_list font_family_list)
+    | Position position -> ("position", string_of_position position)
+    | List_style_type list_style_type ->
+      ("list-style-type", string_of_list_style_type list_style_type)
+    | Alignment (alignment, size) ->
+      (string_of_alignment alignment, string_of_size size)
 
   let string_of_style_attribute attribute =
     let (attribute, value) = components_of_style_attribute attribute in
