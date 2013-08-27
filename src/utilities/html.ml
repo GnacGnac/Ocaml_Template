@@ -55,6 +55,7 @@ module type S = sig
   | Position of position
   | List_style_type of list_style_type
   | Alignment of (alignment * size)
+  | Padding_left of size
   type style_attributes = style_attribute list
 
   type 'a attribute_node = ?class_:string -> ?style:style_attributes -> 'a
@@ -214,6 +215,7 @@ module Make (Parameter : PARAMETER) = struct
   | Position of position
   | List_style_type of list_style_type
   | Alignment of (alignment * size)
+  | Padding_left of size
 
   let components_of_style_attribute = function
     | Text_align alignment -> ("text-align", string_of_alignment alignment)
@@ -231,6 +233,7 @@ module Make (Parameter : PARAMETER) = struct
       ("list-style-type", string_of_list_style_type list_style_type)
     | Alignment (alignment, size) ->
       (string_of_alignment alignment, string_of_size size)
+    | Padding_left size -> ("padding-left", string_of_size size)
 
   let string_of_style_attribute attribute =
     let (attribute, value) = components_of_style_attribute attribute in

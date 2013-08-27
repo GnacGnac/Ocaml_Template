@@ -51,6 +51,7 @@ module type S = sig
   | Position of position
   | List_style_type of list_style_type
   | Alignment of (alignment * size)
+  | Padding_left of size
   type style_attributes = style_attribute list
 
   type 'a attribute_node = ?class_:string -> ?style:style_attributes -> 'a
