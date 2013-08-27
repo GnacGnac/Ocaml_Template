@@ -33,9 +33,10 @@ module type S = sig
   type face = Arial
   type font_family = Face of face
   type alignment = Left | Right | Center | Top | Down | Justify
-  type size = Percent of int | Pixel of int | Absolute of int | Auto | Em of int
+  type size =
+  | Percent of int | Pixel of int | Absolute of int | Auto | Em_size of int
   type cursor = Pointer
-  type position = Absolute
+  type position = Absolute_position
   type list_style_type = No_list_style_type
   type class_name =
   | Class_node of string
@@ -170,21 +171,22 @@ module Make (Parameter : PARAMETER) = struct
     | Down -> "down"
     | Justify -> "justify"
 
-  type size = Percent of int | Pixel of int | Absolute of int | Auto | Em of int
+  type size =
+  | Percent of int | Pixel of int | Absolute of int | Auto | Em_size of int
   let string_of_size = function
     | Percent i -> (string_of_int i) ^ "%"
     | Pixel i -> (string_of_int i) ^ "px"
     | Absolute i -> string_of_int i
     | Auto -> "auto"
-    | Em i -> (string_of_int i) ^ "em"
+    | Em_size i -> (string_of_int i) ^ "em"
 
   type cursor = Pointer
   let string_of_cursor = function
     | Pointer -> "pointer"
 
-  type position = Absolute
+  type position = Absolute_position
   let string_of_position = function
-    | Absolute -> "absolute"
+    | Absolute_position -> "absolute"
 
   type list_style_type = No_list_style_type
   let string_of_list_style_type = function

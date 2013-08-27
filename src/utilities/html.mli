@@ -29,9 +29,10 @@ module type S = sig
   type face = Arial
   type font_family = Face of face
   type alignment = Left | Right | Center | Top | Down | Justify
-  type size = Percent of int | Pixel of int | Absolute of int | Auto | Em of int
+  type size =
+  | Percent of int | Pixel of int | Absolute of int | Auto | Em_size of int
   type cursor = Pointer
-  type position = Absolute
+  type position = Absolute_position
   type list_style_type = No_list_style_type
   type class_name =
   | Class_node of string
