@@ -31,7 +31,7 @@ module type S = sig
   type alignment = Left | Right | Center | Top | Down | Justify
   type size = Percent of int | Pixel of int | Absolute of int | Auto | Em of int
   type cursor = Pointer
-  type position = Absolute_position
+  type position = Absolute
   type list_style_type = No_list_style_type
   type class_name =
   | Class_node of string
@@ -85,6 +85,8 @@ module type S = sig
   val style       : (?type_:string -> t list -> t) attribute_node
   val class_def   : class_name -> style_attributes -> t
   val script      : string -> t
+  val ul          : (t list -> t) attribute_node
+  val li          : (t list -> t) attribute_node
 
   val to_string : t -> string
 

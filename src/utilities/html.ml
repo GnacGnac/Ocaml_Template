@@ -35,7 +35,7 @@ module type S = sig
   type alignment = Left | Right | Center | Top | Down | Justify
   type size = Percent of int | Pixel of int | Absolute of int | Auto | Em of int
   type cursor = Pointer
-  type position = Absolute_position
+  type position = Absolute
   type list_style_type = No_list_style_type
   type class_name =
   | Class_node of string
@@ -89,6 +89,8 @@ module type S = sig
   val style       : (?type_:string -> t list -> t) attribute_node
   val class_def   : class_name -> style_attributes -> t
   val script      : string -> t
+  val ul          : (t list -> t) attribute_node
+  val li          : (t list -> t) attribute_node
 
   val to_string : t -> string
 
@@ -180,9 +182,9 @@ module Make (Parameter : PARAMETER) = struct
   let string_of_cursor = function
     | Pointer -> "pointer"
 
-  type position = Absolute_position
+  type position = Absolute
   let string_of_position = function
-    | Absolute_position -> "absolute"
+    | Absolute -> "absolute"
 
   type list_style_type = No_list_style_type
   let string_of_list_style_type = function
@@ -290,6 +292,8 @@ module Make (Parameter : PARAMETER) = struct
   | Style_node
   | Class_def of class_name * style_attributes
   | Script
+  | Ul
+  | Li
 
   let string_of_node = function
     | Html -> "html"
@@ -313,6 +317,8 @@ module Make (Parameter : PARAMETER) = struct
     | Style_node -> "style"
     | Class_def _ -> assert false (* do not use on this argument *)
     | Script -> "script"
+    | Ul -> "ul"
+    | Li -> "li"
 
   let acute s = s ^ "acute"
   let grave s = s ^ "grave"
@@ -443,6 +449,8 @@ module Make (Parameter : PARAMETER) = struct
   let class_def class_name attributes =
     Node (Class_def (class_name, attributes), [], [])
   let script s = node Script [] [exact_text s]
+  let ul = node Ul []
+  let li = node Li []
 
 
   let string_of_style_attributes_with_space space attributes =
