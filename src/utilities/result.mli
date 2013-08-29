@@ -10,5 +10,7 @@ val map : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
 val map_result : ('a -> 'c) -> ('a, 'b) t -> ('c, 'b) t
 val map_error : ('b -> 'c) -> ('a, 'b) t -> ('a, 'c) t
 
+val to_bool : ('a, 'b) t -> 'a option
+
 (* Only use on valid monads. *)
 val extract : ('a, 'b) t -> 'a
