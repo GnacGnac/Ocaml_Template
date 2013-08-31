@@ -354,7 +354,7 @@ module Make (Parameter : PARAMETER) = struct
   let special_characters = (* TODO: complete *)
     List.map
       (fun (to_replace, replacement) -> (to_replace, "&" ^ replacement ^ ";"))
-      ([("&", "amp")] @
+      ([("&", "amp") ; ("Ç", "Ccedil") ; ("ç", "ccedil")] @
 	  (List.flatten
 	     (List.map string_voyel
 		[("a", "à", "À", true) ; ("e", "è", "È", false) ;
