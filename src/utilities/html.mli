@@ -77,7 +77,7 @@ module type S = sig
      t list -> t) attribute_node
   val input       :
     (?type_:type_ -> ?value:string -> ?name:name -> unit -> t) attribute_node
-  val a           : (?href:string -> t list -> t) attribute_node
+  val a           : (?href:action -> t list -> t) attribute_node
   val table       : (t list -> t) attribute_node
   val tr          : (t list -> t) attribute_node
   val td          : (?colspan:int -> ?rowspan:int -> t list -> t) attribute_node

@@ -81,7 +81,7 @@ module type S = sig
      t list -> t) attribute_node
   val input       :
     (?type_:type_ -> ?value:string -> ?name:name -> unit -> t) attribute_node
-  val a           : (?href:string -> t list -> t) attribute_node
+  val a           : (?href:action -> t list -> t) attribute_node
   val table       : (t list -> t) attribute_node
   val tr          : (t list -> t) attribute_node
   val td          : (?colspan:int -> ?rowspan:int -> t list -> t) attribute_node
@@ -433,7 +433,7 @@ module Make (Parameter : PARAMETER) = struct
     let name = get_name_attribute name in
     node Input (type_ @ value @ name) ?class_ ?style []
   let a ?class_ ?style ?href children =
-    let href = get_href_attribute href in
+    let href = get_action_attribute href in
     node A href ?class_ ?style children
   let table = node Table []
   let tr = node Tr []
