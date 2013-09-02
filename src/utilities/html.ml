@@ -38,6 +38,12 @@ module type S = sig
   type cursor = Pointer
   type position = Absolute_position
   type list_style_type = No_list_style_type
+  type consistence = Solid
+  type border_attribute =
+  | Border_size of size
+  | Border_consistence of consistence
+  | Border_color of color
+  type border_attributes = border_attribute list
   type class_name =
   | Class_node of string
   | Sub_class of string * string
@@ -47,7 +53,7 @@ module type S = sig
   | Color of color
   | Background_color of color
   | Cursor of cursor
-  | Border of size
+  | Border of border_attributes
   | Margin of size
   | Padding of size
   | Font_size of size
@@ -193,6 +199,23 @@ module Make (Parameter : PARAMETER) = struct
   let string_of_list_style_type = function
     | No_list_style_type -> "none"
 
+  type consistence = Solid
+  let string_of_consistence = function
+    | Solid -> "solid"
+
+  type border_attribute =
+  | Border_size of size
+  | Border_consistence of consistence
+  | Border_color of color
+  let string_of_border_attribute = function
+    | Border_size size -> string_of_size size
+    | Border_consistence consistence -> string_of_consistence consistence
+    | Border_color color -> string_of_color color
+
+  type border_attributes = border_attribute list
+  let string_of_border_attributes =
+    List_ext.to_string " " string_of_border_attribute
+
   type class_name =
   | Class_node of string
   | Sub_class of string * string
@@ -207,7 +230,7 @@ module Make (Parameter : PARAMETER) = struct
   | Color of color
   | Background_color of color
   | Cursor of cursor
-  | Border of size
+  | Border of border_attributes
   | Margin of size
   | Padding of size
   | Font_size of size
@@ -222,7 +245,7 @@ module Make (Parameter : PARAMETER) = struct
     | Color color -> ("color", string_of_color color)
     | Background_color color -> ("background-color", string_of_color color)
     | Cursor cursor -> ("cursor", string_of_cursor cursor)
-    | Border size -> ("border", string_of_size size)
+    | Border attributes -> ("border", string_of_border_attributes attributes)
     | Margin size -> ("margin", string_of_size size)
     | Padding size -> ("padding", string_of_size size)
     | Font_size size -> ("font-size", string_of_size size)

@@ -34,6 +34,12 @@ module type S = sig
   type cursor = Pointer
   type position = Absolute_position
   type list_style_type = No_list_style_type
+  type consistence = Solid
+  type border_attribute =
+  | Border_size of size
+  | Border_consistence of consistence
+  | Border_color of color
+  type border_attributes = border_attribute list
   type class_name =
   | Class_node of string
   | Sub_class of string * string
@@ -43,7 +49,7 @@ module type S = sig
   | Color of color
   | Background_color of color
   | Cursor of cursor
-  | Border of size
+  | Border of border_attributes
   | Margin of size
   | Padding of size
   | Font_size of size
