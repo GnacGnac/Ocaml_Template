@@ -25,6 +25,9 @@ module type S = sig
   val bg_submit : color
   val red : color
   val blue : color
+  val green : color
+  val black : color
+  val white : color
   val transparent : color
   type face = Arial
   type font_family = Face of face

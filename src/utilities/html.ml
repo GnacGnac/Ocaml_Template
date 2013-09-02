@@ -29,6 +29,9 @@ module type S = sig
   val bg_submit : color
   val red : color
   val blue : color
+  val green : color
+  val black : color
+  val white : color
   val transparent : color
   type face = Arial
   type font_family = Face of face
@@ -151,6 +154,8 @@ module Make (Parameter : PARAMETER) = struct
 
   let red = Rgb (255, 0, 0)
   let blue = Rgb (0, 0, 255)
+  let green = Rgb (0, 255, 0)
+  let black = Rgb (0, 0, 0)
   let white = Rgb (255, 255, 255)
   let bg_main = Rgb (0xA9, 0xA9, 0xF5)
   let bg_title = Rgb (0xCE, 0xF6, 0xF5)
@@ -275,7 +280,7 @@ module Make (Parameter : PARAMETER) = struct
   | Method of method_
   | Class of string
   | Style of style_attributes
-  | Href of string
+  | Href of Parameter.Action.t
   | Selected
   | Colspan of int
   | Rowspan of int
@@ -291,7 +296,7 @@ module Make (Parameter : PARAMETER) = struct
     | Class s -> ("class", s)
     | Style style_attributes ->
       ("style", string_of_style_attributes style_attributes)
-    | Href s -> ("href", s)
+    | Href action -> ("href", Parameter.Action.to_string action)
     | Selected -> ("selected", "selected")
     | Colspan i -> ("colspan", string_of_int i)
     | Rowspan i -> ("rowspan", string_of_int i)
@@ -429,6 +434,8 @@ module Make (Parameter : PARAMETER) = struct
   let get_style_type_attribute =
     get_generic_attribute (fun attribute -> Style_type attribute)
   let get_onsubmit_attribute = get_generic_attribute (fun s -> On_submit s)
+  let get_href_attribute =
+    get_generic_attribute (fun attribute -> Href attribute)
 
   let exact_text s = Text s
   let text s = exact_text (string s)
@@ -456,7 +463,7 @@ module Make (Parameter : PARAMETER) = struct
     let name = get_name_attribute name in
     node Input (type_ @ value @ name) ?class_ ?style []
   let a ?class_ ?style ?href children =
-    let href = get_action_attribute href in
+    let href = get_href_attribute href in
     node A href ?class_ ?style children
   let table = node Table []
   let tr = node Tr []
