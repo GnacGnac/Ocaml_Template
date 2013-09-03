@@ -28,6 +28,7 @@ module type S = sig
   val green : color
   val black : color
   val white : color
+  val violet : color
   val transparent : color
   type face = Arial
   type font_family = Face of face

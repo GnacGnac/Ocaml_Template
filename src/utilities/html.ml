@@ -32,6 +32,7 @@ module type S = sig
   val green : color
   val black : color
   val white : color
+  val violet : color
   val transparent : color
   type face = Arial
   type font_family = Face of face
@@ -159,6 +160,7 @@ module Make (Parameter : PARAMETER) = struct
   let green = Rgb (0, 255, 0)
   let black = Rgb (0, 0, 0)
   let white = Rgb (255, 255, 255)
+  let violet = Rgb (255, 0, 255)
   let bg_main = Rgb (0xA9, 0xA9, 0xF5)
   let bg_title = Rgb (0xCE, 0xF6, 0xF5)
   let bg1 = white
