@@ -37,22 +37,23 @@ module type S = sig
   type cursor = Pointer
   type position = Absolute_position
   type list_style_type = No_list_style_type
-  type consistence = Solid
-  type border_attribute =
-  | Border_size of size
-  | Border_consistence of consistence
-  | Border_color of color
-  type border_attributes = border_attribute list
+  type border_style = Solid | No_border_style
+  type border_collapse = Collapse
   type class_name =
   | Class_node of string
   | Sub_class of string * string
   | New_class of string
   type style_attribute =
+  | Width of size
+  | Height of size
   | Text_align of alignment
   | Color of color
   | Background_color of color
   | Cursor of cursor
-  | Border of border_attributes
+  | Border_width of size
+  | Border_style of border_style
+  | Border_color of color
+  | Border_collapse of border_collapse
   | Margin of size
   | Padding of size
   | Font_size of size
@@ -98,6 +99,7 @@ module type S = sig
   val script      : string -> t
   val ul          : (t list -> t) attribute_node
   val li          : (t list -> t) attribute_node
+  val button      : (t list -> t) attribute_node
 
   val to_string : t -> string
 

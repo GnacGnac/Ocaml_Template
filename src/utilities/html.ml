@@ -41,22 +41,23 @@ module type S = sig
   type cursor = Pointer
   type position = Absolute_position
   type list_style_type = No_list_style_type
-  type consistence = Solid
-  type border_attribute =
-  | Border_size of size
-  | Border_consistence of consistence
-  | Border_color of color
-  type border_attributes = border_attribute list
+  type border_style = Solid | No_border_style
+  type border_collapse = Collapse
   type class_name =
   | Class_node of string
   | Sub_class of string * string
   | New_class of string
   type style_attribute =
+  | Width of size
+  | Height of size
   | Text_align of alignment
   | Color of color
   | Background_color of color
   | Cursor of cursor
-  | Border of border_attributes
+  | Border_width of size
+  | Border_style of border_style
+  | Border_color of color
+  | Border_collapse of border_collapse
   | Margin of size
   | Padding of size
   | Font_size of size
@@ -102,6 +103,7 @@ module type S = sig
   val script      : string -> t
   val ul          : (t list -> t) attribute_node
   val li          : (t list -> t) attribute_node
+  val button      : (t list -> t) attribute_node
 
   val to_string : t -> string
 
@@ -204,22 +206,14 @@ module Make (Parameter : PARAMETER) = struct
   let string_of_list_style_type = function
     | No_list_style_type -> "none"
 
-  type consistence = Solid
-  let string_of_consistence = function
+  type border_style = Solid | No_border_style
+  let string_of_border_style = function
     | Solid -> "solid"
+    | No_border_style -> "none"
 
-  type border_attribute =
-  | Border_size of size
-  | Border_consistence of consistence
-  | Border_color of color
-  let string_of_border_attribute = function
-    | Border_size size -> string_of_size size
-    | Border_consistence consistence -> string_of_consistence consistence
-    | Border_color color -> string_of_color color
-
-  type border_attributes = border_attribute list
-  let string_of_border_attributes =
-    List_ext.to_string " " string_of_border_attribute
+  type border_collapse = Collapse
+  let string_of_border_collapse = function
+    | Collapse -> "collapse"
 
   type class_name =
   | Class_node of string
@@ -231,11 +225,16 @@ module Make (Parameter : PARAMETER) = struct
     | New_class class_ -> "." ^ class_
 
   type style_attribute =
+  | Width of size
+  | Height of size
   | Text_align of alignment
   | Color of color
   | Background_color of color
   | Cursor of cursor
-  | Border of border_attributes
+  | Border_width of size
+  | Border_style of border_style
+  | Border_color of color
+  | Border_collapse of border_collapse
   | Margin of size
   | Padding of size
   | Font_size of size
@@ -246,11 +245,17 @@ module Make (Parameter : PARAMETER) = struct
   | Padding_left of size
 
   let components_of_style_attribute = function
+    | Width size -> ("width", string_of_size size)
+    | Height size -> ("height", string_of_size size)
     | Text_align alignment -> ("text-align", string_of_alignment alignment)
     | Color color -> ("color", string_of_color color)
     | Background_color color -> ("background-color", string_of_color color)
     | Cursor cursor -> ("cursor", string_of_cursor cursor)
-    | Border attributes -> ("border", string_of_border_attributes attributes)
+    | Border_width size -> ("border-width", string_of_size size)
+    | Border_style style -> ("border-style", string_of_border_style style)
+    | Border_color color -> ("border-color", string_of_color color)
+    | Border_collapse collapse ->
+      ("border-collapse", string_of_border_collapse collapse)
     | Margin size -> ("margin", string_of_size size)
     | Padding size -> ("padding", string_of_size size)
     | Font_size size -> ("font-size", string_of_size size)
@@ -327,6 +332,7 @@ module Make (Parameter : PARAMETER) = struct
   | Script
   | Ul
   | Li
+  | Button
 
   let string_of_node = function
     | Html -> "html"
@@ -352,6 +358,7 @@ module Make (Parameter : PARAMETER) = struct
     | Script -> "script"
     | Ul -> "ul"
     | Li -> "li"
+    | Button -> "button"
 
   let acute s = s ^ "acute"
   let grave s = s ^ "grave"
@@ -486,6 +493,7 @@ module Make (Parameter : PARAMETER) = struct
   let script s = node Script [] [exact_text s]
   let ul = node Ul []
   let li = node Li []
+  let button = node Button []
 
 
   let string_of_style_attributes_with_space space attributes =
