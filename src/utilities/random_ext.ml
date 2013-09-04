@@ -25,6 +25,7 @@ let int min max =
       | Ok s -> Big_int.big_int_of_string (keep_numbers s)
       | Error (`Could_not_read_file _) -> random ())
     else random () in
+  Sys.remove file ;
   let min = Big_int.big_int_of_int min in
   let max = Big_int.big_int_of_int max in
   let modulo = Big_int.sub_big_int max min in
