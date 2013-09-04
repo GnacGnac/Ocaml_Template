@@ -8,8 +8,9 @@ module M = struct
     [(Term, "term") ; (Var, "var") ; (App, "app") ; (Abs, "abs")]
 end
 
-let string_of_pos a = match Position.line_and_char a with
-  | Ok (line, char) -> Printf.sprintf "line %d, character %d, " line char
+let string_of_pos a = match Position.all a with
+  | Ok (file, line, char) ->
+    Printf.sprintf "in file %s, line %d, character %d, " file line char
   | Error `No_position -> ""
 
 let string_of_error f = function
@@ -46,8 +47,8 @@ let string_of_error f = function
     Printf.sprintf "%s%s is not a node of the grammar."
       (string_of_pos s) (Position.contents s)
 
-let show_error f file error =
-  Error.show ("in file " ^ file ^ ", " ^ (string_of_error f error))
+let show_error f error =
+  Error.show (string_of_error f error)
 
 let run () =
   if Array.length Sys.argv >= 3 then
@@ -59,7 +60,7 @@ let run () =
       let module Lambda = (val lambda : BlockML.PARSE_RESULT) in
       (match Lambda.parse_result with
       | Ok block -> Printf.printf "%s\n%!" (Lambda.to_string block)
-      | Error error -> show_error Lambda.Node.to_string file error)
+      | Error error -> show_error Lambda.Node.to_string error)
     | Error (`Grammar_error error) ->
-      show_error BlockML.Grammar.Node.to_string grammar_file error
+      show_error BlockML.Grammar.Node.to_string error
   else Error.show ("usage: " ^ Sys.argv.(0) ^ " grammar_file file")

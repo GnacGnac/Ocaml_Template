@@ -7,29 +7,32 @@
 
   let pos_of_lexbuf lexbuf =
       let pos = Lexing.lexeme_start_p lexbuf in
+      let file = pos.Lexing.pos_fname in
       let line = pos.Lexing.pos_lnum in
       let char = pos.Lexing.pos_cnum - pos.Lexing.pos_bol in
-      (line, char)
+      (file, line, char)
 
   let position_from_buffer lexbuf a =
-    let (line, char) = pos_of_lexbuf lexbuf in
-    Position.make a line char
+    let (file, line, char) = pos_of_lexbuf lexbuf in
+    Position.make a file line char
 
   module Chars : sig
     val reset : Lexing.lexbuf -> unit
     val add : char -> unit
-    val get : unit -> string * int * int
+    val get : unit -> string * string * int * int
   end = struct
     let chars : string ref = ref ""
+    let file = ref ""
     let line = ref 1
     let char = ref 0
     let reset lexbuf =
-      let (ln, ch) = pos_of_lexbuf lexbuf in
+      let (fl, ln, ch) = pos_of_lexbuf lexbuf in
       chars := "" ;
+      file := fl ;
       line := ln ;
       char := ch
     let add c = chars := !chars ^ (String.make 1 c)
-    let get () = (!chars, !line, !char)
+    let get () = (!chars, !file, !line, !char)
   end
 
   module CommentLevel : sig
@@ -77,8 +80,8 @@ and quoted_string = parse
 		    quoted_string lexbuf }
   | "\\\""        { Chars.add '"' ; quoted_string lexbuf }
   | "\\\\"        { Chars.add '\\' ; quoted_string lexbuf }
-  | '"'           { let (s, line, char) = Chars.get () in
-		    STRING (Position.make s line char) }
+  | '"'           { let (s, file, line, char) = Chars.get () in
+		    STRING (Position.make s file line char) }
   | _ as c        { Chars.add c ; quoted_string lexbuf }
 
 and comment = parse
