@@ -85,3 +85,7 @@ let filter_and_apply f =
   let f' res a =
     res @ (match f a with None -> [] | Some b -> [b]) in
   List.fold_left f' []
+
+let repeat_rank l =
+  let f i a = repeat (i + 1) a in
+  List.flatten (mapi f l)

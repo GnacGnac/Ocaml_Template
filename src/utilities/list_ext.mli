@@ -33,3 +33,5 @@ val make_with_next : 'a -> ('a -> 'a) -> int -> 'a list
 val index_of : 'a -> 'a list -> (int, [> `Not_found]) Result.t
 
 val filter_and_apply : ('a -> 'b option) -> 'a list -> 'b list
+
+val repeat_rank : 'a list -> 'a list
