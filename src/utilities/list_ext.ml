@@ -89,3 +89,10 @@ let filter_and_apply f =
 let repeat_rank l =
   let f i a = repeat (i + 1) a in
   List.flatten (mapi f l)
+
+let pick l =
+  let length = List.length l in
+  if length = 0 then error `Empty_list
+  else
+    let n = Random_ext.int 0 length in
+    return (List.nth l n, removei n l)
