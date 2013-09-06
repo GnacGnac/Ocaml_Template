@@ -15,3 +15,4 @@ open Sys_ext
 open BlockML
 open Debug
 open Grammar_example
+open Array_ext
