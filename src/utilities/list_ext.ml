@@ -96,3 +96,8 @@ let pick l =
   else
     let n = Random_ext.int 0 length in
     return (List.nth l n, removei n l)
+
+let product l1 l2 =
+  let f1 a b = (a, b) in
+  let f2 a = List.map (f1 a) l2 in
+  List.flatten (List.map f2 l1)
