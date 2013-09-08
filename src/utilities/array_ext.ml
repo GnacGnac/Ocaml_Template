@@ -10,5 +10,5 @@ let foldi f e a =
   let length = Array.length a in
   let rec aux e i =
     if i >= length then e
-    else aux (f i e) (i + 1) in
+    else aux (f i e a.(i)) (i + 1) in
   aux e 0
