@@ -18,40 +18,45 @@ module Generic : sig
     val text : string -> t
     val node : Node.t -> t list -> t
     val get_int : t -> (int, [> `No_int]) Result.t
-    val get_text : t -> (string, [> `No_text]) Result.t
-    val get_node_no_pos : Node.t -> t -> (contents, [> `No_such_child]) Result.t
-    val get_int_children : t -> (int list, [> `No_children]) Result.t
-    val get_text_children : t -> (string list, [> `No_children]) Result.t
-    val get_node_children_no_pos :
-      Node.t -> t -> (contents list, [> `No_children]) Result.t
-    val get_children : t -> (contents list, [> `No_children]) Result.t
     val get_int_with_pos : t -> (int Position.t, [> `No_int]) Result.t
+    val get_text : t -> (string, [> `No_text]) Result.t
     val get_text_with_pos : t -> (string Position.t, [> `No_text]) Result.t
     val get_node : Node.t -> t -> (t, [> `No_such_child]) Result.t
+    val get_node_no_pos : Node.t -> t -> (contents, [> `No_such_child]) Result.t
+    val get_int_children : t -> (int list, [> `No_children]) Result.t
     val get_int_children_with_pos :
       t -> (int Position.t list, [> `No_children]) Result.t
+    val get_text_children : t -> (string list, [> `No_children]) Result.t
     val get_text_children_with_pos :
       t -> (string Position.t list, [> `No_children]) Result.t
     val get_node_children :
       Node.t -> t -> (t list, [> `No_children]) Result.t
-    val get_children_with_pos : t -> (t list, [> `No_children]) Result.t
+    val get_node_children_no_pos :
+      Node.t -> t -> (contents list, [> `No_children]) Result.t
+    val get_root_node : t -> (Node.t, [> `Not_a_node]) Result.t
+    val get_root_node_with_pos :
+      t -> (Node.t Position.t, [> `Not_a_node]) Result.t
+    val get_children : t -> (t list, [> `No_children]) Result.t
+    val get_children_no_pos : t -> (contents list, [> `No_children]) Result.t
     val to_string : t -> string
 
     (* Unsafe functions: raise assertion failure. *)
     val extract_int : t -> int
-    val extract_text : t -> string
-    val extract_node_no_pos : Node.t -> t -> contents
-    val extract_int_children : t -> int list
-    val extract_text_children : t -> string list
-    val extract_node_children_no_pos : Node.t -> t -> contents list
-    val extract_children : t -> contents list
     val extract_int_with_pos : t -> int Position.t
+    val extract_text : t -> string
     val extract_text_with_pos : t -> string Position.t
     val extract_node : Node.t -> t -> t
+    val extract_node_no_pos : Node.t -> t -> contents
+    val extract_int_children : t -> int list
     val extract_int_children_with_pos : t -> int Position.t list
+    val extract_text_children : t -> string list
     val extract_text_children_with_pos : t -> string Position.t list
     val extract_node_children : Node.t -> t -> t list
-    val extract_children_with_pos : t -> t list
+    val extract_node_children_no_pos : Node.t -> t -> contents list
+    val extract_root_node : t -> Node.t
+    val extract_root_node_with_pos : t -> Node.t Position.t
+    val extract_children : t -> t list
+    val extract_children_no_pos : t -> contents list
   end
 
 end
