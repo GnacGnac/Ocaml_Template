@@ -33,3 +33,5 @@ val remove_chars : string -> char list -> string
 
 val parse_indices : string -> int -> string -> int list option
 val add_indices : string -> int list -> string
+
+val to_int : string -> (int, [> `Not_an_int of string]) Result.t

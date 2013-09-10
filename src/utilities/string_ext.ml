@@ -80,3 +80,7 @@ let parse_indices base nb_indices s =
 let add_indices base indices =
   let f res i = res ^ sep ^ (string_of_int i) in
   base ^ (List.fold_left f "" indices)
+
+let to_int s =
+  try return (int_of_string s)
+  with Failure _ -> error (`Not_an_int s)
