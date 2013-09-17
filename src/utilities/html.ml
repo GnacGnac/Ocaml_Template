@@ -60,6 +60,7 @@ module type S = sig
   | Border_color of color
   | Border_collapse of border_collapse
   | Margin of size
+  | Margin_right of size
   | Padding of size
   | Font_size of size
   | Font_family of font_family list
@@ -238,6 +239,7 @@ module Make (Parameter : PARAMETER) = struct
   | Border_color of color
   | Border_collapse of border_collapse
   | Margin of size
+  | Margin_right of size
   | Padding of size
   | Font_size of size
   | Font_family of font_family list
@@ -259,6 +261,7 @@ module Make (Parameter : PARAMETER) = struct
     | Border_collapse collapse ->
       ("border-collapse", string_of_border_collapse collapse)
     | Margin size -> ("margin", string_of_size size)
+    | Margin_right size -> ("margin-right", string_of_size size)
     | Padding size -> ("padding", string_of_size size)
     | Font_size size -> ("font-size", string_of_size size)
     | Font_family font_family_list ->

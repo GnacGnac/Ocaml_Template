@@ -56,6 +56,7 @@ module type S = sig
   | Border_color of color
   | Border_collapse of border_collapse
   | Margin of size
+  | Margin_right of size
   | Padding of size
   | Font_size of size
   | Font_family of font_family list
