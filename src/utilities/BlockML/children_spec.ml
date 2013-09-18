@@ -32,6 +32,15 @@ module Occurrence = struct
   let option = between 0 1
   let one = exactly 1
 
+  let combine occurrence = List.map (fun x -> (x, occurrence))
+  let anys l = combine any l
+  let exactlys i l = combine (exactly i) l
+  let at_leasts i l = combine (at_least i) l
+  let at_mosts i l = combine (at_most i) l
+  let betweens i j l = combine (between i j) l
+  let options l = combine option l
+  let ones l = combine one l
+
   let to_string occurrence =
     Printf.sprintf "%d..%s" (min occurrence) (string_of_bound (max occurrence))
 

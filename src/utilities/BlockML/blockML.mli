@@ -66,13 +66,20 @@ module Occurrence : sig
   type t
   val make : int -> bound -> t
   val any : t
+  val anys : 'a list -> ('a * t) list
   val none : t
   val exactly : int -> t
+  val exactlys : int -> 'a list -> ('a * t) list
   val at_least : int -> t
+  val at_leasts : int -> 'a list -> ('a * t) list
   val at_most : int -> t
+  val at_mosts : int -> 'a list -> ('a * t) list
   val between : int -> int -> t
+  val betweens : int -> int -> 'a list -> ('a * t) list
   val option : t
+  val options : 'a list -> ('a * t) list
   val one : t
+  val ones : 'a list -> ('a * t) list
   val to_string : t -> string
 end
 
