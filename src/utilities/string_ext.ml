@@ -84,3 +84,8 @@ let add_indices base indices =
 let to_int s =
   try return (int_of_string s)
   with Failure _ -> error (`Not_an_int s)
+
+let uppercase_first s =
+  let l = String.length s in
+  if l = 0 then s
+  else (String.uppercase (String.make 1 s.[0])) ^ (String.sub s 1 (l - 1))

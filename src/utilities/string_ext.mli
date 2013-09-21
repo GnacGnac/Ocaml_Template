@@ -35,3 +35,5 @@ val parse_indices : string -> int -> string -> int list option
 val add_indices : string -> int list -> string
 
 val to_int : string -> (int, [> `Not_an_int of string]) Result.t
+
+val uppercase_first : string -> string
