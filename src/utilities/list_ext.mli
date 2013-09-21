@@ -1,4 +1,6 @@
 
+val insert_between : 'a -> 'a list -> 'a list
+
 val to_string : string -> ('a -> string) -> 'a list -> string
 
 val to_string_err :

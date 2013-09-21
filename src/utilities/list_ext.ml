@@ -2,6 +2,10 @@
 open Result
 
 
+let rec insert_between a = function
+  | ([] | [_]) as l -> l
+  | e :: l -> e :: a :: (insert_between a l)
+
 let rec to_string_err sep f = function
   | [] -> return ""
   | [e] -> f e
