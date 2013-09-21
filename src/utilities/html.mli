@@ -71,6 +71,7 @@ module type S = sig
   val string : string -> string
 
   val text        : string -> t
+  val texts       : string list -> t
   val exact_text  : string -> t
   val html        : (t list -> t) attribute_node
   val head        : (t list -> t) attribute_node

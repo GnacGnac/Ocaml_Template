@@ -75,6 +75,7 @@ module type S = sig
   val string : string -> string
 
   val text        : string -> t
+  val texts       : string list -> t
   val exact_text  : string -> t
   val html        : (t list -> t) attribute_node
   val head        : (t list -> t) attribute_node
@@ -451,6 +452,7 @@ module Make (Parameter : PARAMETER) = struct
 
   let exact_text s = Text s
   let text s = exact_text (string s)
+  let texts l = text (List_ext.to_string " " (fun s -> s) l)
   let html = node Html []
   let head = node Head []
   let body = node Body []
