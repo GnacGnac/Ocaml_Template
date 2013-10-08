@@ -41,3 +41,5 @@ val repeat_rank : 'a list -> 'a list
 val pick : 'a list -> ('a * 'a list, [> `Empty_list]) Result.t
 
 val product : 'a list -> 'b list -> ('a * 'b) list
+
+val remove_doubles : ('a -> 'a -> bool) -> 'a list -> 'a list

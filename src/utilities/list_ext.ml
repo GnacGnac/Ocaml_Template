@@ -105,3 +105,10 @@ let product l1 l2 =
   let f1 a b = (a, b) in
   let f2 a = List.map (f1 a) l2 in
   List.flatten (List.map f2 l1)
+
+let remove_doubles eq =
+  let rec aux acc = function
+    | [] -> List.rev acc
+    | e :: l when List.exists (eq e) l -> aux acc l
+    | e :: l -> aux (e :: acc) l in
+  aux []
