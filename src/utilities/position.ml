@@ -43,5 +43,3 @@ let apply f_pos f_no_pos pos =
   (contents pos)
 
 let map_contents f pos = change_contents (f (contents pos)) pos
-
-let apply_contents f pos = f (contents pos)

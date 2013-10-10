@@ -14,3 +14,5 @@ val to_bool : ('a, 'b) t -> 'a option
 
 (* Only use on valid monads. *)
 val extract : ('a, 'b) t -> 'a
+
+val (|>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c

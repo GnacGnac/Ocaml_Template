@@ -14,4 +14,3 @@ val change_contents : 'a -> 'b t -> 'a t
 
 val apply : (string -> int -> int -> 'a -> 'b) -> ('a -> 'b) -> 'a t -> 'b
 val map_contents : ('a -> 'b) -> 'a t -> 'b t
-val apply_contents : ('a -> 'b) -> 'a t -> 'b

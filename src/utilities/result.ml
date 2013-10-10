@@ -23,3 +23,5 @@ let to_bool = function
 let extract = function
   | Ok a -> a
   | _ -> assert false (* Only use on valid monads. *)
+
+let (|>) f g = fun x -> g (f x)
