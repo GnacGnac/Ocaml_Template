@@ -61,45 +61,6 @@ module Generic : sig
 
 end
 
-module Occurrence : sig
-  type bound = Int of int | Infty
-  type t
-  val make : int -> bound -> t
-  val any : t
-  val anys : 'a list -> ('a * t) list
-  val none : t
-  val exactly : int -> t
-  val exactlys : int -> 'a list -> ('a * t) list
-  val at_least : int -> t
-  val at_leasts : int -> 'a list -> ('a * t) list
-  val at_most : int -> t
-  val at_mosts : int -> 'a list -> ('a * t) list
-  val between : int -> int -> t
-  val betweens : int -> int -> 'a list -> ('a * t) list
-  val option : t
-  val options : 'a list -> ('a * t) list
-  val one : t
-  val ones : 'a list -> ('a * t) list
-  val to_string : t -> string
-end
-
-module Primitive : sig
-  type t = Int | Text
-  type 'a specification = t -> 'a
-  type occurrence_specification = Occurrence.t specification
-  val none : occurrence_specification
-  val anys : occurrence_specification
-  val one : t -> occurrence_specification
-  val any : t -> occurrence_specification
-  val option : t -> occurrence_specification
-  val one_int : occurrence_specification
-  val one_text : occurrence_specification
-  val any_int : occurrence_specification
-  val any_text : occurrence_specification
-  val option_int : occurrence_specification
-  val option_text : occurrence_specification
-end
-
 type 'node occurrence_error =
   [ `Bad_int_occurrence of 'node Position.t * int * Occurrence.t
   | `Bad_text_occurrence of 'node Position.t * int * Occurrence.t
@@ -123,6 +84,17 @@ type 'node grammar_parse_error =
   | `Grammar_unrecognized_node of string Position.t]
 
 module ChildrenSpec : sig
+
+  type primitive = Int | Text
+
+  type 'a value =
+  | Primitive of primitive
+  | Var of 'a
+  | Int of int
+
+  type 'a t =
+  | Op of op * 'a value list
+  | 
 
   type 'a unsafe_children_specification = ('a * Occurrence.t) list
 
