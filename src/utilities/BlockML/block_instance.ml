@@ -7,8 +7,7 @@ module type SPEC = sig
   val to_string : t -> string
   val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
   module Set : Set_ext.S with type elt = t
-  module Children : Children_spec.S with type node = t
-  val spec : t -> Children.t
+  val spec : t -> t Children_spec.t
   val possible_roots : Set.t
 end
 
@@ -60,31 +59,19 @@ module Make (Spec : SPEC) = struct
   and analyze_children_names children = List_ext.bind analyze_names children
 
   let spec_primitive_of_primitive = function
-    | Int _ -> Children_spec.Primitive.Int
-    | Text _ -> Children_spec.Primitive.Text
+    | Int _ -> Children_spec.Primitive (Children_spec.Int)
+    | Text _ -> Children_spec.Primitive (Children_spec.Text)
 
-  let update_nb_primitives primitive nb_primitives primitive' =
-    (nb_primitives primitive') + (if primitive' = primitive then 1 else 0)
+  let exp_of_block block = match Position.contents block with
+    | Primitive prim -> spec_primitive_of_primitive prim
+    | Node (name, _) -> Children_spec.Var name
+
+  let add_env env exp = assert false (* TODO *)
 
   let analyze_children_spec name spec children =
-    let add_occurrence (nb_primitives, nb_sub_nodes) child =
-      match Position.contents child with
-	| Primitive prim ->
-	  let spec_primitive = spec_primitive_of_primitive prim in
-	  (update_nb_primitives spec_primitive nb_primitives, nb_sub_nodes)
-	| Node (name, _) ->
-	  let old_occurrence = Spec.Children.NodeMap.find name nb_sub_nodes in
-	  let old_occurrence = match old_occurrence with
-	    | Ok old_occurrence -> old_occurrence
-	    | Error `Not_found -> 0 in
-	  let nb_sub_nodes =
-	    Spec.Children.NodeMap.add name (old_occurrence + 1) nb_sub_nodes in
-	  (nb_primitives, nb_sub_nodes) in
-    let (nb_primitives, nb_sub_nodes) =
-      List.fold_left
-	add_occurrence ((fun _ -> 0), Spec.Children.NodeMap.empty) children in
-    let nb_children = Spec.Children.make nb_primitives nb_sub_nodes in
-    Spec.Children.check name spec nb_children
+    let add_occurrence env child = add_env env (exp_of_block child) in
+    let env = List.fold_left add_occurrence [] children in
+    Children_spec.check name spec
 
   let rec analyze block = match Position.contents block with
     | Primitive _ -> return ()
