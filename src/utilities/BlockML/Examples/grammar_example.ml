@@ -15,10 +15,12 @@ let string_of_pos a = match Position.all a with
 
 let string_of_error f = function
   | `Parse_error pos -> (string_of_pos pos) ^ " parse error."
+(*
   | `Bad_sub_node_occurrence (parent, child, i, occ) ->
     Printf.sprintf "%sbad child occurrence %s for %s (%d not in %s)."
       (string_of_pos parent) (f child) (f (Position.contents parent)) i
       (BlockML.Occurrence.to_string occ)
+*)
   | `Not_a_root_node node_opt ->
     Printf.sprintf "%s%s is not a root node."
       (string_of_pos node_opt)
@@ -32,6 +34,7 @@ let string_of_error f = function
     Printf.sprintf "%sunterminated comment." (string_of_pos pos)
   | `File_does_not_exist file -> "file " ^ file ^ " does not exist."
   | `Could_not_open_file file -> "could not open file " ^ file ^ "."
+(*
   | `Bad_int_occurrence (node, i, occ) ->
     Printf.sprintf "%sbad int children occurrence for %s (%d not in %s)."
       (string_of_pos node) (f (Position.contents node)) i
@@ -40,15 +43,19 @@ let string_of_error f = function
     Printf.sprintf "%sbad text children occurrence for %s (%d not in %s)."
       (string_of_pos node) (f (Position.contents node)) i
       (BlockML.Occurrence.to_string occ)
+*)
   | `Unrecognized_node s ->
     Printf.sprintf "%sunrecognized node %s."
       (string_of_pos s) (Position.contents s)
   | `Grammar_unrecognized_node s ->
     Printf.sprintf "%s%s is not a node of the grammar."
       (string_of_pos s) (Position.contents s)
+  | `Unknown_children_spec_expression (name, env, spec) ->
+    assert false (* TODO *)
+  | `Children_spec_violation (name, env, spec) ->
+    assert false (* TODO *)
 
-let show_error f error =
-  Error.show (string_of_error f error)
+let show_error f error = Error.show (string_of_error f error)
 
 let run () =
   if Array.length Sys.argv >= 3 then

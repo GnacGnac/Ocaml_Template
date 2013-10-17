@@ -61,6 +61,7 @@ module Generic : sig
 
 end
 
+(*
 module Occurrence : sig
   type bound = Int of int | Infty
   type t
@@ -104,26 +105,34 @@ type 'node occurrence_error =
   [ `Bad_int_occurrence of 'node Position.t * int * Occurrence.t
   | `Bad_text_occurrence of 'node Position.t * int * Occurrence.t
   | `Bad_sub_node_occurrence of 'node Position.t * 'node * int * Occurrence.t]
-
-type 'node analyze_error =
-  [ 'node occurrence_error
-  | `Not_a_root_node of 'node option Position.t]
-
-type 'node parse_error =
-  [ 'node analyze_error
-  | `File_does_not_exist of string
-  | `Could_not_open_file of string
-  | `Unrecognized_char of char Position.t
-  | `Unterminated_comment of unit Position.t
-  | `Parse_error of unit Position.t
-  | `Unrecognized_node of string Position.t]
-
-type 'node grammar_parse_error =
-  [ 'node parse_error
-  | `Grammar_unrecognized_node of string Position.t]
+*)
 
 module ChildrenSpec : sig
 
+  type primitive = Int | Text
+  type bin_op = Add | Sub | Mul
+  type 'node exp =
+  | Primitive of primitive
+  | Var of 'node
+  | Cst of int
+  | Bin_op of bin_op * 'node exp * 'node exp
+  type bin_cmp = Eq | Diff | Le | Lt | Ge | Gt
+  type un_con = Not
+  type bin_con = And | Or
+  type 'node t =
+  | Bin_cmp of bin_cmp * 'node exp * 'node exp
+  | Un_con of un_con * 'node t
+  | Bin_con of bin_con * 'node t * 'node t
+  type 'node env = ('node exp * int) list
+
+  type 'node occurrence_error =
+  [ `Unknown_children_spec_expression of ('node env * 'node exp)
+  | `Children_spec_violation of ('node env * 'node t) ]
+
+  val check :
+    'node env -> 'node t -> (unit, [> 'node occurrence_error]) Result.t
+
+(*
   type 'a unsafe_children_specification = ('a * Occurrence.t) list
 
   val empty : 'a unsafe_children_specification
@@ -156,16 +165,39 @@ module ChildrenSpec : sig
   end
 
   module Make (Node : Map_ext.ORDERED_TYPE) : S with type node = Node.t
+*)
 
 end
+
+type 'node occurrence_error =
+[ `Unknown_children_spec_expression of
+    ('node Position.t * 'node ChildrenSpec.env * 'node ChildrenSpec.exp)
+| `Children_spec_violation of
+    ('node Position.t * 'node ChildrenSpec.env * 'node ChildrenSpec.t) ]
+
+type 'node analyze_error =
+  [ 'node occurrence_error
+  | `Not_a_root_node of 'node option Position.t ]
+
+type 'node parse_error =
+  [ 'node analyze_error
+  | `File_does_not_exist of string
+  | `Could_not_open_file of string
+  | `Unrecognized_char of char Position.t
+  | `Unterminated_comment of unit Position.t
+  | `Parse_error of unit Position.t
+  | `Unrecognized_node of string Position.t ]
+
+type 'node grammar_parse_error =
+  [ 'node parse_error
+  | `Grammar_unrecognized_node of string Position.t ]
 
 module Instance : sig
 
   module type SPEC = sig
     include String_ext.STRINGABLE
     module Set : Set_ext.S with type elt = t
-    module Children : ChildrenSpec.S with type node = t
-    val spec : t -> Children.t
+    val spec : t -> t ChildrenSpec.t
     val possible_roots : Set.t
   end
 
@@ -181,8 +213,7 @@ module Instance : sig
 
   module type UNSAFE_SPEC = sig
     include String_ext.UNSAFE_STRINGABLE
-    val spec :
-      t -> (Occurrence.t Primitive.specification * (t * Occurrence.t) list)
+    val spec : t -> t ChildrenSpec.t
     val possible_roots : t list
   end
 
@@ -191,6 +222,7 @@ module Instance : sig
 end
 
 
+(*
 module Grammar : sig
   type node =
     | Grammar
@@ -231,3 +263,4 @@ val parse_from_external :
   (module String_ext.UNSAFE_STRINGABLE) -> string -> string ->
   ((module PARSE_RESULT),
    [> `Grammar_error of [> Grammar.node grammar_parse_error]]) Result.t
+*)

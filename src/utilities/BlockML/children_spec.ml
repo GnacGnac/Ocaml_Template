@@ -36,7 +36,7 @@ let eval_bin_op = function
   | Mul -> ( * )
 
 let rec eval_exp env = function
-  | e when List.mem_assoc e env -> List.assoc e env
+  | e when List.mem_assoc e env -> return (List.assoc e env)
   | Cst i -> return i
   | Bin_op (bin_op, e1, e2) ->
     eval_exp env e1 >>= fun e1 ->

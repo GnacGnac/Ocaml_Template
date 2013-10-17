@@ -3,10 +3,11 @@ open Result
 
 
 module Generic = Block_generic
-module Occurrence = Children_spec.Occurrence
-module Primitive = Children_spec.Primitive
 
-type 'node occurrence_error = 'node Children_spec.occurrence_error
+
+module ChildrenSpec = Children_spec
+
+type 'node occurrence_error = 'node Block_instance.occurrence_error
 type 'node analyze_error = 'node Block_instance.analyze_error
 type 'node parse_error = 'node Block_instance.parse_error
 
@@ -14,11 +15,10 @@ type 'node grammar_parse_error =
   [ 'node parse_error
   | `Grammar_unrecognized_node of string Position.t]
 
-module ChildrenSpec = Children_spec
-
 module Instance = Block_instance
 
 
+(*
 module Grammar = struct
 
   type node =
@@ -61,6 +61,10 @@ module Grammar = struct
     let possible_roots = [Grammar]
 
     let spec = function
+      | _ -> assert false (* TODO *)
+
+(*
+    let spec = function
       | Grammar ->
 	(Primitive.none, ChildrenSpec.ones [Possible_roots ; Children_specs])
       | Possible_roots -> (Primitive.any_text, ChildrenSpec.empty)
@@ -78,6 +82,7 @@ module Grammar = struct
 	(Primitive.none, [(Min, Occurrence.one) ; (Max, Occurrence.option)])
       | Min -> (Primitive.one_int, ChildrenSpec.empty)
       | Max -> (Primitive.one_int, ChildrenSpec.empty)
+*)
 
   end
 
@@ -96,7 +101,6 @@ module Grammar = struct
 
     module MSet = Set_ext.Make (M)
     module MMap = Map_ext.Make (M)
-    module MChildren = ChildrenSpec.Make (M)
 
     let of_string pos_string =
       map_error
@@ -215,3 +219,4 @@ let parse_from_external unsafe_stringable grammar_file file =
     end in
     return (module Instance : PARSE_RESULT)
   | Error err -> error (`Grammar_error err)
+*)

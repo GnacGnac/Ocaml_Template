@@ -11,9 +11,14 @@ module type SPEC = sig
   val possible_roots : Set.t
 end
 
+type 'node occurrence_error =
+[ `Unknown_children_spec_expression of
+    ('node Position.t * 'node Children_spec.env * 'node Children_spec.exp)
+| `Children_spec_violation of
+    ('node Position.t * 'node Children_spec.env * 'node Children_spec.t) ]
 
 type 'node analyze_error =
-  [ 'node Children_spec.occurrence_error
+  [ 'node occurrence_error
   | `Not_a_root_node of 'node option Position.t]
 
 type 'node parse_error =
@@ -66,12 +71,22 @@ module Make (Spec : SPEC) = struct
     | Primitive prim -> spec_primitive_of_primitive prim
     | Node (name, _) -> Children_spec.Var name
 
-  let add_env env exp = assert false (* TODO *)
+  let add_env env e =
+    let f (found, env) (e', n) =
+      let (found, added) = if e' = e then (true, 1) else (found, 0) in
+      (found, (e', n + added) :: env) in
+    let (found, env) = List.fold_left f (false, []) env in
+    (if found then [] else [(e, 1)]) @ env
 
   let analyze_children_spec name spec children =
+    let f_error = function
+      | `Unknown_children_spec_expression (env, e) ->
+	`Unknown_children_spec_expression (name, env, e)
+      | `Children_spec_violation (env, e) ->
+	`Children_spec_violation (name, env, e) in
     let add_occurrence env child = add_env env (exp_of_block child) in
     let env = List.fold_left add_occurrence [] children in
-    Children_spec.check name spec
+    map_error f_error (Children_spec.check env spec)
 
   let rec analyze block = match Position.contents block with
     | Primitive _ -> return ()
@@ -112,10 +127,7 @@ end
 
 module type UNSAFE_SPEC = sig
   include String_ext.UNSAFE_STRINGABLE
-  val spec :
-    t ->
-    (Children_spec.Occurrence.t Children_spec.Primitive.specification *
-     (t * Children_spec.Occurrence.t) list)
+  val spec : t -> t Children_spec.t
   val possible_roots : t list
 end
 
@@ -133,12 +145,7 @@ module MakeUnsafe (Spec : UNSAFE_SPEC) = struct
 
     module Set = Set_ext.Make (M)
 
-    module Children = Children_spec.Make (M)
-
-    let spec node =
-      let (primitives, list) = Spec.spec node in
-      let map = Children.NodeMap.of_list list in
-      Children.make primitives map
+    let spec = Spec.spec
 
     let possible_roots =
       let f roots root = Set.add root roots in
