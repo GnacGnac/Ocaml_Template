@@ -7,9 +7,9 @@ type primitive = Int | Text
 type bin_op = Add | Sub | Mul
 
 type 'a exp =
+| Cst of int
 | Primitive of primitive
 | Var of 'a
-| Cst of int
 | Bin_op of bin_op * 'a exp * 'a exp
 
 type bin_cmp = Eq | Diff | Le | Lt | Ge | Gt
@@ -20,6 +20,8 @@ type bin_con = And | Or
 type 'a t =
 | Bin_cmp of bin_cmp * 'a exp * 'a exp
 | Un_con of un_con * 'a t
+| True
+| False
 | Bin_con of bin_con * 'a t list
 
 
@@ -59,6 +61,8 @@ let rec check env spec =
   | Un_con (Not, spec') -> check_not error (check env spec')
   | Bin_con (And, specs) -> check_and (List.map (check env) specs)
   | Bin_con (Or, specs) -> check_or error (List.map (check env) specs)
+  | True -> return ()
+  | False -> error
 
 and check_bin_cmp error env bin_cmp e1 e2 =
   eval_exp env e1 >>= fun e1 ->
@@ -77,3 +81,49 @@ and check_or error specs =
     | Ok () -> return ()
     | Error _ -> res in
   List.fold_left f error specs
+
+
+let rec base_exps_exp e = match e with
+  | Cst _ -> []
+  | Primitive _ | Var _ -> [e]
+  | Bin_op (_, e1, e2) -> (base_exps_exp e1) @ (base_exps_exp e2)
+
+let rec base_exps_rec = function
+  | Bin_cmp (_, e1, e2) -> (base_exps_exp e1) @ (base_exps_exp e2)
+  | Un_con (_, spec) -> base_exps_rec spec
+  | True | False -> []
+  | Bin_con (_, specs) -> List.flatten (List.map base_exps_rec specs)
+
+let base_exps spec = List_ext.remove_doubles Pervasives.(=) (base_exps_rec spec)
+
+
+let cst n = Cst n
+let int_spec = Primitive Int
+let text_spec = Primitive Text
+let var a = Var a
+
+let bin_cmp bin_cmp a b = Bin_cmp (bin_cmp, a, b)
+let eq a b = bin_cmp Eq a b
+let le a b = bin_cmp Le a b
+
+let bin_con bin_con l = Bin_con (bin_con, l)
+let and_ l = bin_con And l
+
+let nones l = and_ (List.map (eq (cst 0)) l)
+
+let exp_large_interval e n m =
+  let min = le (cst n) e in
+  let max = match m with
+    | None -> True
+    | Some m -> le e (cst m) in
+  and_ [min ; max]
+
+let exact_exp e n = eq e (cst n)
+
+let one_exp e = exact_exp e 1
+
+let only spec l =
+  let bases = base_exps spec in
+  let l = int_spec :: text_spec :: (List.map var l) in
+  let l = List_ext.removes l bases in
+  and_ [spec  ; nones l]

@@ -61,60 +61,15 @@ module Generic : sig
 
 end
 
-(*
-module Occurrence : sig
-  type bound = Int of int | Infty
-  type t
-  val make : int -> bound -> t
-  val any : t
-  val anys : 'a list -> ('a * t) list
-  val none : t
-  val exactly : int -> t
-  val exactlys : int -> 'a list -> ('a * t) list
-  val at_least : int -> t
-  val at_leasts : int -> 'a list -> ('a * t) list
-  val at_most : int -> t
-  val at_mosts : int -> 'a list -> ('a * t) list
-  val between : int -> int -> t
-  val betweens : int -> int -> 'a list -> ('a * t) list
-  val option : t
-  val options : 'a list -> ('a * t) list
-  val one : t
-  val ones : 'a list -> ('a * t) list
-  val to_string : t -> string
-end
-
-module Primitive : sig
-  type t = Int | Text
-  type 'a specification = t -> 'a
-  type occurrence_specification = Occurrence.t specification
-  val none : occurrence_specification
-  val anys : occurrence_specification
-  val one : t -> occurrence_specification
-  val any : t -> occurrence_specification
-  val option : t -> occurrence_specification
-  val one_int : occurrence_specification
-  val one_text : occurrence_specification
-  val any_int : occurrence_specification
-  val any_text : occurrence_specification
-  val option_int : occurrence_specification
-  val option_text : occurrence_specification
-end
-
-type 'node occurrence_error =
-  [ `Bad_int_occurrence of 'node Position.t * int * Occurrence.t
-  | `Bad_text_occurrence of 'node Position.t * int * Occurrence.t
-  | `Bad_sub_node_occurrence of 'node Position.t * 'node * int * Occurrence.t]
-*)
-
 module ChildrenSpec : sig
 
+(*
   type primitive = Int | Text
   type bin_op = Add | Sub | Mul
   type 'node exp =
+  | Cst of int
   | Primitive of primitive
   | Var of 'node
-  | Cst of int
   | Bin_op of bin_op * 'node exp * 'node exp
   type bin_cmp = Eq | Diff | Le | Lt | Ge | Gt
   type un_con = Not
@@ -123,6 +78,19 @@ module ChildrenSpec : sig
   | Bin_cmp of bin_cmp * 'node exp * 'node exp
   | Un_con of un_con * 'node t
   | Bin_con of bin_con * 'node t list
+*)
+  type 'node exp
+
+  val cst : int -> 'node exp
+  val int_spec : 'node exp
+  val text_spec : 'node exp
+  val var : 'node -> 'node exp
+
+  type 'node t
+
+  val eq : 'node exp -> 'node exp -> 'node t
+  val and_ : 'node t list -> 'node t
+
   type 'node env = ('node exp * int) list
 
   type 'node occurrence_error =
@@ -131,41 +99,6 @@ module ChildrenSpec : sig
 
   val check :
     'node env -> 'node t -> (unit, [> 'node occurrence_error]) Result.t
-
-(*
-  type 'a unsafe_children_specification = ('a * Occurrence.t) list
-
-  val empty : 'a unsafe_children_specification
-  val all : Occurrence.t -> 'a list -> 'a unsafe_children_specification
-  val any : 'a -> 'a unsafe_children_specification
-  val one : 'a -> 'a unsafe_children_specification
-  val option : 'a -> 'a unsafe_children_specification
-  val anys : 'a list -> 'a unsafe_children_specification
-  val ones : 'a list -> 'a unsafe_children_specification
-  val options : 'a list -> 'a unsafe_children_specification
-
-  module type S = sig
-    type node
-    module NodeMap : sig
-      include Map_ext.S with type key = node
-      val all : Occurrence.t -> node list -> Occurrence.t t
-      val any : node -> Occurrence.t t
-      val one : node -> Occurrence.t t
-      val option : node -> Occurrence.t t
-      val anys : node list -> Occurrence.t t
-      val ones : node list -> Occurrence.t t
-      val options : node list -> Occurrence.t t
-    end
-    type 'a specification
-    val make : 'a Primitive.specification -> 'a NodeMap.t -> 'a specification
-    type t = Occurrence.t specification
-    val check :
-      node Position.t -> t -> int specification ->
-      (unit, [> node occurrence_error]) Result.t
-  end
-
-  module Make (Node : Map_ext.ORDERED_TYPE) : S with type node = Node.t
-*)
 
 end
 

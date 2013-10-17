@@ -112,3 +112,5 @@ let remove_doubles eq =
     | e :: l when List.exists (eq e) l -> aux acc l
     | e :: l -> aux (e :: acc) l in
   aux []
+
+let removes l1 l2 = List.filter (fun e -> not (List.mem e l2)) l1
