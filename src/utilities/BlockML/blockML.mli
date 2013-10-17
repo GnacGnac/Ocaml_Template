@@ -122,7 +122,7 @@ module ChildrenSpec : sig
   type 'node t =
   | Bin_cmp of bin_cmp * 'node exp * 'node exp
   | Un_con of un_con * 'node t
-  | Bin_con of bin_con * 'node t * 'node t
+  | Bin_con of bin_con * 'node t list
   type 'node env = ('node exp * int) list
 
   type 'node occurrence_error =

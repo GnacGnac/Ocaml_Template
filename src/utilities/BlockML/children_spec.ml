@@ -20,7 +20,7 @@ type bin_con = And | Or
 type 'a t =
 | Bin_cmp of bin_cmp * 'a exp * 'a exp
 | Un_con of un_con * 'a t
-| Bin_con of bin_con * 'a t * 'a t
+| Bin_con of bin_con * 'a t list
 
 
 type 'a env = ('a exp * int) list
@@ -57,9 +57,8 @@ let rec check env spec =
   match spec with
   | Bin_cmp (bin_cmp, e1, e2) -> check_bin_cmp error env bin_cmp e1 e2
   | Un_con (Not, spec') -> check_not error (check env spec')
-  | Bin_con (And, spec1, spec2) -> check_and (check env spec1) (check env spec2)
-  | Bin_con (Or, spec1, spec2) ->
-    check_or error (check env spec1) (check env spec2)
+  | Bin_con (And, specs) -> check_and (List.map (check env) specs)
+  | Bin_con (Or, specs) -> check_or error (List.map (check env) specs)
 
 and check_bin_cmp error env bin_cmp e1 e2 =
   eval_exp env e1 >>= fun e1 ->
@@ -71,11 +70,10 @@ and check_not error = function
   | Ok _ -> error
   | Error _ -> return ()
 
-and check_and spec1 spec2 =
-  spec1 >>= fun () ->
-  spec2 >>= fun () ->
-  return ()
+and check_and specs = List_ext.fold_bind (fun () spec -> spec) () specs
 
-and check_or error spec1 spec2 = match spec1, spec2 with
-  | Ok (), _ | _, Ok () -> return ()
-  | Error _, Error _ -> error
+and check_or error specs =
+  let f res = function
+    | Ok () -> return ()
+    | Error _ -> res in
+  List.fold_left f error specs
