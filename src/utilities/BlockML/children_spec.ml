@@ -98,8 +98,8 @@ let base_exps spec = List_ext.remove_doubles Pervasives.(=) (base_exps_rec spec)
 
 
 let cst n = Cst n
-let int_spec = Primitive Int
-let text_spec = Primitive Text
+let int = Primitive Int
+let text = Primitive Text
 let var a = Var a
 
 let bin_cmp bin_cmp a b = Bin_cmp (bin_cmp, a, b)
@@ -108,22 +108,32 @@ let le a b = bin_cmp Le a b
 
 let bin_con bin_con l = Bin_con (bin_con, l)
 let and_ l = bin_con And l
+let or_ l = bin_con Or l
 
 let nones l = and_ (List.map (eq (cst 0)) l)
 
 let exp_large_interval e n m =
   let min = le (cst n) e in
-  let max = match m with
-    | None -> True
-    | Some m -> le e (cst m) in
-  and_ [min ; max]
+  match m with
+  | None -> min
+  | Some m -> and_ [min ; le e (cst m)]
 
-let exact_exp e n = eq e (cst n)
+let exact_exp n e = eq e (cst n)
+let exact n v = exact_exp n (var v)
 
-let one_exp e = exact_exp e 1
+let one_exp e = exact_exp 1 e
+let one_int = one_exp int
+let one_text = one_exp text
+let one v = one_exp (Var v)
+let ones_exp exps = and_ (List.map one_exp exps)
+let ones vars = ones_exp (List.map var vars)
 
-let only spec l =
+let only l spec =
   let bases = base_exps spec in
-  let l = int_spec :: text_spec :: (List.map var l) in
+  let l = int :: text :: (List.map var l) in
   let l = List_ext.removes l bases in
   and_ [spec  ; nones l]
+
+let sum l specs = or_ (List.map (only l) specs)
+let sum_one_exp l exps = sum l (List.map one_exp exps)
+let sum_one l vars = sum_one_exp l (List.map var vars)

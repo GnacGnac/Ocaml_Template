@@ -82,14 +82,26 @@ module ChildrenSpec : sig
   type 'node exp
 
   val cst : int -> 'node exp
-  val int_spec : 'node exp
-  val text_spec : 'node exp
+  val int : 'node exp
+  val text : 'node exp
   val var : 'node -> 'node exp
 
   type 'node t
 
   val eq : 'node exp -> 'node exp -> 'node t
   val and_ : 'node t list -> 'node t
+
+  val exact : int -> 'node -> 'node t
+
+  val one_text : 'node t
+  val ones_exp : 'node exp list -> 'node t
+  val ones : 'node list -> 'node t
+
+  val sum : 'node list -> 'node t list -> 'node t
+  val sum_one : 'node list -> 'node list -> 'node t
+  val sum_one_exp : 'node list -> 'node exp list -> 'node t
+
+  val only : 'node list -> 'node t -> 'node t
 
   type 'node env = ('node exp * int) list
 
