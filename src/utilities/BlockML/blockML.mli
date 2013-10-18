@@ -63,30 +63,27 @@ end
 
 module ChildrenSpec : sig
 
-(*
   type primitive = Int | Text
   type bin_op = Add | Sub | Mul
-  type 'node exp =
+  type 'a exp =
   | Cst of int
   | Primitive of primitive
-  | Var of 'node
-  | Bin_op of bin_op * 'node exp * 'node exp
+  | Var of 'a
+  | Bin_op of bin_op * 'a exp * 'a exp
   type bin_cmp = Eq | Diff | Le | Lt | Ge | Gt
   type un_con = Not
   type bin_con = And | Or
-  type 'node t =
-  | Bin_cmp of bin_cmp * 'node exp * 'node exp
-  | Un_con of un_con * 'node t
-  | Bin_con of bin_con * 'node t list
-*)
-  type 'node exp
+  type 'a t =
+  | Bin_cmp of bin_cmp * 'a exp * 'a exp
+  | Un_con of un_con * 'a t
+  | True
+  | False
+  | Bin_con of bin_con * 'a t list
 
   val cst : int -> 'node exp
   val int : 'node exp
   val text : 'node exp
   val var : 'node -> 'node exp
-
-  type 'node t
 
   val eq : 'node exp -> 'node exp -> 'node t
   val and_ : 'node t list -> 'node t
@@ -106,8 +103,7 @@ module ChildrenSpec : sig
   type 'node env = ('node exp * int) list
 
   type 'node occurrence_error =
-  [ `Unknown_children_spec_expression of ('node env * 'node exp)
-  | `Children_spec_violation of ('node env * 'node t) ]
+  [ `Children_spec_violation of ('node env * 'node t) ]
 
   val check :
     'node env -> 'node t -> (unit, [> 'node occurrence_error]) Result.t
@@ -115,9 +111,7 @@ module ChildrenSpec : sig
 end
 
 type 'node occurrence_error =
-[ `Unknown_children_spec_expression of
-    ('node Position.t * 'node ChildrenSpec.env * 'node ChildrenSpec.exp)
-| `Children_spec_violation of
+[ `Children_spec_violation of
     ('node Position.t * 'node ChildrenSpec.env * 'node ChildrenSpec.t) ]
 
 type 'node analyze_error =

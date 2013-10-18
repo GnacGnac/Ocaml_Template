@@ -30,6 +30,20 @@ module M = struct
   let all = List.map fst string_assoc
 end
 
+
+let string_of_primitive = function
+  | BlockML.ChildrenSpec.Int -> "int"
+  | BlockML.ChildrenSpec.Text -> "text"
+
+let string_of_exp f = function
+  | BlockML.ChildrenSpec.Cst i -> string_of_int i
+  | BlockML.ChildrenSpec.Primitive primitive -> string_of_primitive primitive
+  | BlockML.ChildrenSpec.Var node -> f node
+  | BlockML.ChildrenSpec.Bin_op _ -> "binop"
+
+let string_of_env f env =
+  "" (* TODO *)
+
 let string_of_pos a = match Position.all a with
   | Ok (file, line, char) ->
     Printf.sprintf "in file %s, line %d, character %d, " file line char
@@ -72,10 +86,8 @@ let string_of_error f = function
   | `Grammar_unrecognized_node s ->
     Printf.sprintf "%s%s is not a node of the grammar."
       (string_of_pos s) (Position.contents s)
-  | `Unknown_children_spec_expression (name, env, spec) ->
-    assert false (* TODO *)
   | `Children_spec_violation (name, env, spec) ->
-    assert false (* TODO *)
+    Printf.sprintf "%s%s." (string_of_pos name) (f (Position.contents name))
 
 let show_error f error = Error.show (string_of_error f error)
 

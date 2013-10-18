@@ -28,8 +28,7 @@ type 'a t =
 type 'a env = ('a exp * int) list
 
 type 'a occurrence_error =
-[ `Unknown_children_spec_expression of ('a env * 'a exp)
-| `Children_spec_violation of ('a env * 'a t) ]
+[ `Children_spec_violation of ('a env * 'a t) ]
 
 
 let eval_bin_op = function
@@ -38,13 +37,11 @@ let eval_bin_op = function
   | Mul -> ( * )
 
 let rec eval_exp env = function
-  | e when List.mem_assoc e env -> return (List.assoc e env)
-  | Cst i -> return i
+  | e when List.mem_assoc e env -> List.assoc e env
+  | Cst i -> i
   | Bin_op (bin_op, e1, e2) ->
-    eval_exp env e1 >>= fun e1 ->
-    eval_exp env e2 >>= fun e2 ->
-    return (eval_bin_op bin_op e1 e2)
-  | e -> error (`Unknown_children_spec_expression (env, e))
+    eval_bin_op bin_op (eval_exp env e1) (eval_exp env e2)
+  | e -> 0
 
 let eval_bin_cmp = function
   | Eq -> (=)
@@ -65,9 +62,7 @@ let rec check env spec =
   | False -> error
 
 and check_bin_cmp error env bin_cmp e1 e2 =
-  eval_exp env e1 >>= fun e1 ->
-  eval_exp env e2 >>= fun e2 ->
-  if eval_bin_cmp bin_cmp e1 e2 then return ()
+  if eval_bin_cmp bin_cmp (eval_exp env e1) (eval_exp env e2) then return ()
   else error
 
 and check_not error = function

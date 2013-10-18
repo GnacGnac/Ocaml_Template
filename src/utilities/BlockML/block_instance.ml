@@ -12,9 +12,7 @@ module type SPEC = sig
 end
 
 type 'node occurrence_error =
-[ `Unknown_children_spec_expression of
-    ('node Position.t * 'node Children_spec.env * 'node Children_spec.exp)
-| `Children_spec_violation of
+[ `Children_spec_violation of
     ('node Position.t * 'node Children_spec.env * 'node Children_spec.t) ]
 
 type 'node analyze_error =
@@ -80,8 +78,6 @@ module Make (Spec : SPEC) = struct
 
   let analyze_children_spec name spec children =
     let f_error = function
-      | `Unknown_children_spec_expression (env, e) ->
-	`Unknown_children_spec_expression (name, env, e)
       | `Children_spec_violation (env, e) ->
 	`Children_spec_violation (name, env, e) in
     let add_occurrence env child = add_env env (exp_of_block child) in
