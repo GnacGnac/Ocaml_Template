@@ -136,7 +136,8 @@ module Grammar = struct
       let possible_roots = G.extract_text_children_with_pos possible_roots in
       List_ext.bind of_string possible_roots
 
-    let apply_if_mem_node block (node, f) = G.get_node node block >>= f block
+    let apply_if_mem_node block (node, f) =
+      G.get_node node block >>= fun child_block -> return (f block child_block)
 
     let bin_cmp_of_block block =
       assert false (* TODO *)
@@ -156,7 +157,10 @@ module Grammar = struct
 	| Error `No_such_child -> None in
       let nodes =
 	[(Bin_cmp, bin_con_spec_of_block) ;
-	 (Un_con, un_con_spec_of_block)] in
+	 (Un_con, un_con_spec_of_block) ;
+	 (Bin_con, bin_con_spec_of_block) ;
+	 (True, true_spec_of_block) ;
+	 (False, false_spec_of_block)] in
       let nodes = List.map (apply_if_mem_node block) nodes in
       extract (List_ext.find_and_apply f nodes)
 
@@ -165,6 +169,10 @@ module Grammar = struct
 
     and bin_con_spec_of_block parent_block bin_con_block =
       assert false (* TODO *)
+
+    and true_spec_of_block parent_block bin_con_block = ChildrenSpec.True
+
+    and false_spec_of_block parent_block bin_con_block = ChildrenSpec.False
 
     let add_children_spec children_specs block =
       let name = G.extract_text_with_pos (G.extract_node Node block) in
