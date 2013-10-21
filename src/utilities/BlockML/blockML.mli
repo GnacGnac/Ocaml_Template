@@ -80,25 +80,43 @@ module ChildrenSpec : sig
   | False
   | Bin_con of bin_con * 'a t list
 
-  val cst : int -> 'node exp
-  val int : 'node exp
-  val text : 'node exp
-  val var : 'node -> 'node exp
+  module type M = sig type t val all : t list end
 
-  val eq : 'node exp -> 'node exp -> 'node t
-  val and_ : 'node t list -> 'node t
+  module type S = sig
+    type node
 
-  val exact : int -> 'node -> 'node t
+    val cst : int -> node exp
+    val int : node exp
+    val text : node exp
+    val var : node -> node exp
 
-  val one_text : 'node t
-  val ones_exp : 'node exp list -> 'node t
-  val ones : 'node list -> 'node t
+    val eq : node exp -> node exp -> node t
+    val and_ : node t list -> node t
 
-  val sum : 'node list -> 'node t list -> 'node t
-  val sum_one : 'node list -> 'node list -> 'node t
-  val sum_one_exp : 'node list -> 'node exp list -> 'node t
+    val exact : int -> node -> node t
 
-  val only : 'node list -> 'node t -> 'node t
+    val one_int : node t
+    val one_text : node t
+    val one : node -> node t
+    val one_exp : node exp -> node t
+    val ones : node list -> node t
+    val ones_exp : node exp list -> node t
+
+    val any_int : node t
+    val any_text : node t
+    val any : node -> node t
+    val any_exp : node exp -> node t
+    val anys : node list -> node t
+    val anys_exp : node exp list -> node t
+
+    val sum : node t list -> node t
+    val sum_one : node list -> node t
+    val sum_one_exp : node exp list -> node t
+
+    val only : node t -> node t
+  end
+
+  module Make (M : M) : S with type node = M.t
 
   type 'node env = ('node exp * int) list
 
@@ -128,8 +146,7 @@ type 'node parse_error =
   | `Unrecognized_node of string Position.t ]
 
 type 'node grammar_parse_error =
-  [ 'node parse_error
-  | `Grammar_unrecognized_node of string Position.t ]
+['node parse_error | `Grammar_unrecognized_node of string Position.t]
 
 module Instance : sig
 
@@ -161,29 +178,43 @@ module Instance : sig
 end
 
 
-(*
 module Grammar : sig
   type node =
     | Grammar
     | Possible_roots
     | Children_specs
     | Children_spec
-    | Name
+    | Node
+    | Spec
+    | Bin_cmp
+    | Un_con
+    | Bin_con
+    | True
+    | False
+    | And
+    | Or
+    | Not
+    | Eq
+    | Diff
+    | Le
+    | Lt
+    | Ge
+    | Gt
+    | Exp
+    | Primitive
+    | Bin_op
+    | Add
+    | Sub
+    | Mul
     | Int
     | Text
-    | Children
-    | Child
-    | Cardinality
-    | Min
-    | Max
-  include Instance.S with type Node.t = node
   module type S = sig
     type t
     module type S = Instance.S with type Node.t = t
     val from_file :
-      string ->
-      ((module S), [> node grammar_parse_error]) Result.t
+      string -> ((module S), [> node grammar_parse_error]) Result.t
   end
+  include Instance.S with type Node.t = node
   module type M = sig
     include String_ext.STRINGABLE
     val compare : t -> t -> int
@@ -202,4 +233,3 @@ val parse_from_external :
   (module String_ext.UNSAFE_STRINGABLE) -> string -> string ->
   ((module PARSE_RESULT),
    [> `Grammar_error of [> Grammar.node grammar_parse_error]]) Result.t
-*)

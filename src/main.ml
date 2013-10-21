@@ -94,20 +94,15 @@ let show_error f error = Error.show (string_of_error f error)
 
 module Spec = struct
 
-  module S = BlockML.ChildrenSpec
+  module S = BlockML.ChildrenSpec.Make (M)
 
-  type t = node
-
-  let string_assoc = M.string_assoc
-
-  let only = S.only M.all
-  let sum_one = S.sum_one M.all
+  include M
 
   let spec = function
-    | Term -> sum_one [Var ; Abs ; App]
-    | Var -> only S.one_text
-    | Abs -> only (S.ones_exp [S.text ; S.var Term])
-    | App -> only (S.exact 2 Term)
+    | Term -> S.sum_one [Var ; Abs ; App]
+    | Var -> S.only S.one_text
+    | Abs -> S.only (S.ones_exp [S.text ; S.var Term])
+    | App -> S.only (S.exact 2 Term)
 
   let possible_roots = [Term]
 

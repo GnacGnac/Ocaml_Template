@@ -92,43 +92,93 @@ let rec base_exps_rec = function
 let base_exps spec = List_ext.remove_doubles Pervasives.(=) (base_exps_rec spec)
 
 
-let cst n = Cst n
-let int = Primitive Int
-let text = Primitive Text
-let var a = Var a
+module type M = sig type t val all : t list end
 
-let bin_cmp bin_cmp a b = Bin_cmp (bin_cmp, a, b)
-let eq a b = bin_cmp Eq a b
-let le a b = bin_cmp Le a b
+module type S = sig
+  type node
 
-let bin_con bin_con l = Bin_con (bin_con, l)
-let and_ l = bin_con And l
-let or_ l = bin_con Or l
+  val cst : int -> node exp
+  val int : node exp
+  val text : node exp
+  val var : node -> node exp
 
-let nones l = and_ (List.map (eq (cst 0)) l)
+  val eq : node exp -> node exp -> node t
+  val and_ : node t list -> node t
 
-let exp_large_interval e n m =
-  let min = le (cst n) e in
-  match m with
-  | None -> min
-  | Some m -> and_ [min ; le e (cst m)]
+  val exact : int -> node -> node t
 
-let exact_exp n e = eq e (cst n)
-let exact n v = exact_exp n (var v)
+  val one_int : node t
+  val one_text : node t
+  val one : node -> node t
+  val one_exp : node exp -> node t
+  val ones : node list -> node t
+  val ones_exp : node exp list -> node t
 
-let one_exp e = exact_exp 1 e
-let one_int = one_exp int
-let one_text = one_exp text
-let one v = one_exp (Var v)
-let ones_exp exps = and_ (List.map one_exp exps)
-let ones vars = ones_exp (List.map var vars)
+  val any_int : node t
+  val any_text : node t
+  val any : node -> node t
+  val any_exp : node exp -> node t
+  val anys : node list -> node t
+  val anys_exp : node exp list -> node t
 
-let only l spec =
-  let bases = base_exps spec in
-  let l = int :: text :: (List.map var l) in
-  let l = List_ext.removes l bases in
-  and_ [spec  ; nones l]
+  val sum : node t list -> node t
+  val sum_one : node list -> node t
+  val sum_one_exp : node exp list -> node t
 
-let sum l specs = or_ (List.map (only l) specs)
-let sum_one_exp l exps = sum l (List.map one_exp exps)
-let sum_one l vars = sum_one_exp l (List.map var vars)
+  val only : node t -> node t
+end
+
+module Make (M : M) = struct
+
+  type node = M.t
+
+  let cst n = Cst n
+  let int = Primitive Int
+  let text = Primitive Text
+  let var a = Var a
+
+  let bin_cmp bin_cmp a b = Bin_cmp (bin_cmp, a, b)
+  let eq a b = bin_cmp Eq a b
+  let le a b = bin_cmp Le a b
+
+  let bin_con bin_con l = Bin_con (bin_con, l)
+  let and_ l = bin_con And l
+  let or_ l = bin_con Or l
+
+  let nones_exp l = and_ (List.map (eq (cst 0)) l)
+  let nones = nones_exp (List.map var M.all)
+
+  let exp_large_interval e n m =
+    let min = le (cst n) e in
+    match m with
+    | None -> min
+    | Some m -> and_ [min ; le e (cst m)]
+
+  let exact_exp n e = eq e (cst n)
+  let exact n v = exact_exp n (var v)
+
+  let one_exp e = exact_exp 1 e
+  let one_int = one_exp int
+  let one_text = one_exp text
+  let one v = one_exp (Var v)
+  let ones_exp exps = and_ (List.map one_exp exps)
+  let ones vars = ones_exp (List.map var vars)
+
+  let any_exp e = exp_large_interval e 0 None
+  let any_int = any_exp int
+  let any_text = any_exp text
+  let any v = any_exp (Var v)
+  let anys_exp exps = and_ (List.map any_exp exps)
+  let anys vars = anys_exp (List.map var vars)
+
+  let only spec =
+    let bases = base_exps spec in
+    let l = int :: text :: (List.map var M.all) in
+    let l = List_ext.removes l bases in
+    and_ [spec ; nones_exp l]
+
+  let sum specs = or_ (List.map only specs)
+  let sum_one_exp exps = sum (List.map one_exp exps)
+  let sum_one vars = sum_one_exp (List.map var vars)
+
+end
