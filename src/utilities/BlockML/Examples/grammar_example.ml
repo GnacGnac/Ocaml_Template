@@ -8,6 +8,17 @@ module M = struct
     [(Term, "term") ; (Var, "var") ; (App, "app") ; (Abs, "abs")]
 end
 
+let string_of_env f env =
+  let f (exp, i) =
+    (BlockML.ChildrenSpec.string_of_exp f exp) ^ " = " ^ (string_of_int i) in
+  let s = List_ext.to_string "\n" f env in
+  if s = "" then "empty" else s
+
+let string_of_spec_violation f name env spec =
+  "node `" ^ (f name) ^ "` violates the part of its specification:\n" ^
+    (BlockML.ChildrenSpec.to_string f spec) ^ "\n  in the environment:\n" ^
+    (string_of_env f env)
+
 let string_of_pos a = match Position.all a with
   | Ok (file, line, char) ->
     Printf.sprintf "in file %s, line %d, character %d, " file line char
@@ -15,12 +26,6 @@ let string_of_pos a = match Position.all a with
 
 let string_of_error f = function
   | `Parse_error pos -> (string_of_pos pos) ^ " parse error."
-(*
-  | `Bad_sub_node_occurrence (parent, child, i, occ) ->
-    Printf.sprintf "%sbad child occurrence %s for %s (%d not in %s)."
-      (string_of_pos parent) (f child) (f (Position.contents parent)) i
-      (BlockML.Occurrence.to_string occ)
-*)
   | `Not_a_root_node node_opt ->
     Printf.sprintf "%s%s is not a root node."
       (string_of_pos node_opt)
@@ -34,16 +39,6 @@ let string_of_error f = function
     Printf.sprintf "%sunterminated comment." (string_of_pos pos)
   | `File_does_not_exist file -> "file " ^ file ^ " does not exist."
   | `Could_not_open_file file -> "could not open file " ^ file ^ "."
-(*
-  | `Bad_int_occurrence (node, i, occ) ->
-    Printf.sprintf "%sbad int children occurrence for %s (%d not in %s)."
-      (string_of_pos node) (f (Position.contents node)) i
-      (BlockML.Occurrence.to_string occ)
-  | `Bad_text_occurrence (node, i, occ) ->
-    Printf.sprintf "%sbad text children occurrence for %s (%d not in %s)."
-      (string_of_pos node) (f (Position.contents node)) i
-      (BlockML.Occurrence.to_string occ)
-*)
   | `Unrecognized_node s ->
     Printf.sprintf "%sunrecognized node %s."
       (string_of_pos s) (Position.contents s)
@@ -51,7 +46,8 @@ let string_of_error f = function
     Printf.sprintf "%s%s is not a node of the grammar."
       (string_of_pos s) (Position.contents s)
   | `Children_spec_violation (name, env, spec) ->
-    Printf.sprintf "%s%s." (string_of_pos name) (f (Position.contents name))
+    Printf.sprintf "%s%s." (string_of_pos name)
+      (string_of_spec_violation f (Position.contents name) env spec)
 
 let show_error f error = Error.show (string_of_error f error)
 

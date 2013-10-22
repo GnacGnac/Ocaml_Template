@@ -80,6 +80,9 @@ module ChildrenSpec : sig
   | False
   | Bin_con of bin_con * 'a t list
 
+  val string_of_exp : ('node -> string) -> 'node exp -> string
+  val to_string : ('node -> string) -> 'node t -> string
+
   module type M = sig type t val all : t list end
 
   module type S = sig

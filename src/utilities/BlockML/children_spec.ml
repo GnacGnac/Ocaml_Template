@@ -25,6 +25,59 @@ type 'a t =
 | Bin_con of bin_con * 'a t list
 
 
+let string_of_primitive = function
+  | Int -> "int"
+  | Text -> "text"
+
+let string_of_binop = function
+  | Add -> "+"
+  | Sub -> "-"
+  | Mul -> "*"
+
+let add_parenthesis_if_needed f e =
+  let s = f e in
+  match e with
+  | Bin_op (_, _, _) -> "(" ^ s ^ ")"
+  | _ -> s
+
+let rec string_of_exp f = function
+  | Cst i -> string_of_int i
+  | Primitive primitive -> string_of_primitive primitive
+  | Var v -> f v
+  | Bin_op (bin_op, e1, e2) ->
+    let bin_op = string_of_binop bin_op in
+    let e1 = add_parenthesis_if_needed (string_of_exp f) e1 in
+    let e2 = add_parenthesis_if_needed (string_of_exp f) e2 in
+    e1 ^ " " ^ bin_op ^ " " ^ e2
+
+let string_of_bin_cmp = function
+  | Eq -> "="
+  | Diff -> "<>"
+  | Le -> "<="
+  | Lt -> "<"
+  | Ge -> ">="
+  | Gt -> ">"
+
+let string_of_un_con = function
+  | Not -> "Not"
+
+let string_of_bin_con = function
+  | And -> "And"
+  | Or -> "Or"
+
+let rec to_string f = function
+  | Bin_cmp (bin_cmp, e1, e2) ->
+    (string_of_exp f e1) ^ " " ^ (string_of_bin_cmp bin_cmp) ^ " " ^
+      (string_of_exp f e2)
+  | Un_con (un_con, spec) ->
+    (string_of_un_con un_con) ^ "(" ^ (to_string f spec) ^ ")"
+  | True -> "True"
+  | False -> "False"
+  | Bin_con (bin_con, specs) ->
+    let specs = List_ext.to_string " ; " (to_string f) specs in
+    (string_of_bin_con bin_con) ^ "[" ^ specs ^ "]"
+
+
 type 'a env = ('a exp * int) list
 
 type 'a occurrence_error =

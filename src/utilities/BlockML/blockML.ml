@@ -156,7 +156,7 @@ module Grammar = struct
 	[(Int, ChildrenSpec.Int) ; (Text, ChildrenSpec.Text)]
 
     let primitive_spec_of_block parent_block primitive_block =
-      return (ChildrenSpec.Primitive (primitive_of_block parent_block))
+      return (ChildrenSpec.Primitive (primitive_of_block primitive_block))
 
     let var_spec_of_block parent_block var_block =
       of_string (G.extract_text_with_pos var_block) >>= fun node ->

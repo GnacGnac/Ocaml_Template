@@ -9,8 +9,99 @@ grammar {
   	  bin_con { and }
 	  spec {
 	    bin_cmp { eq }
+	    exp { var { "term" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "abs" } }
+	    exp { cst { 1 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "app" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "var" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { primitive { int } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { primitive { text } }
+	    exp { cst { 0 } }
+	  }
+	}
+	spec {
+  	  bin_con { and }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "term" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "abs" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "app" } }
+	    exp { cst { 1 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "var" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { primitive { int } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { primitive { text } }
+	    exp { cst { 0 } }
+	  }
+	}
+	spec {
+  	  bin_con { and }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "term" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "abs" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { var { "app" } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
 	    exp { var { "var" } }
 	    exp { cst { 1 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { primitive { int } }
+	    exp { cst { 0 } }
+	  }
+	  spec {
+	    bin_cmp { eq }
+	    exp { primitive { text } }
+	    exp { cst { 0 } }
 	  }
 	}
       }
@@ -18,19 +109,109 @@ grammar {
     children_spec {
       node { "var" }
       spec {
-        false
+        bin_con { and }
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "term" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "abs" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "app" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "var" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { primitive { int } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { primitive { text } }
+	  exp { cst { 1 } }
+	}
       }
     }
     children_spec {
       node { "abs" }
       spec {
-        true
+        bin_con { and }
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "term" } }
+	  exp { cst { 1 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "abs" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "app" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "var" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { primitive { int } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { primitive { text } }
+	  exp { cst { 1 } }
+	}
       }
     }
     children_spec {
       node { "app" }
       spec {
-        true
+        bin_con { and }
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "term" } }
+	  exp { cst { 2 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "abs" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "app" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { var { "var" } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { primitive { int } }
+	  exp { cst { 0 } }
+	}
+	spec {
+	  bin_cmp { eq }
+	  exp { primitive { text } }
+	  exp { cst { 0 } }
+	}
       }
     }
   }
