@@ -50,10 +50,8 @@ let string_of_error f = function
   | `Grammar_unrecognized_node s ->
     Printf.sprintf "%s%s is not a node of the grammar."
       (string_of_pos s) (Position.contents s)
-  | `Unknown_children_spec_expression (name, env, spec) ->
-    assert false (* TODO *)
   | `Children_spec_violation (name, env, spec) ->
-    assert false (* TODO *)
+    Printf.sprintf "%s%s." (string_of_pos name) (f (Position.contents name))
 
 let show_error f error = Error.show (string_of_error f error)
 

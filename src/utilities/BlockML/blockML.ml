@@ -41,7 +41,9 @@ module Grammar = struct
     | Ge
     | Gt
     | Exp
+    | Cst
     | Primitive
+    | Var
     | Bin_op
     | Add
     | Sub
@@ -55,7 +57,7 @@ module Grammar = struct
       [(Grammar, "grammar") ; (Possible_roots, "possible_roots") ;
        (Children_specs, "children_specs") ; (Children_spec, "children_spec") ;
        (Node, "node") ; (Spec, "spec") ; (Bin_cmp, "bin_cmp") ;
-       (Un_con, "un_con") ;
+       (Un_con, "un_con") ; (Cst, "cst") ; (Var, "var") ;
        (Bin_con, "bin_con") ; (True, "true") ; (False, "false") ; (And, "and") ;
        (Or, "or") ; (Not, "not") ; (Eq, "eq") ; (Diff, "diff") ; (Le, "le") ;
        (Lt, "lt") ; (Ge, "ge") ; (Gt, "gt") ; (Exp, "exp") ;
@@ -100,11 +102,13 @@ module Grammar = struct
       | Sub | Mul | Int | Text -> S.nones
       | Exp ->
 	S.sum
-	  [S.one_int ;
+	  [S.one Cst ;
 	   S.one Primitive ;
-	   S.one_text ;
+	   S.one Var ;
 	   S.and_ [S.one Bin_op ; S.exact 2 Exp]]
+      | Cst -> S.only S.one_int
       | Primitive -> S.sum_one [Int ; Text]
+      | Var -> S.only S.one_text
       | Bin_op -> S.sum_one [Add ; Sub ; Mul]
 
   end
@@ -137,47 +141,99 @@ module Grammar = struct
       List_ext.bind of_string possible_roots
 
     let apply_if_mem_node block (node, f) =
-      G.get_node node block >>= fun child_block -> return (f block child_block)
+      Option.map (f block) (to_option (G.get_node node block))
 
-    let bin_cmp_of_block block =
-      assert false (* TODO *)
+    let enum_element_of_block nodes block =
+      let f (node, enum_element) =
+	apply_if_mem_node block (node, (fun _ _ -> return enum_element)) in
+      extract (extract (List_ext.find_and_apply f nodes))
 
-    let un_con_of_block block =
-      assert false (* TODO *)
+    let cst_spec_of_block parent_block cst_block =
+      return (ChildrenSpec.Cst (G.extract_int cst_block))
 
-    let bin_con_of_block block =
-      assert false (* TODO *)
+    let primitive_of_block =
+      enum_element_of_block
+	[(Int, ChildrenSpec.Int) ; (Text, ChildrenSpec.Text)]
+
+    let primitive_spec_of_block parent_block primitive_block =
+      return (ChildrenSpec.Primitive (primitive_of_block parent_block))
+
+    let var_spec_of_block parent_block var_block =
+      of_string (G.extract_text_with_pos var_block) >>= fun node ->
+      return (ChildrenSpec.Var node)
+
+    let bin_op_of_block =
+      enum_element_of_block
+	[(Add, ChildrenSpec.Add) ; (Sub, ChildrenSpec.Sub) ;
+	 (Mul, ChildrenSpec.Mul)]
+
+    let rec exp_of_block block =
+      let nodes =
+	[(Cst, cst_spec_of_block) ;
+	 (Primitive, primitive_spec_of_block) ;
+	 (Var, var_spec_of_block) ;
+	 (Bin_op, bin_op_spec_of_block)] in
+      extract (List_ext.find_and_apply (apply_if_mem_node block) nodes)
+
+    and bin_op_spec_of_block parent_block bin_op_block =
+      let bin_op = bin_op_of_block bin_op_block in
+      let exps = G.extract_node_children Exp parent_block in
+      List_ext.bind exp_of_block exps >>= function
+      | [e1 ; e2] -> return (ChildrenSpec.Bin_op (bin_op, e1, e2))
+      | _ ->
+	(* Should not be possible because of the node specification. *)
+	assert false
+
+    let bin_cmp_of_block =
+      enum_element_of_block
+	[(Eq, ChildrenSpec.Eq) ; (Diff, ChildrenSpec.Diff) ;
+	 (Le, ChildrenSpec.Le) ; (Lt, ChildrenSpec.Lt) ;
+	 (Ge, ChildrenSpec.Ge) ; (Gt, ChildrenSpec.Gt)]
 
     let bin_cmp_spec_of_block parent_block bin_cmp_block =
-      assert false (* TODO *)
+      let bin_cmp = bin_cmp_of_block bin_cmp_block in
+      let exps = G.extract_node_children Exp parent_block in
+      List_ext.bind exp_of_block exps >>= function
+      | [e1 ; e2] -> return (ChildrenSpec.Bin_cmp (bin_cmp, e1, e2))
+      | _ ->
+	(* Should not be possible because of the node specification. *)
+	assert false
+
+    let un_con_of_block = enum_element_of_block [(Not, ChildrenSpec.Not)]
+
+    let bin_con_of_block =
+      enum_element_of_block [(And, ChildrenSpec.And) ; (Or, ChildrenSpec.Or)]
 
     let rec spec_of_block block =
-      let f = function
-	| Ok spec -> Some spec
-	| Error `No_such_child -> None in
       let nodes =
-	[(Bin_cmp, bin_con_spec_of_block) ;
+	[(Bin_cmp, bin_cmp_spec_of_block) ;
 	 (Un_con, un_con_spec_of_block) ;
 	 (Bin_con, bin_con_spec_of_block) ;
 	 (True, true_spec_of_block) ;
 	 (False, false_spec_of_block)] in
-      let nodes = List.map (apply_if_mem_node block) nodes in
-      extract (List_ext.find_and_apply f nodes)
+      extract (List_ext.find_and_apply (apply_if_mem_node block) nodes)
 
     and un_con_spec_of_block parent_block un_con_block =
-      assert false (* TODO *)
+      let un_con = un_con_of_block un_con_block in
+      spec_of_block (G.extract_node Spec parent_block) >>= fun spec ->
+      return (ChildrenSpec.Un_con (un_con, spec))
 
     and bin_con_spec_of_block parent_block bin_con_block =
-      assert false (* TODO *)
+      let bin_con = bin_con_of_block bin_con_block in
+      let specs = G.extract_node_children Spec parent_block in
+      List_ext.bind spec_of_block specs >>= fun specs ->
+      return (ChildrenSpec.Bin_con (bin_con, specs))
 
-    and true_spec_of_block parent_block bin_con_block = ChildrenSpec.True
+    and true_spec_of_block parent_block bin_con_block =
+      return ChildrenSpec.True
 
-    and false_spec_of_block parent_block bin_con_block = ChildrenSpec.False
+    and false_spec_of_block parent_block bin_con_block =
+      return ChildrenSpec.False
 
     let add_children_spec children_specs block =
       let name = G.extract_text_with_pos (G.extract_node Node block) in
       of_string name >>= fun name ->
-      let spec = spec_of_block (G.extract_node Spec block) in
+      spec_of_block (G.extract_node Spec block) >>= fun spec ->
       return (MMap.add name spec children_specs)
 
     let children_specs block =

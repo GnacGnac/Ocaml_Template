@@ -201,7 +201,9 @@ module Grammar : sig
     | Ge
     | Gt
     | Exp
+    | Cst
     | Primitive
+    | Var
     | Bin_op
     | Add
     | Sub
