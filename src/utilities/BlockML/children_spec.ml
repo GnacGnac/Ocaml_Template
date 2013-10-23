@@ -186,6 +186,8 @@ module type S = sig
   val sum_one_exp : node exp list -> node t
 
   val only : node t -> node t
+
+  val nones : node t
 end
 
 module Make (M : M) = struct

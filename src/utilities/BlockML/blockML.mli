@@ -124,6 +124,8 @@ module ChildrenSpec : sig
     val sum_one_exp : node exp list -> node t
 
     val only : node t -> node t
+
+    val nones : node t
   end
 
   module Make (M : M) : S with type node = M.t
