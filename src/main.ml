@@ -16,6 +16,3 @@ open BlockML
 open Debug
 open Grammar_example
 open Array_ext
-
-
-let () = Grammar_example.run ()
