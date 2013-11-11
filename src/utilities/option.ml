@@ -13,3 +13,7 @@ let extract = function
 let of_result = function
   | Ok a -> Some a
   | Error _ -> None
+
+let fold none_result some_result = function
+  | None -> none_result
+  | Some a -> some_result a
