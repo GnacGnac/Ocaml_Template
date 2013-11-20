@@ -112,11 +112,20 @@ module ChildrenSpec : sig
     val anys : node list -> node t
     val anys_exp : node exp list -> node t
 
+    val option_int : node t
+    val option_text : node t
+    val option : node -> node t
+    val option_exp : node exp -> node t
+    val options : node list -> node t
+    val options_exp : node exp list -> node t
+
     val sum : node t list -> node t
     val sum_one : node list -> node t
     val sum_one_exp : node exp list -> node t
 
     val only : node t -> node t
+
+    val nones : node t
   end
 
   module Make (M : M) : S with type node = M.t

@@ -174,11 +174,20 @@ module type S = sig
   val anys : node list -> node t
   val anys_exp : node exp list -> node t
 
+  val option_int : node t
+  val option_text : node t
+  val option : node -> node t
+  val option_exp : node exp -> node t
+  val options : node list -> node t
+  val options_exp : node exp list -> node t
+
   val sum : node t list -> node t
   val sum_one : node list -> node t
   val sum_one_exp : node exp list -> node t
 
   val only : node t -> node t
+
+  val nones : node t
 end
 
 module Make (M : M) = struct
@@ -223,6 +232,13 @@ module Make (M : M) = struct
   let any v = any_exp (Var v)
   let anys_exp exps = and_ (List.map any_exp exps)
   let anys vars = anys_exp (List.map var vars)
+
+  let option_exp e = exp_large_interval e 0 (Some 1)
+  let option_int = option_exp int
+  let option_text = option_exp text
+  let option v = option_exp (Var v)
+  let options_exp exps = and_ (List.map option_exp exps)
+  let options vars = options_exp (List.map var vars)
 
   let only spec =
     let bases = base_exps spec in
