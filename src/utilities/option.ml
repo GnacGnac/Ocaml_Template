@@ -10,6 +10,5 @@ let extract = function
   | None -> assert false (* do not use on this argument *)
   | Some a -> a
 
-let of_result = function
-  | Ok a -> Some a
-  | Error _ -> None
+let of_result = Result.to_option
+let to_result = Result.of_option

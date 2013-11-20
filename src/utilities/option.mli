@@ -5,3 +5,4 @@ val map : ('a -> 'b) -> 'a option -> 'b option
 val extract : 'a option -> 'a
 
 val of_result : ('a, 'b) Result.t -> 'a option
+val to_result : 'b -> 'a option -> ('a, 'b) Result.t

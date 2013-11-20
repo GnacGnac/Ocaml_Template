@@ -20,6 +20,10 @@ let to_option = function
   | Ok a -> Some a
   | Error _ -> None
 
+let of_option none_error = function
+  | None -> error none_error
+  | Some a -> return a
+
 let extract = function
   | Ok a -> a
   | _ -> assert false (* Only use on valid monads. *)
