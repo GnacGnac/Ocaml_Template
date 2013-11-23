@@ -11,6 +11,7 @@ val map_result : ('a -> 'c) -> ('a, 'b) t -> ('c, 'b) t
 val map_error : ('b -> 'c) -> ('a, 'b) t -> ('a, 'c) t
 
 val to_option : ('a, 'b) t -> 'a option
+val of_option : 'b -> 'a option -> ('a, 'b) t
 
 (* Only use on valid monads. *)
 val extract : ('a, 'b) t -> 'a
