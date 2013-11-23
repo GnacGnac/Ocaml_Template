@@ -25,3 +25,7 @@ let extract = function
   | _ -> assert false (* Only use on valid monads. *)
 
 let (|>) f g = fun x -> g (f x)
+
+let (@@) f x  = f x
+
+let (|-) x f = f x
