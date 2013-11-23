@@ -17,3 +17,5 @@ val of_option : 'b -> 'a option -> ('a, 'b) t
 val extract : ('a, 'b) t -> 'a
 
 val (|>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
+val (@@) : ('a -> 'b) -> 'a -> 'b
+val (|-) : 'a -> ('a -> 'b) -> 'b
