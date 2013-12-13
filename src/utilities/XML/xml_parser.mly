@@ -8,12 +8,12 @@
 %token <string Position.t> IDENT
 %token EOF
 
-%start xml
-%type <Xml_parsing.t> xml
+%start root
+%type <Xml_parsing.t> root
 
 %%
 
-xml:
+root:
   node EOF { $1 }
 ;
 

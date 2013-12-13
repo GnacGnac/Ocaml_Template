@@ -37,3 +37,14 @@ val get_children : t -> t list
 val get_node_children : t -> string -> t list
 val get_node_child : t -> string -> (t, [> `Not_found]) Result.t
 val extract_node_child : t -> string -> t
+
+val from_file :
+  string ->
+  (t,
+   [> `Could_not_open_file of string
+    | `File_does_not_exist of string
+    | `Parse_error of unit Position.t
+    | `Unrecognized_char of char Position.t
+    | `Unterminated_comment of unit Position.t
+    | `Different_opening_and_closing_tags of
+	string Position.t * string Position.t]) Result.t

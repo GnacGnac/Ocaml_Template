@@ -113,3 +113,22 @@ let get_node_child xml node = match get_node_children xml node with
   | node :: _ -> return node
 
 let extract_node_child xml = get_node_child xml |> extract
+
+
+let check_tags start_tag end_tag =
+  if Position.contents start_tag = Position.contents end_tag then return ()
+  else error (`Different_opening_and_closing_tags (start_tag, end_tag))
+
+let from_attributes xml_parsing_attributes =
+  assert false (* TODO *)
+
+let rec from_xml_parsing xml_parsing =
+  let start_tag = Xml_parsing.start_tag xml_parsing in
+  let end_tag = Xml_parsing.start_tag xml_parsing in
+  check_tags start_tag end_tag >>= fun () ->
+  from_attributes (Xml_parsing.attributes xml_parsing) >>= fun attributes ->
+  List_ext.bind from_xml_parsing (Xml_parsing.children xml_parsing) >>=
+    fun children ->
+  return (node_with_pos start_tag attributes children)
+
+let from_file file = Xml_parse.from_file file >>= from_xml_parsing
