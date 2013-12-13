@@ -2,4 +2,5 @@
 <src/utilities>: include
 <src/utilities/BlockML>: include
 <src/utilities/BlockML/Examples>: include
+<src/utilities/XML>: include
 <src/main.{byte,native}>: use_unix, use_str, use_nums
