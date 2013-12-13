@@ -1,20 +1,39 @@
 %{
 
- type t = Yop of int
-
 %}
 
-%token YOP
-%token <int> INT
+%token START FINISH END CLOSE
+%token EQ
 %token <string Position.t> STRING
 %token <string Position.t> IDENT
 %token EOF
 
-%start yop
-%type <t> yop
+%start xml
+%type <Xml_parsing.t> xml
 
 %%
 
-yop:
-  YOP INT EOF { Yop $2 }
+xml:
+  node EOF { $1 }
+;
+
+node:
+  START IDENT attributes CLOSE { Xml_parsing.make $2 $2 $3 [] }
+| START IDENT attributes END
+    nodes
+  FINISH IDENT END             { Xml_parsing.make $2 $7 $3 $5 }
+;
+
+nodes:
+  /* empty */ { [] }
+| node nodes  { $1 :: $2 }
+;
+
+attributes:
+  /* empty */          { [] }
+| attribute attributes { $1 :: $2 }
+;
+
+attribute:
+  IDENT EQ STRING { ($1, $3) }
 ;

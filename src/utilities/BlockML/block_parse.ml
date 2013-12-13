@@ -18,8 +18,7 @@ let from_file file =
       set_file lexbuf file ;
       try return (Block_parser.root Block_lexer.token lexbuf)
       with
-	| Block_lexer.Unrecognized_char c ->
-	  error (`Unrecognized_char (Block_lexer.position_from_buffer lexbuf c))
+	| Block_lexer.Unrecognized_char c -> error (`Unrecognized_char c)
 	| Block_lexer.Unterminated_comment pos ->
 	  error (`Unterminated_comment pos)
 	| Parsing.Parse_error ->

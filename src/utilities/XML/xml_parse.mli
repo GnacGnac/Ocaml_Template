@@ -1,7 +1,7 @@
 
 val from_file :
   string ->
-  (Prototypes.templates,
+  (Xml_parsing.t,
    [> `File_does_not_exist of string
     | `Could_not_open_file of string
     | `Unrecognized_char of char Position.t

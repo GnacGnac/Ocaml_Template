@@ -1,6 +1,6 @@
 
 open Result
-open Xml_lexer
+open Xml_parse
 
 
 module Infos = struct

@@ -2,7 +2,7 @@
 
   open Block_parser
 
-  exception Unrecognized_char of char
+  exception Unrecognized_char of char Position.t
   exception Unterminated_comment of unit Position.t
 
   let pos_of_lexbuf lexbuf =
@@ -73,7 +73,7 @@ rule token = parse
   | integer as i { INT (position_from_buffer lexbuf (int_of_string i)) }
   | ident as s   { IDENT (position_from_buffer lexbuf s) }
   | eof          { EOF }
-  | _ as c       { raise (Unrecognized_char c) }
+  | _ as c       { raise (Unrecognized_char (position_from_buffer lexbuf c)) }
 
 and quoted_string = parse
   | new_line as c { Lexing.new_line lexbuf ; Chars.add c ;
