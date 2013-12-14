@@ -83,6 +83,10 @@ module Attributes = struct
       f key value in
     fold_with_pos f'
 
+  let to_string attributes =
+    let f key value s = s ^ " " ^ key ^ "=\"" ^ value ^ "\"" in
+    fold f attributes ""
+
 end
 
 
@@ -119,8 +123,12 @@ let check_tags start_tag end_tag =
   if Position.contents start_tag = Position.contents end_tag then return ()
   else error (`Different_opening_and_closing_tags (start_tag, end_tag))
 
-let from_attributes xml_parsing_attributes =
-  assert false (* TODO *)
+let add_attribute attributes (key, value) =
+  map_error
+    (fun `Attribute_already_exists -> `Attribute_already_exists (key, value))
+    (Attributes.add_with_pos attributes key value)
+
+let from_attributes = List_ext.fold_bind add_attribute Attributes.empty
 
 let rec from_xml_parsing xml_parsing =
   let start_tag = Xml_parsing.start_tag xml_parsing in
@@ -132,3 +140,18 @@ let rec from_xml_parsing xml_parsing =
   return (node_with_pos start_tag attributes children)
 
 let from_file file = Xml_parse.from_file file >>= from_xml_parsing
+
+
+let rec to_string_rec space xml =
+  let node = get_node xml in
+  Printf.sprintf "%s<%s%s>\n%s%s</%s>"
+    space node
+    (Attributes.to_string (get_attributes xml))
+    (to_string_children (space ^ "  ") (get_children xml))
+    space node
+
+and to_string_children space =
+  let f s xml = s ^ (to_string_rec space xml) ^ "\n" in
+  List.fold_left f ""
+
+let to_string = to_string_rec ""

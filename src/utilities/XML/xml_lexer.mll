@@ -54,6 +54,7 @@ rule token = parse
   | "</"         { FINISH }
   | '>'          { END }
   | "/>"         { CLOSE }
+  | '='          { EQ }
   | '"'          { Chars.reset lexbuf ; quoted_string lexbuf }
   | ident as s   { IDENT (position_from_buffer lexbuf s) }
   | eof          { EOF }
