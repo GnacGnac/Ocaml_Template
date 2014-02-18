@@ -121,3 +121,9 @@ let rec lex_compare cmp l1 l2 = match l1, l2 with
   | _, [] -> 1
   | e1 :: _, e2 :: _ when cmp e1 e2 <> 0 -> cmp e1 e2
   | _ :: l1, _ :: l2 -> lex_compare cmp l1 l2
+
+let hd = function
+  | [] -> error `Empty_list
+  | e :: _ -> return e
+
+let last l = hd (List.rev l)

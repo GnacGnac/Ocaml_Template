@@ -48,3 +48,6 @@ val removes : 'a list -> 'a list -> 'a list
 
 val lex_compare : ('a -> 'a -> int) -> 'a list -> 'a list -> int
 
+val hd : 'a list -> ('a, [> `Empty_list]) Result.t
+
+val last : 'a list -> ('a, [> `Empty_list]) Result.t
