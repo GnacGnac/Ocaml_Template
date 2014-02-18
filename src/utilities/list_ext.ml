@@ -114,3 +114,10 @@ let remove_doubles eq =
   aux []
 
 let removes l1 l2 = List.filter (fun e -> not (List.mem e l2)) l1
+
+let rec lex_compare cmp l1 l2 = match l1, l2 with
+  | [], [] -> 0
+  | [], _ -> -1
+  | _, [] -> 1
+  | e1 :: _, e2 :: _ when cmp e1 e2 <> 0 -> cmp e1 e2
+  | _ :: l1, _ :: l2 -> lex_compare cmp l1 l2
