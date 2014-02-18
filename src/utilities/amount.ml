@@ -81,7 +81,7 @@ let of_string s =
   try return (make (big_int_of_string s) unit_big_int)
   with _ (* what's the thrown exception by big_int_of_string? *) -> error
 
-let to_string amount =
+let to_string ?(sep=",") amount =
   let value = absolute_value amount in
   let (euros, cents) = quomod_big_int value (big_int_of_int 100) in
   let sign = if sign amount = Pos then "" else "-" in
@@ -89,4 +89,4 @@ let to_string amount =
   let cents =
     (if lt_big_int cents (big_int_of_int 10) then "0" else "") ^
     (string_of_big_int cents) in
-  sign ^ euros ^ (if cents = "00" then "" else "," ^ cents)
+  sign ^ euros ^ (if cents = "00" then "" else sep ^ cents)

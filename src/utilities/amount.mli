@@ -6,7 +6,7 @@ val of_int : int -> t
 
 val of_string : string -> (t, [> `Not_an_amount of string]) Result.t
 
-val to_string : t -> string
+val to_string : ?sep : string -> t -> string
 
 val is_null : t -> bool
 val zero : t
