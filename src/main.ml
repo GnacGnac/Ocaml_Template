@@ -20,3 +20,4 @@ open Filename_ext
 open Xml
 open Lexer_ext
 open Options_parsing
+open Configuration_file

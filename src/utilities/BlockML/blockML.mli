@@ -160,6 +160,8 @@ type 'node parse_error =
 type 'node grammar_parse_error =
 ['node parse_error | `Grammar_unrecognized_node of string Position.t]
 
+type save_error = [`Could_not_write_file of string]
+
 module Instance : sig
 
   module type SPEC = sig
@@ -173,8 +175,7 @@ module Instance : sig
     include Generic.S
     val analyze : t -> (unit, [> Node.t analyze_error]) Result.t
     val parse : string -> (t, [> Node.t parse_error]) Result.t
-    val save :
-      string -> t -> (unit, [> `Could_not_write_file of string]) Result.t
+    val save : string -> t -> (unit, [> save_error]) Result.t
   end
 
   module Make (Spec : SPEC) : S with type Node.t = Spec.t

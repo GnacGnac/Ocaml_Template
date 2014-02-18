@@ -14,6 +14,8 @@ type 'node parse_error = 'node Block_instance.parse_error
 type 'node grammar_parse_error =
 ['node parse_error | `Grammar_unrecognized_node of string Position.t]
 
+type save_error = [`Could_not_write_file of string]
+
 module Instance = Block_instance
 
 
