@@ -10,7 +10,7 @@ let keep_numbers s =
     if i >= length then res
     else
       let c = s.[i] in
-      let res = if '0' <= c & c <= '9' then res ^ (String.make 1 c) else res in
+      let res = if '0' <= c && c <= '9' then res ^ (String.make 1 c) else res in
       aux res (i + 1) in
   aux "" 0
 

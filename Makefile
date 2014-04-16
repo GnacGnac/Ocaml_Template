@@ -26,7 +26,7 @@ clean:
 	$(BUILD) -clean
 
 distclean: clean
-	rm -rf $(EXE) $(TMPS)
+	rm -rf $(BYTE) $(NAT) $(EXE) $(TMPS)
 
 install: all
 	mkdir -p $(LIB_DIR)

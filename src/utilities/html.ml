@@ -376,7 +376,7 @@ module Make (Parameter : PARAMETER) = struct
     let rec aux i acc =
       if i > 3 then acc
       else
-	aux (i + 1) (acc @ [base + i + (if has_bar & i = 3 then 1 else 0)]) in
+	aux (i + 1) (acc @ [base + i + (if has_bar && i = 3 then 1 else 0)]) in
     aux 0 []
 
   let string_voyel_accents voyel base_accent has_bar =
