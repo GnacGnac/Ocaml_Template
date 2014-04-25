@@ -17,3 +17,6 @@ val read_file : string -> (string, [> `Could_not_read_file of string]) Result.t
 
 val write_file :
   string -> string -> (unit, [> `Could_not_write_file of string]) Result.t
+
+val chdir :
+  string -> (unit, [> `Could_not_change_to_directory of string]) Result.t

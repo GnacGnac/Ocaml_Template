@@ -2,17 +2,20 @@
 open Result
 
 
+let catch_sys_error f err =
+  try return (f ())
+  with Sys_error _ -> error err
+
+
 let get_env var =
   try return (Sys.getenv var)
   with Not_found -> error (`No_such_environment_variable var)
 
 let open_in file =
-  try return (open_in file)
-  with Sys_error _ -> error (`Could_not_open_in_file file)
+  catch_sys_error (fun () -> open_in file) (`Could_not_open_in_file file)
 
 let open_out file =
-  try return (open_out file)
-  with Sys_error _ -> error (`Could_not_open_out_file file)
+  catch_sys_error (fun () -> open_out file) (`Could_not_open_out_file file)
 
 let is_file_empty file =
   if Sys.file_exists file then
@@ -43,3 +46,6 @@ let write_file file s =
      output_string oc s ;
      close_out oc ;
      return ())
+
+let chdir dir =
+  catch_sys_error (fun () -> Sys.chdir dir) (`Could_not_change_to_directory dir)
