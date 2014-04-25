@@ -49,3 +49,9 @@ let write_file file s =
 
 let chdir dir =
   catch_sys_error (fun () -> Sys.chdir dir) (`Could_not_change_to_directory dir)
+
+let mkdir ?(p=false) dir =
+  let option = if p then "-p " else "" in
+  let mkdir_result = Sys.command ("mkdir " ^ option ^ dir) in
+  if mkdir_result = 0 then return ()
+  else error (`Could_not_create_directory dir)

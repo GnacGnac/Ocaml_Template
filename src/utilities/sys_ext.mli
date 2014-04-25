@@ -20,3 +20,7 @@ val write_file :
 
 val chdir :
   string -> (unit, [> `Could_not_change_to_directory of string]) Result.t
+
+val mkdir :
+  ?p:bool -> string ->
+  (unit, [> `Could_not_create_directory of string]) Result.t
