@@ -98,5 +98,5 @@ let rec contains_rec s substring length substring_length i =
       Some (i, i + substring_length)
     else contains_rec s substring length substring_length (i + 1)
 
-let contains s substring =
-  contains_rec s substring (String.length s) (String.length substring) 0
+let contains s ?(from=0) substring =
+  contains_rec s substring (String.length s) (String.length substring) from

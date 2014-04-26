@@ -38,4 +38,4 @@ val to_int : string -> (int, [> `Not_an_int of string]) Result.t
 
 val uppercase_first : string -> string
 
-val contains : string -> string -> (int * int) option
+val contains : string -> ?from:int -> string -> (int * int) option
