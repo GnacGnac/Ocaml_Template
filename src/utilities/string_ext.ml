@@ -89,3 +89,14 @@ let uppercase_first s =
   let l = String.length s in
   if l = 0 then s
   else (String.uppercase (String.make 1 s.[0])) ^ (String.sub s 1 (l - 1))
+
+
+let rec contains_rec s substring length substring_length i =
+  if i + substring_length > length then None
+  else
+    if String.sub s i substring_length = substring then
+      Some (i, i + substring_length)
+    else contains_rec s substring length substring_length (i + 1)
+
+let contains s substring =
+  contains_rec s substring (String.length s) (String.length substring) 0
