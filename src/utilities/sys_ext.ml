@@ -26,7 +26,7 @@ let is_file_empty file =
 
 let remove ?(f=false) file =
   let option = if f then "-f " else "" in
-  match Sys.command ("rm " ^ option ^ (Filename.quote file)) with
+  match Sys.command ("rm " ^ option ^ file) with
   | 0 -> return ()
   | err -> error (`Could_not_remove_file (file, err))
 
