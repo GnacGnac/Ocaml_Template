@@ -9,9 +9,10 @@ val is_file_empty :
     | `Could_not_open_in_file of string]) Result.t
 
 val remove :
+  ?f:bool ->
   string ->
   (unit,
-   [> `Could_not_remove_file of (string * string)]) Result.t
+   [> `Could_not_remove_file of (string * int)]) Result.t
 
 val read_file : string -> (string, [> `Could_not_read_file of string]) Result.t
 

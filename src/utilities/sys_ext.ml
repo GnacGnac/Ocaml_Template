@@ -24,9 +24,11 @@ let is_file_empty file =
      with End_of_file -> return true)
   else error (`File_does_not_exist file)
 
-let remove file =
-  try return (Sys.remove file)
-  with Sys_error err -> error (`Could_not_remove_file (file, err))
+let remove ?(f=false) file =
+  let option = if f then "-f " else "" in
+  match Sys.command ("rm " ^ option ^ (Filename.quote file)) with
+  | 0 -> return ()
+  | err -> error (`Could_not_remove_file (file, err))
 
 let read_file file =
   map_error (function `Could_not_open_in_file s -> `Could_not_read_file s)
