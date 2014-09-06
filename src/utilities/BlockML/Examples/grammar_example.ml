@@ -21,33 +21,35 @@ let string_of_spec_violation f name env spec =
 
 let string_of_pos a = match Position.all a with
   | Ok (file, line, char) ->
-    Printf.sprintf "in file %s, line %d, character %d, " file line char
+    Printf.sprintf "in file `%s`, line %d, character %d, " file line char
   | Error `No_position -> ""
 
+let positioned_error f e = (string_of_pos e) ^ (f (Position.contents e))
+
+let string_of_node_opt f = function
+  | None -> "primitive node"
+  | Some node -> "`" ^ f node ^ "`"
+
 let string_of_error f = function
-  | `Parse_error pos -> (string_of_pos pos) ^ " parse error."
-  | `Not_a_root_node node_opt ->
-    Printf.sprintf "%s%s is not a root node."
-      (string_of_pos node_opt)
-      (match Position.contents node_opt with
-	| None -> "primitive node."
-	| Some node -> f node)
-  | `Unrecognized_char c ->
-    Printf.sprintf "%sunrecognized character `%c`."
-      (string_of_pos c) (Position.contents c)
-  | `Unterminated_comment pos ->
-    Printf.sprintf "%sunterminated comment." (string_of_pos pos)
-  | `File_does_not_exist file -> "file " ^ file ^ " does not exist."
-  | `Could_not_open_file file -> "could not open file " ^ file ^ "."
-  | `Unrecognized_node s ->
-    Printf.sprintf "%sunrecognized node %s."
-      (string_of_pos s) (Position.contents s)
-  | `Grammar_unrecognized_node s ->
-    Printf.sprintf "%s%s is not a node of the grammar."
-      (string_of_pos s) (Position.contents s)
   | `Children_spec_violation (name, env, spec) ->
-    Printf.sprintf "%s%s." (string_of_pos name)
-      (string_of_spec_violation f (Position.contents name) env spec)
+    positioned_error
+      (fun name -> (string_of_spec_violation f name env spec) ^ ".")
+      name
+  | `Not_a_root_node node_opt ->
+    positioned_error
+      (fun node_opt -> (string_of_node_opt f node_opt ^ " is not a root node."))
+      node_opt      
+  | `Unrecognized_char c ->
+    positioned_error (Printf.sprintf "unrecognized character `%c`.") c
+  | `Unterminated_comment pos ->
+    positioned_error (fun () -> "unterminated comment.") pos
+  | `File_does_not_exist file -> "file `" ^ file ^ "` does not exist."
+  | `Could_not_open_file file -> "could not open file `" ^ file ^ "`."
+  | `Parse_error pos -> positioned_error (fun () -> "parse error.") pos
+  | `Unrecognized_node s ->
+    positioned_error (Printf.sprintf "unrecognized node `%s`.") s
+  | `Grammar_unrecognized_node s ->
+    positioned_error (Printf.sprintf "`%s` is not a node of the grammar.") s
 
 let show_error f error = Error.show (string_of_error f error)
 

@@ -11,13 +11,14 @@ type 'node occurrence_error = 'node Block_instance.occurrence_error
 type 'node analyze_error = 'node Block_instance.analyze_error
 type 'node parse_error = 'node Block_instance.parse_error
 
-type 'node grammar_parse_error =
-['node parse_error | `Grammar_unrecognized_node of string Position.t]
-
 type save_error = [`Could_not_write_file of string]
+
 
 module Instance = Block_instance
 
+
+type 'node grammar_parse_error =
+['node parse_error | `Grammar_unrecognized_node of string Position.t]
 
 module Grammar = struct
 
@@ -73,7 +74,7 @@ module Grammar = struct
     type t
     module type S = Instance.S with type Node.t = t
     val from_file :
-      string -> ((module S), [> node grammar_parse_error]) Result.t
+      string -> ((module S), node grammar_parse_error) Result.t
   end
 
   module Spec = struct
@@ -245,7 +246,8 @@ module Grammar = struct
       List_ext.fold_bind add_children_spec MMap.empty children_specs
 
     let from_file file =
-      G.parse file >>= fun block ->
+      (G.parse file :> (G.t, node grammar_parse_error) Result.t) >>=
+	fun block ->
       possible_roots block >>= fun possible_roots ->
       children_specs block >>= fun children_specs ->
       let module Spec = struct
@@ -284,7 +286,7 @@ end
 
 module type PARSE_RESULT = sig
   include Instance.S
-  val parse_result : (t, [> Node.t parse_error]) Result.t
+  val parse_result : (t, Node.t parse_error) Result.t
 end
 
 let parse_from_external unsafe_stringable grammar_file file =

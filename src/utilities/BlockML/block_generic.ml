@@ -13,32 +13,40 @@ module type S = sig
   type primitive = Int of int | Text of string
   type contents = Primitive of primitive | Node of Node.t * t list
   and t = contents Position.t
+
+  type no_int = [`No_int]
+  type no_text = [`No_text]
+  type no_such_child = [`No_such_child]
+  type no_children = [`No_children]
+  type not_a_node = [`Not_a_node]
+
   val int_content : int -> contents
   val text_content : string -> contents
   val node_content : Node.t -> t list -> contents
   val int : int -> t
   val text : string -> t
   val node : Node.t -> t list -> t
-  val get_int : t -> (int, [> `No_int]) Result.t
-  val get_int_with_pos : t -> (int Position.t, [> `No_int]) Result.t
-  val get_text : t -> (string, [> `No_text]) Result.t
-  val get_text_with_pos : t -> (string Position.t, [> `No_text]) Result.t
-  val get_node : Node.t -> t -> (t, [> `No_such_child]) Result.t
-  val get_node_no_pos : Node.t -> t -> (contents, [> `No_such_child]) Result.t
-  val get_int_children : t -> (int list, [> `No_children]) Result.t
+  val get_int : t -> (int, no_int) Result.t
+  val get_int_with_pos : t -> (int Position.t, no_int) Result.t
+  val get_text : t -> (string, no_text) Result.t
+  val get_text_with_pos : t -> (string Position.t, no_text) Result.t
+  val get_node : Node.t -> t -> (t, no_such_child) Result.t
+  val get_node_no_pos : Node.t -> t -> (contents, no_such_child) Result.t
+  val get_int_children : t -> (int list, no_children) Result.t
   val get_int_children_with_pos :
-    t -> (int Position.t list, [> `No_children]) Result.t
-  val get_text_children : t -> (string list, [> `No_children]) Result.t
+    t -> (int Position.t list, no_children) Result.t
+  val get_text_children : t -> (string list, no_children) Result.t
   val get_text_children_with_pos :
-    t -> (string Position.t list, [> `No_children]) Result.t
-  val get_node_children : Node.t -> t -> (t list, [> `No_children]) Result.t
+    t -> (string Position.t list, no_children) Result.t
+  val get_node_children : Node.t -> t -> (t list, no_children) Result.t
   val get_node_children_no_pos :
-    Node.t -> t -> (contents list, [> `No_children]) Result.t
-  val get_root_node : t -> (Node.t, [> `Not_a_node]) Result.t
+    Node.t -> t -> (contents list, no_children) Result.t
+  val get_root_node : t -> (Node.t, not_a_node) Result.t
   val get_root_node_with_pos :
-    t -> (Node.t Position.t, [> `Not_a_node]) Result.t
-  val get_children : t -> (t list, [> `No_children]) Result.t
-  val get_children_no_pos : t -> (contents list, [> `No_children]) Result.t
+    t -> (Node.t Position.t, not_a_node) Result.t
+  val get_children : t -> (t list, no_children) Result.t
+  val get_children_no_pos : t -> (contents list, no_children) Result.t
+
   val to_string : t -> string
 
   (* Unsafe functions: raise assertion failure. *)
@@ -64,6 +72,13 @@ end
 module Make (N : NODE) = struct
 
   module Node = N
+
+
+  type no_int = [`No_int]
+  type no_text = [`No_text]
+  type no_such_child = [`No_such_child]
+  type no_children = [`No_children]
+  type not_a_node = [`Not_a_node]
 
 
   type primitive = Int of int | Text of string

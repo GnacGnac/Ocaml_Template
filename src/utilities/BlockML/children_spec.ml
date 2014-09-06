@@ -80,8 +80,7 @@ let rec to_string f = function
 
 type 'a env = ('a exp * int) list
 
-type 'a occurrence_error =
-[ `Children_spec_violation of ('a env * 'a t) ]
+type 'a occurrence_error = [`Children_spec_violation of ('a env * 'a t)]
 
 
 let eval_bin_op = function

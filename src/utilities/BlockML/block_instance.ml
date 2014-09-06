@@ -3,43 +3,46 @@ open Result
 
 
 module type SPEC = sig
-  type t
-  val to_string : t -> string
-  val of_string : string -> (t, [> `Unrecognized_string of string]) Result.t
+  include String_ext.STRINGABLE
   module Set : Set_ext.S with type elt = t
   val spec : t -> t Children_spec.t
   val possible_roots : Set.t
 end
 
-type 'node occurrence_error =
-[ `Children_spec_violation of
-    ('node Position.t * 'node Children_spec.env * 'node Children_spec.t) ]
+type 'node occurrence_error = [
+| `Children_spec_violation of
+      ('node Position.t * 'node Children_spec.env * 'node Children_spec.t)
+]
 
-type 'node analyze_error =
-  [ 'node occurrence_error
-  | `Not_a_root_node of 'node option Position.t]
+type 'node analyze_error = [
+| 'node occurrence_error
+| `Not_a_root_node of 'node option Position.t
+]
 
-type 'node parse_error =
-  [ 'node analyze_error
-  | `File_does_not_exist of string
-  | `Could_not_open_file of string
-  | `Unrecognized_char of char Position.t
-  | `Unterminated_comment of unit Position.t
-  | `Parse_error of unit Position.t
-  | `Unrecognized_node of string Position.t]
+type 'node parse_error = [
+| 'node analyze_error
+| Block_parse.error
+| `Unrecognized_node of string Position.t
+]
 
 module type S = sig
   include Block_generic.S
-  val analyze : t -> (unit, [> Node.t analyze_error]) Result.t
-  val parse : string -> (t, [> Node.t parse_error]) Result.t
-  val save :
-    string -> t -> (unit, [> `Could_not_write_file of string]) Result.t
+  type node_analyze_error = Node.t analyze_error
+  type node_parse_error = Node.t parse_error
+  type could_not_write_to_file = [`Could_not_write_file of string]
+  val analyze : t -> (unit, node_analyze_error) Result.t
+  val parse : string -> (t, node_parse_error) Result.t
+  val save : string -> t -> (unit, could_not_write_to_file) Result.t
 end
 
 
 module Make (Spec : SPEC) = struct
 
   include Block_generic.Make (Spec)
+
+  type node_analyze_error = Node.t analyze_error
+  type node_parse_error = Node.t parse_error
+  type could_not_write_to_file = [`Could_not_write_file of string]
 
   let analyze_name block name =
     let f_error = function
@@ -111,7 +114,8 @@ module Make (Spec : SPEC) = struct
     return ()
 
   let parse file =
-    Block_parse.from_file file >>=
+    (Block_parse.from_file file :>
+       (Block_string.t, node_parse_error) Result.t) >>=
     analyze_names >>= fun block ->
     analyze block >>= fun () ->
     return block
@@ -136,6 +140,8 @@ module MakeUnsafe (Spec : UNSAFE_SPEC) = struct
       type t = Spec.t
       let compare = Pervasives.compare
     end
+
+    type unrecognized_string = [`Unrecognized_string of string]
 
     include String_ext.MakeStringable (Spec)
 
