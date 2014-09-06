@@ -2,6 +2,11 @@
 open Result
 
 
+type not_found = [`Not_found]
+type empty_list = [`Empty_list]
+type out_of_bounds = [`Out_of_bounds]
+
+
 let rec insert_between a = function
   | ([] | [_]) as l -> l
   | e :: l -> e :: a :: (insert_between a l)

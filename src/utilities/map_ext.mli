@@ -3,6 +3,8 @@ module type ORDERED_TYPE = sig
   include Map.OrderedType
 end
 
+type not_found = [`Not_found]
+
 module type S = sig
   type key
   type +'a t
@@ -29,7 +31,7 @@ module type S = sig
   val max_binding : 'a t -> key * 'a
   val choose : 'a t -> key * 'a
   val split : key -> 'a t -> 'a t * 'a option * 'a t
-  val find : key -> 'a t -> ('a, [> `Not_found]) Result.t
+  val find : key -> 'a t -> ('a, not_found) Result.t
   val map : ('a -> 'b) -> 'a t -> 'b t
   val mapi : (key -> 'a -> 'b) -> 'a t -> 'b t
 
@@ -70,7 +72,7 @@ module type S1 = sig
   val max_binding : t -> key * img
   val choose : t -> key * img
   val split : key -> t -> t * img option * t
-  val find : key -> t -> (img, [> `Not_found]) Result.t
+  val find : key -> t -> (img, not_found) Result.t
   val map : (img -> img) -> t -> t
   val mapi : (key -> img -> img) -> t -> t
   val of_list : (key * img) list -> t

@@ -1,17 +1,20 @@
 
+type not_found = [`Not_found]
+type attribute_already_exists = [`Attribute_already_exists]
+
 module Attributes : sig
   type t
   val empty : t
-  val get_pos : t -> string -> (unit Position.t, [> `Not_found]) Result.t
+  val get_pos : t -> string -> (unit Position.t, not_found) Result.t
   val extract_pos : t -> string -> unit Position.t
-  val get : t -> string -> (string, [> `Not_found]) Result.t
-  val get_with_pos : t -> string -> (string Position.t, [> `Not_found]) Result.t
+  val get : t -> string -> (string, not_found) Result.t
+  val get_with_pos : t -> string -> (string Position.t, not_found) Result.t
   val extract : t -> string -> string
   val extract_with_pos : t -> string -> string Position.t
-  val add : t -> string -> string -> (t, [> `Attribute_already_exists]) Result.t
+  val add : t -> string -> string -> (t, attribute_already_exists) Result.t
   val add_with_pos :
     t -> string Position.t -> string Position.t ->
-    (t, [> `Attribute_already_exists]) Result.t
+    (t, attribute_already_exists) Result.t
   val update : t -> string -> string -> t
   val update_with_pos : t -> string Position.t -> string Position.t -> t
   val remove : t -> string -> t
@@ -28,14 +31,14 @@ val node_with_pos : string Position.t -> Attributes.t -> t list -> t
 val get_node : t -> string
 val get_node_with_pos : t -> string Position.t
 val get_attributes : t -> Attributes.t
-val get_attribute : t -> string -> (string, [> `Not_found]) Result.t
+val get_attribute : t -> string -> (string, not_found) Result.t
 val get_attribute_with_pos :
-  t -> string -> (string Position.t, [> `Not_found]) Result.t
+  t -> string -> (string Position.t, not_found) Result.t
 val extract_attribute : t -> string -> string
 val extract_attribute_with_pos : t -> string -> string Position.t
 val get_children : t -> t list
 val get_node_children : t -> string -> t list
-val get_node_child : t -> string -> (t, [> `Not_found]) Result.t
+val get_node_child : t -> string -> (t, not_found) Result.t
 val extract_node_child : t -> string -> t
 
 val from_file :

@@ -20,6 +20,8 @@ let make contents file line char =
 
 let make_dummy contents = { contents ; pos = None }
 
+type no_position = [`No_position]
+
 let contents pos = pos.contents
 let all pos = match pos.pos with
   | None -> error `No_position

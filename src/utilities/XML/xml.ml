@@ -3,6 +3,10 @@ open Result
 open Xml_parse
 
 
+type not_found = [`Not_found]
+type attribute_already_exists = [`Attribute_already_exists]
+
+
 module Infos = struct
 
   type t = { pos : unit Position.t ; value : string Position.t }
