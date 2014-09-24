@@ -7,10 +7,8 @@ module type ORDERED_TYPE = sig
 end
 
 
-type not_found = [`Not_found]
-
-
 module type S = sig
+  type not_found = [`Not_found]
   type key
   type +'a t
   val empty : 'a t
@@ -51,6 +49,8 @@ end
 
 
 module Make (Ord : ORDERED_TYPE) : S with type key = Ord.t = struct
+
+  type not_found = [`Not_found]
 
   include Map.Make (Ord)
 
@@ -93,6 +93,7 @@ end
 
 
 module type S1 = sig
+  type not_found = [`Not_found]
   type key
   type img
   type t
@@ -131,6 +132,8 @@ end
 module Make1 (Key : ORDERED_TYPE) (Img : ORDERED_TYPE)
   : S1 with type key = Key.t and type img = Img.t =
 struct
+
+  type not_found = [`Not_found]
 
   module M = Make (Key)
 
