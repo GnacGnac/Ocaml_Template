@@ -54,9 +54,11 @@ module Attributes = struct
     let old_value = get_with_pos attributes attribute in
     let old_value_changed =
       map_result (Position.change_contents value) old_value in
-    let value = Result.get (Position.make_dummy value) old_value_changed in
+    let value =
+      Result.get (fun _ -> Position.make_dummy value) old_value_changed in
     let pos =
-      Result.get (Position.make_dummy ()) (get_pos attributes attribute) in
+      Result.get (fun _ -> Position.make_dummy ())
+		 (get_pos attributes attribute) in
     let attribute = Position.change_contents attribute pos in
     update_with_pos attributes attribute value
 
