@@ -16,11 +16,11 @@ let map_result f_ok = map f_ok (fun a -> a)
 
 let map_error f_error = map (fun a -> a) f_error
 
-let fold error_result ok_result = function
+let fold ok_result error_result = function
   | Ok a -> ok_result a
-  | Error _ -> error_result
+  | Error err -> error_result err
 
-let get default = fold default (fun a -> a)
+let get error_result = fold (fun a -> a) error_result
 
 let to_option = function
   | Ok a -> Some a

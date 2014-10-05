@@ -10,8 +10,8 @@ val map : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
 val map_result : ('a -> 'c) -> ('a, 'b) t -> ('c, 'b) t
 val map_error : ('b -> 'c) -> ('a, 'b) t -> ('a, 'c) t
 
-val fold : 'a -> ('b -> 'a) -> ('b, 'c) t -> 'a
-val get : 'a -> ('a, 'b) t -> 'a
+val fold : ('b -> 'a) -> ('c -> 'a) -> ('b, 'c) t -> 'a
+val get : ('b -> 'a) -> ('a, 'b) t -> 'a
 
 val to_option : ('a, 'b) t -> 'a option
 val of_option : 'b -> 'a option -> ('a, 'b) t
