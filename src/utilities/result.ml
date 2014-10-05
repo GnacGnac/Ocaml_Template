@@ -36,6 +36,6 @@ let extract = function
 
 let (|>) f g = fun x -> g (f x)
 
-let (@@) f x  = f x
+let (@@) = Pervasives.(@@)
 
-let (|-) x f = f x
+let (|-) = Pervasives.(|>)
