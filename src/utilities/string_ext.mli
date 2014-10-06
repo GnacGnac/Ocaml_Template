@@ -1,5 +1,6 @@
 
 type unrecognized_string = [`Unrecognized_string of string]
+type not_an_int = [`Not_an_int of string]
 
 module type TO_STRING = sig
   type t
@@ -36,7 +37,7 @@ val remove_chars : string -> char list -> string
 val parse_indices : string -> int -> string -> int list option
 val add_indices : string -> int list -> string
 
-val to_int : string -> (int, [`Not_an_int of string]) Result.t
+val to_int : string -> (int, not_an_int) Result.t
 
 val uppercase_first : string -> string
 

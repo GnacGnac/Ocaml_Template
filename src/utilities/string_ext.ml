@@ -3,6 +3,7 @@ open Result
 
 
 type unrecognized_string = [`Unrecognized_string of string]
+type not_an_int = [`Not_an_int of string]
 
 
 module type TO_STRING = sig
