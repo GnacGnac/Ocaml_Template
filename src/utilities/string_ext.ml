@@ -104,3 +104,10 @@ let rec contains_rec s substring length substring_length i =
 
 let contains s ?(from=0) substring =
   contains_rec s substring (String.length s) (String.length substring) from
+
+
+let rec to_list_rec s length i acc =
+  if i >= length then acc
+  else to_list_rec s length (i + 1) (s.[i] :: acc)
+
+let to_list s = List.rev (to_list_rec s (String.length s) 0 [])
