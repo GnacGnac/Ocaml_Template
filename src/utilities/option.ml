@@ -16,3 +16,5 @@ let to_result = Result.of_option
 let fold none_result some_result = function
   | None -> none_result
   | Some a -> some_result a
+
+let get default = fold default (fun a -> a)
