@@ -17,7 +17,5 @@ let foldi f e a =
   aux e 0
 
 
-type out_of_bounds = [`Out_of_bounds]
-
 let get array i =
   if i < Array.length array then return array.(i) else error `Out_of_bounds

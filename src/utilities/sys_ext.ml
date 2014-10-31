@@ -57,3 +57,7 @@ let mkdir ?(p=false) dir =
   let mkdir_result = Sys.command ("mkdir " ^ option ^ dir) in
   if mkdir_result = 0 then return ()
   else error (`Could_not_create_directory dir)
+
+let readdir directory =
+  if Sys.is_directory directory then return (Sys.readdir directory)
+  else error (`Not_a_directory directory)

@@ -23,3 +23,5 @@ val chdir :
 
 val mkdir :
   ?p:bool -> string -> (unit, [`Could_not_create_directory of string]) Result.t
+
+val readdir : string -> (string array, [`Not_a_directory of string]) Result.t
