@@ -5,6 +5,7 @@ val return : 'a -> ('a, 'b) t
 val error : 'b -> ('a, 'b) t
 
 val (>>=) : ('a, 'b) t -> ('a -> ('c, 'b) t) -> ('c, 'b) t
+val (|>>) : ('a, 'b) t -> ('a -> 'c) -> ('c, 'b) t
 
 val map : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
 val map_result : ('a -> 'c) -> ('a, 'b) t -> ('c, 'b) t

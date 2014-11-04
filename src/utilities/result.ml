@@ -42,3 +42,5 @@ let (|>) f g = fun x -> g (f x)
 let (@@) = Pervasives.(@@)
 
 let (|-) = Pervasives.(|>)
+
+let (|>>) a f = a >>= (f |> return)
