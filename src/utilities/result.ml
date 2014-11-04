@@ -30,6 +30,9 @@ let of_option none_error = function
   | None -> error none_error
   | Some a -> return a
 
+let safe_try f error_handler =
+  try return (f ()) with exn -> error (error_handler exn)
+
 let extract = function
   | Ok a -> a
   | _ -> assert false (* Only use on valid monads. *)

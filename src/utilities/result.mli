@@ -16,6 +16,8 @@ val get : ('b -> 'a) -> ('a, 'b) t -> 'a
 val to_option : ('a, 'b) t -> 'a option
 val of_option : 'b -> 'a option -> ('a, 'b) t
 
+val safe_try : (unit -> 'a) -> (exn -> 'b) -> ('a, 'b) t
+
 (* Only use on valid monads. *)
 val extract : ('a, 'b) t -> 'a
 
