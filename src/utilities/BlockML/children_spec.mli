@@ -72,4 +72,4 @@ type 'node occurrence_error = [
 | `Children_spec_violation of ('node env * 'node t)
 ]
 
-val check : 'node env -> 'node t -> (unit, 'node occurrence_error) Result.t
+val check : 'node env -> 'node t -> (unit, [> 'node occurrence_error]) Result.t

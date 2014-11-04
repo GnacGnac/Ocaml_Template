@@ -21,7 +21,7 @@ val fold_bind :
 
 val repeat : int -> 'a -> 'a list
 
-val assoc : 'a -> ('a * 'b) list -> ('b, not_found) Result.t
+val assoc : 'a -> ('a * 'b) list -> ('b, [> not_found]) Result.t
 
 val removei : int -> 'a list -> 'a list
 
@@ -30,19 +30,19 @@ val map_nth : int -> ('a -> 'a) -> 'a list -> 'a list
 val make : int -> 'a -> 'a list
 
 val find_and_apply :
-  ('a -> 'b option) -> 'a list -> ('b, not_found) Result.t
+  ('a -> 'b option) -> 'a list -> ('b, [> not_found]) Result.t
 
-val nth : 'a list -> int -> ('a, out_of_bounds) Result.t
+val nth : 'a list -> int -> ('a, [> out_of_bounds]) Result.t
 
 val make_with_next : 'a -> ('a -> 'a) -> int -> 'a list
 
-val index_of : 'a -> 'a list -> (int, not_found) Result.t
+val index_of : 'a -> 'a list -> (int, [> not_found]) Result.t
 
 val filter_and_apply : ('a -> 'b option) -> 'a list -> 'b list
 
 val repeat_rank : 'a list -> 'a list
 
-val pick : 'a list -> ('a * 'a list, empty_list) Result.t
+val pick : 'a list -> ('a * 'a list, [> empty_list]) Result.t
 
 val product : 'a list -> 'b list -> ('a * 'b) list
 

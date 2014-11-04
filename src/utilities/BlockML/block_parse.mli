@@ -7,4 +7,4 @@ type error = [
 | `Parse_error of unit Position.t
 ]
 
-val from_file : string -> (Block_string.t, error) Result.t
+val from_file : string -> (Block_string.t, [> error]) Result.t

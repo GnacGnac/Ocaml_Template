@@ -8,7 +8,7 @@ module type S = sig
   val port : int
   val pages :
     Unix.sockaddr ->
-    (Action.t, [`Unrecognized_page of string]) Result.t ->
+    (Action.t, [> `Unrecognized_page of string]) Result.t ->
     (Name.t * string) list -> Html.t
 end
 
@@ -25,7 +25,7 @@ module type UNSAFE_S = sig
   val port : int
   val pages :
     Unix.sockaddr ->
-    (Action.t, [`Unrecognized_page of string]) Result.t ->
+    (Action.t, [> `Unrecognized_page of string]) Result.t ->
     (Name.t * string) list -> Html.t
 end
 

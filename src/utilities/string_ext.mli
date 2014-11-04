@@ -9,13 +9,13 @@ end
 
 module type OF_STRING = sig
   type t
-  val of_string : string -> (t, unrecognized_string) Result.t
+  val of_string : string -> (t, [> unrecognized_string]) Result.t
 end
 
 module type STRINGABLE = sig
   type t
   val to_string : t -> string
-  val of_string : string -> (t, unrecognized_string) Result.t
+  val of_string : string -> (t, [> unrecognized_string]) Result.t
 end
 
 module type UNSAFE_STRINGABLE = sig
@@ -37,7 +37,7 @@ val remove_chars : string -> char list -> string
 val parse_indices : string -> int -> string -> int list option
 val add_indices : string -> int list -> string
 
-val to_int : string -> (int, not_an_int) Result.t
+val to_int : string -> (int, [> not_an_int]) Result.t
 
 val uppercase_first : string -> string
 

@@ -24,26 +24,26 @@ module Generic : sig
     val int : int -> t
     val text : string -> t
     val node : Node.t -> t list -> t
-    val get_int : t -> (int, no_int) Result.t
-    val get_int_with_pos : t -> (int Position.t, no_int) Result.t
-    val get_text : t -> (string, no_text) Result.t
-    val get_text_with_pos : t -> (string Position.t, no_text) Result.t
-    val get_node : Node.t -> t -> (t, no_such_child) Result.t
-    val get_node_no_pos : Node.t -> t -> (contents, no_such_child) Result.t
-    val get_int_children : t -> (int list, no_children) Result.t
+    val get_int : t -> (int, [> no_int]) Result.t
+    val get_int_with_pos : t -> (int Position.t, [> no_int]) Result.t
+    val get_text : t -> (string, [> no_text]) Result.t
+    val get_text_with_pos : t -> (string Position.t, [> no_text]) Result.t
+    val get_node : Node.t -> t -> (t, [> no_such_child]) Result.t
+    val get_node_no_pos : Node.t -> t -> (contents, [> no_such_child]) Result.t
+    val get_int_children : t -> (int list, [> no_children]) Result.t
     val get_int_children_with_pos :
-      t -> (int Position.t list, no_children) Result.t
-    val get_text_children : t -> (string list, no_children) Result.t
+      t -> (int Position.t list, [> no_children]) Result.t
+    val get_text_children : t -> (string list, [> no_children]) Result.t
     val get_text_children_with_pos :
-      t -> (string Position.t list, no_children) Result.t
-    val get_node_children : Node.t -> t -> (t list, no_children) Result.t
+      t -> (string Position.t list, [> no_children]) Result.t
+    val get_node_children : Node.t -> t -> (t list, [> no_children]) Result.t
     val get_node_children_no_pos :
-      Node.t -> t -> (contents list, no_children) Result.t
-    val get_root_node : t -> (Node.t, not_a_node) Result.t
+      Node.t -> t -> (contents list, [> no_children]) Result.t
+    val get_root_node : t -> (Node.t, [> not_a_node]) Result.t
     val get_root_node_with_pos :
-      t -> (Node.t Position.t, not_a_node) Result.t
-    val get_children : t -> (t list, no_children) Result.t
-    val get_children_no_pos : t -> (contents list, no_children) Result.t
+      t -> (Node.t Position.t, [> not_a_node]) Result.t
+    val get_children : t -> (t list, [> no_children]) Result.t
+    val get_children_no_pos : t -> (contents list, [> no_children]) Result.t
 
     val to_string : t -> string
 
@@ -145,7 +145,8 @@ module ChildrenSpec : sig
   | `Children_spec_violation of ('node env * 'node t)
   ]
 
-  val check : 'node env -> 'node t -> (unit, 'node occurrence_error) Result.t
+  val check :
+    'node env -> 'node t -> (unit, [> 'node occurrence_error]) Result.t
 
 end
 
@@ -185,9 +186,9 @@ module Instance : sig
     type node_analyze_error = Node.t analyze_error
     type node_parse_error = Node.t parse_error
     type could_not_write_to_file = [`Could_not_write_file of string]
-    val analyze : t -> (unit, node_analyze_error) Result.t
-    val parse : string -> (t, node_parse_error) Result.t
-    val save : string -> t -> (unit, could_not_write_to_file) Result.t
+    val analyze : t -> (unit, [> node_analyze_error]) Result.t
+    val parse : string -> (t, [> node_parse_error]) Result.t
+    val save : string -> t -> (unit, [> could_not_write_to_file]) Result.t
   end
 
   module Make (Spec : SPEC) : S with type Node.t = Spec.t
@@ -241,7 +242,8 @@ module Grammar : sig
   module type S = sig
     type t
     module type S = Instance.S with type Node.t = t
-    val from_file : string -> ((module S), node grammar_parse_error) Result.t
+    val from_file :
+      string -> ((module S), [> node grammar_parse_error]) Result.t
   end
   include Instance.S with type Node.t = node
   module type M = sig
@@ -252,13 +254,12 @@ module Grammar : sig
   module MakeUnsafe (M : String_ext.UNSAFE_STRINGABLE) : S with type t = M.t
 end
 
-
 module type PARSE_RESULT = sig
   include Instance.S
-  val parse_result : (t, Node.t parse_error) Result.t
+  val parse_result : (t, [> Node.t parse_error]) Result.t
 end
 
 val parse_from_external :
   (module String_ext.UNSAFE_STRINGABLE) -> string -> string ->
   ((module PARSE_RESULT),
-   [`Grammar_error of Grammar.node grammar_parse_error]) Result.t
+   [> `Grammar_error of Grammar.node grammar_parse_error]) Result.t

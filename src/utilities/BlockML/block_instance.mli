@@ -27,9 +27,9 @@ module type S = sig
   type node_analyze_error = Node.t analyze_error
   type node_parse_error = Node.t parse_error
   type could_not_write_to_file = [`Could_not_write_file of string]
-  val analyze : t -> (unit, node_analyze_error) Result.t
-  val parse : string -> (t, node_parse_error) Result.t
-  val save : string -> t -> (unit, could_not_write_to_file) Result.t
+  val analyze : t -> (unit, [> node_analyze_error]) Result.t
+  val parse : string -> (t, [> node_parse_error]) Result.t
+  val save : string -> t -> (unit, [> could_not_write_to_file]) Result.t
 end
 
 module Make (Spec : SPEC) : S with type Node.t = Spec.t
