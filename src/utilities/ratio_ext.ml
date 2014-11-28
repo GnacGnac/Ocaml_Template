@@ -3,7 +3,6 @@ open Result
 open Big_int
 
 
-type sign = Pos | Neg
 type t = { num : big_int ; den : big_int }
 
 let num ratio = ratio.num
@@ -39,3 +38,5 @@ let div ratio1 ratio2 =
     return (make n d)
 
 let of_int i = make (big_int_of_int i) unit_big_int
+
+let to_string ratio = string_of_big_int (div_big_int (num ratio) (den ratio))
