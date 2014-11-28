@@ -9,7 +9,7 @@ let fri = 4
 let sat = 5
 let sun = 6
 
-let divides a b = a % b = 0
+let divides a b = a mod b = 0
 let is_leap year =
   ((divides year 4) && not (divides year 100)) ||
   (divides year 400)
