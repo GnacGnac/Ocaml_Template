@@ -21,3 +21,4 @@ open Xml
 open Lexer_ext
 open Options_parsing
 open Configuration_file
+open Ratio_ext
