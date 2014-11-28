@@ -207,7 +207,7 @@ module Make (M : M) = struct
   let or_ l = bin_con Or l
 
   let nones_exp l = and_ (List.map (eq (cst 0)) l)
-  let nones = nones_exp (List.map var M.all)
+  let nones = nones_exp (int :: text :: List.map var M.all)
 
   let exp_large_interval e n m =
     let min = le (cst n) e in
