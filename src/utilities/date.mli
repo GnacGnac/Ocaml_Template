@@ -8,3 +8,5 @@ val thu : week_day
 val fri : week_day
 val sat : week_day
 val sun : week_day
+
+val is_leap : int -> bool
