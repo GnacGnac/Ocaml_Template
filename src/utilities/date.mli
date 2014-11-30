@@ -1,12 +1,17 @@
 
-type week_day
+module Week_day : sig
+  include Comparison.S
 
-val mon : week_day
-val tue : week_day
-val wed : week_day
-val thu : week_day
-val fri : week_day
-val sat : week_day
-val sun : week_day
+  val mon : t
+  val tue : t
+  val wed : t
+  val thu : t
+  val fri : t
+  val sat : t
+  val sun : t
+
+end
 
 val is_leap : int -> bool
+
+include Comparison.S
