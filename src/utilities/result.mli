@@ -25,3 +25,4 @@ val extract : ('a, 'b) t -> 'a
 val (|>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 val (@@) : ('a -> 'b) -> 'a -> 'b
 val (|-) : 'a -> ('a -> 'b) -> 'b
+val fun_pow : ('a -> 'a) -> int -> 'a -> 'a

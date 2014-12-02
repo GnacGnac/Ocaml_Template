@@ -44,3 +44,5 @@ let (@@) = Pervasives.(@@)
 let (|-) = Pervasives.(|>)
 
 let (|>>) a f = a >>= (f |> return)
+
+let rec fun_pow f i a = if i <= 0 then a else fun_pow f (i - 1) (f a)
