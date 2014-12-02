@@ -10,14 +10,15 @@ module Week_day : sig
   val sat : t
   val sun : t
 
+  val to_int : t -> int
 end
 
-val is_leap : int -> bool
 
 include Comparison.S
 
+val is_leap : int -> bool
 val number_of_days : int -> int -> int
-
+val week_day : t -> Week_day.t
 
 type make_error = [
 | `Invalid_date_month_lower_than_1 of int
@@ -28,6 +29,7 @@ type make_error = [
 val make : int -> int -> int -> (t, [> make_error]) Result.t
 
 val next : t -> t
+val diff : t -> t -> int
 
 type format = Year | Month | Day
 val to_string : ?format:(format list) -> ?sep:string -> t -> string

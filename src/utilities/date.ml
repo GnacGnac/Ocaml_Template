@@ -17,6 +17,8 @@ module Week_day = struct
   let fri = 4
   let sat = 5
   let sun = 6
+
+  let to_int i = i
 end
 
 
@@ -93,6 +95,7 @@ let year = M.year
 let month = M.month
 let day = M.day
 let make = M.make
+let extract_make year month day = extract (make year month day)
 
 
 let next date =
@@ -106,6 +109,65 @@ let next date =
       else make year (month + 1) 1
     else make year month (day + 1) in
   extract next_date
+
+
+let iterate_date f (date1, date2) =
+  let next (date, days) =
+    let (next_date, added_days) = f date in
+    (next_date, days + added_days) in
+  let continue (date, _) = fst (f date) <= date2 in
+  iterate next continue (date1, 0)
+
+let next_year date =
+  let open Pervasives in
+  let year = year date in
+  let next_year = year + 1 in
+  let month = month date in
+  let day = day date in
+  let next_day = if month = 2 && day = 29 then 28 else day in
+  let days =
+    if (month >= 3 && is_leap next_year) ||
+       (month <= 2 && day <> 29 && is_leap year) then
+      366
+    else 365 in
+  (extract_make next_year month next_day, days)
+
+let iterate_years = iterate_date next_year
+
+let next_month date =
+  let open Pervasives in
+  let year = year date in
+  let month = month date in
+  let (next_year, next_month) =
+    if month = 12 then (year + 1, 1)
+    else (year, month + 1) in
+  let day = day date in
+  let last_day_next_month = number_of_days year next_month in
+  let next_day = min day last_day_next_month in
+  let days = number_of_days year month - (day - next_day) in
+  (extract_make next_year next_month next_day, days)
+
+let iterate_months = iterate_date next_month
+
+let next_day date = (next date, 1)
+
+let iterate_days = iterate_date next_day
+
+let diff_ordered date1 date2 =
+  let f (date1, days) iterate =
+    let (date1, added_days) = iterate (date1, date2) in
+    (date1, days + added_days) in
+  let iterates = [iterate_years ; iterate_months ; iterate_days] in
+  snd (List.fold_left f (date1, 0) iterates)
+
+let diff date1 date2 =
+  if date1 <= date2 then - (diff_ordered date1 date2)
+  else diff_ordered date2 date1
+
+
+let week_day date =
+  let base_date = extract_make 1900 1 1 in
+  diff date base_date mod 7
 
 
 type format = Year | Month | Day

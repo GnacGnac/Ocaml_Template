@@ -46,3 +46,6 @@ let (|-) = Pervasives.(|>)
 let (|>>) a f = a >>= (f |> return)
 
 let rec fun_pow f i a = if i <= 0 then a else fun_pow f (i - 1) (f a)
+
+let rec iterate next continue a =
+  if continue a then iterate next continue (next a) else a

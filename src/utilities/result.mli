@@ -26,3 +26,4 @@ val (|>) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 val (@@) : ('a -> 'b) -> 'a -> 'b
 val (|-) : 'a -> ('a -> 'b) -> 'b
 val fun_pow : ('a -> 'a) -> int -> 'a -> 'a
+val iterate : ('a -> 'a) -> ('a -> bool) -> 'a -> 'a
