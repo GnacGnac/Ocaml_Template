@@ -8,7 +8,6 @@ open List_ext
 open Map_ext
 open Option
 open Position
-open Result
 open Set_ext
 open String_ext
 open Sys_ext
@@ -23,3 +22,4 @@ open Options_parsing
 open Configuration_file
 open Ratio_ext
 open Date
+open Result
