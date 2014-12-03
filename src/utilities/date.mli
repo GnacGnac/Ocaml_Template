@@ -29,6 +29,10 @@ type make_error = [
 ]
 val make : int -> int -> int -> (t, [> make_error]) Result.t
 
+val year : t -> int
+val month : t -> int
+val day : t -> int
+
 val next : t -> t
 val diff : t -> t -> int
 
