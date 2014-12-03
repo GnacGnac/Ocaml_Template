@@ -10,6 +10,7 @@ module Week_day : sig
   val sat : t
   val sun : t
 
+  val next : t -> t
   val to_int : t -> int
 end
 

@@ -18,6 +18,7 @@ module Week_day = struct
   let sat = 5
   let sun = 6
 
+  let next week_day = (succ week_day) mod 7
   let to_int i = i
 end
 
