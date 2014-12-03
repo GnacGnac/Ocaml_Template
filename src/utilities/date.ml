@@ -115,7 +115,7 @@ let iterate_date f (date1, date2) =
   let next (date, days) =
     let (next_date, added_days) = f date in
     (next_date, days + added_days) in
-  let continue (date, _) = fst (f date) <= date2 in
+  let continue (date, _) = date <= date2 in
   iterate next continue (date1, 0)
 
 let next_year date =

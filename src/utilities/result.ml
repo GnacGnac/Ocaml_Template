@@ -47,5 +47,8 @@ let (|>>) a f = a >>= (f |> return)
 
 let rec fun_pow f i a = if i <= 0 then a else fun_pow f (i - 1) (f a)
 
-let rec iterate next continue a =
-  if continue a then iterate next continue (next a) else a
+let rec loop f next continue b a =
+  if continue a then loop f next continue (f b a) (next a)
+  else b
+
+let rec iterate next continue a = loop (fun _ a -> a) next continue a a
