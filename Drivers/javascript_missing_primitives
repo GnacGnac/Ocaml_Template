@@ -1,0 +1,7 @@
+// Missing primitives
+function initialize_nat() {}
+function create_nat() {}
+function set_to_zero_nat() {}
+function set_digit_nat() {}
+function incr_nat() {}
+function mult_digit_nat() {}

@@ -3,3 +3,7 @@ main.native
 _build
 *~
 import.ml
+src/main.ml
+main.byte
+main.html
+main.js
