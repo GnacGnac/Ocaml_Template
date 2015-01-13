@@ -381,8 +381,8 @@ module Make (Parameter : PARAMETER) = struct
 
   let string_voyel_accents voyel base_accent has_bar =
     let f base_int modifier =
-      let s = String.copy base_accent in
-      s.[1] <- char_of_int base_int ;
+      let s = Bytes.copy base_accent in
+      Bytes.set s 1 (char_of_int base_int) ;
       (s, modifier voyel) in
     let base_ints = make_base_ints base_accent has_bar in
     let modifiers = [grave ; acute ; circ ; uml] in

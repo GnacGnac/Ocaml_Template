@@ -42,5 +42,6 @@ val to_int : string -> (int, [> not_an_int]) Result.t
 val uppercase_first : string -> string
 
 val contains : string -> ?from:int -> string -> (int * int) option
+val starts_with : string -> string -> bool
 
 val to_list : string -> char list

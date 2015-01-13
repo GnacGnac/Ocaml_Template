@@ -106,6 +106,11 @@ let contains s ?(from=0) substring =
   contains_rec s substring (String.length s) (String.length substring) from
 
 
+let starts_with s prefix = match contains s prefix with
+  | Some (0, _) -> true
+  | _ -> false
+
+
 let rec to_list_rec s length i acc =
   if i >= length then acc
   else to_list_rec s length (i + 1) (s.[i] :: acc)
